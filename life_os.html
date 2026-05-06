@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life OS — Conor</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #eef0f3; --bg2: #e6e9ed; --bg3: #dde0e6; --bg4: #d4d8de;
+    --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+    --text: #1a1e26; --text2: #5a6070; --text3: #8a92a0;
+    --accent: #2c3a52; --accent2: #4a6080;
+    --red: #b83030; --red-light: #d94040;
+    --green: #1e8c4e; --blue: #1e6ea8; --amber: #b86e1a; --teal: #167a60; --pink: #a04a62;
+  }
+  html { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; }
+  body { min-height: 100vh; }
+
+  .header { border-bottom: 1px solid var(--border); padding: 2.5rem 2.5rem 2rem; position: relative; overflow: hidden; }
+  .header::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(74,96,128,0.06) 0%, transparent 70%); pointer-events: none; }
+  .header-inner { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+  .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--accent2); margin-bottom: 6px; }
+  .main-title { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: 4px; line-height: 0.9; background: linear-gradient(135deg, #1a1e26 0%, #2c5080 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .header-right { text-align: right; }
+  .start-badge { display: inline-block; background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px; padding: 10px 16px; margin-bottom: 8px; }
+  .start-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); }
+  .start-date { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; color: var(--accent); }
+  .start-company { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); }
+  .stat { padding: 1.25rem 1.5rem; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: none; }
+  .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 6px; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 2px; color: var(--accent); line-height: 1; }
+  .stat-sub { font-size: 10px; color: var(--text2); margin-top: 3px; }
+  .stat-urgent .stat-value { color: var(--red-light); }
+  .stat-good .stat-value { color: var(--green); }
+
+  .nav-tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; background: var(--bg2); scrollbar-width: none; align-items: stretch; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); background: none; border: none; padding: 1rem 1.5rem; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+  .tab-btn:hover { color: var(--text2); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent2); }
+  .tab-letter { font-family: 'Bebas Neue', sans-serif; font-size: 16px; margin-right: 6px; opacity: 0.6; }
+
+  .panel { display: none; animation: fadeIn 0.2s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid var(--border); }
+  .dash-card { padding: 1.5rem 1.5rem 1.5rem 2rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; position: relative; overflow: hidden; }
+
+  /* PROGRESS BAR ON DASH CARDS */
+  .card-progress { margin-top: 12px; }
+  .card-progress-track { height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+  .card-progress-fill { height: 100%; border-radius: 2px; background: var(--pillar-color, var(--accent2)); transition: width 0.3s ease; }
+  .card-progress-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
+
+  /* CHECKBOXES ON PILLAR TABS */
+  .action-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .action-check { flex-shrink: 0; margin-top: 2px; }
+  .action-check input[type="checkbox"] { display: none; }
+  .action-check label {
+    display: flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--border2);
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--bg);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .action-check label::after {
+    content: '';
+    display: block;
+    width: 5px; height: 9px;
+    border-right: 2px solid white;
+    border-bottom: 2px solid white;
+    transform: rotate(45deg) translate(-1px, -1px);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .action-check input[type="checkbox"]:checked + label { background: var(--accent2); border-color: var(--accent2); }
+  .action-check input[type="checkbox"]:checked + label::after { opacity: 1; }
+  .action-item.checked .action-title { text-decoration: line-through; color: var(--text3); }
+  .action-item.checked .action-detail { color: var(--text3); opacity: 0.7; }
+  .dash-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--pillar-color, #333); opacity: 0.5; transition: opacity 0.15s; }
+  .dash-card::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.12) 0%, transparent 60%); pointer-events: none; }
+  .dash-card:hover { background: var(--bg2); }
+  .dash-card:hover::before { opacity: 0.85; }
+  .dash-card:nth-child(3n) { border-right: none; }
+  .dash-card.card-work   { --pillar-color: var(--blue); }
+  .dash-card.card-finance { --pillar-color: var(--green); }
+  .dash-card.card-structure { --pillar-color: var(--amber); }
+  .dash-card.card-social  { --pillar-color: var(--pink); }
+  .dash-card.card-health  { --pillar-color: var(--teal); }
+  .dash-card.card-alert   { --pillar-color: var(--red); }
+  .card-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; padding: 3px 8px; border-radius: 2px; display: inline-block; margin-bottom: 12px; font-weight: 500; }
+  .tag-a { background: rgba(30,110,168,0.12); color: #1e6ea8; }
+  .tag-b { background: rgba(30,140,78,0.12); color: #1e8c4e; }
+  .tag-c { background: rgba(22,122,96,0.12); color: #167a60; }
+  .tag-d { background: rgba(184,110,26,0.12); color: #b86e1a; }
+  .tag-e { background: rgba(160,74,98,0.12); color: #a04a62; }
+  .tag-alert { background: rgba(184,48,48,0.12); color: #b83030; }
+  .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: var(--text); margin-bottom: 6px; }
+  .card-desc { font-size: 11px; color: var(--text2); line-height: 1.5; margin-bottom: 14px; }
+  .action-list { list-style: none; }
+  .action-list li { font-size: 11px; color: var(--text2); padding: 5px 0; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: flex-start; line-height: 1.4; }
+  .dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .dot-a { background: var(--blue); } .dot-b { background: var(--green); } .dot-c { background: var(--teal); }
+  .dot-d { background: var(--amber); } .dot-e { background: var(--pink); } .dot-alert { background: var(--red-light); }
+
+  .timeline-section { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 1rem; }
+  .timeline-track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .tl-item { background: var(--bg2); padding: 1rem 1.25rem; }
+  .tl-when { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent2); margin-bottom: 5px; }
+  .tl-what { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .tl-detail { font-size: 11px; color: var(--text2); line-height: 1.4; }
+
+  .pillar-wrap { padding: 2rem; max-width: 800px; }
+  .pillar-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .pillar-eyebrow { font-size: 9px; text-transform: uppercase; letter-spacing: 3px; color: var(--text3); margin-bottom: 8px; }
+  .pillar-title { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 2px; line-height: 1; margin-bottom: 10px; }
+  .pillar-lead { font-size: 14px; color: var(--text2); line-height: 1.7; }
+  .action-section { margin-bottom: 2rem; }
+  .action-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .action-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .action-num { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--text3); width: 20px; flex-shrink: 0; line-height: 1.3; }
+  .action-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .action-detail { font-size: 11px; color: var(--text2); line-height: 1.5; }
+  .urgent-tag { display: inline-block; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; padding: 2px 6px; border-radius: 2px; background: rgba(192,57,43,0.15); color: var(--red-light); margin-bottom: 4px; }
+  .insight-box { background: var(--bg3); border: 1px solid var(--border); border-left: 2px solid var(--accent2); border-radius: 4px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .insight-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--accent2); margin-bottom: 6px; }
+  .insight-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  .schedule-wrap { padding: 2rem; }
+  .schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+  .schedule-col-title { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 1rem; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .time-block { display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .time-tag { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 1px; color: var(--accent2); width: 70px; flex-shrink: 0; line-height: 1.4; }
+  .time-title { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .time-note { font-size: 11px; color: var(--text2); line-height: 1.4; }
+  .time-block.non-neg .time-title::after { content: ' —'; color: var(--red-light); }
+
+  .callouts-wrap { padding: 2rem; }
+  .callouts-intro { font-size: 12px; color: var(--text2); max-width: 600px; margin-bottom: 2rem; line-height: 1.6; }
+  .callouts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .callout-card { background: var(--bg2); padding: 1.5rem; border-left: 2px solid var(--red); transition: background 0.15s; }
+  .callout-card:hover { background: var(--bg3); }
+  .callout-num { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--red); opacity: 0.15; line-height: 1; margin-bottom: -8px; }
+  .callout-heading { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .callout-body { font-size: 11px; color: var(--text2); line-height: 1.6; }
+
+  .footer { border-top: 1px solid var(--border); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg2); }
+  .footer-text { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); }
+  .version-tag { font-size: 10px; color: var(--text3); }
+  .export-btn { font-family: 'DM Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 3px; cursor: pointer; transition: opacity 0.15s; }
+  .export-btn:hover { opacity: 0.8; }
+  .export-btn.copied { background: var(--green); }
+
+  /* DROPDOWN */
+  .nav-right { margin-left: auto; position: relative; flex-shrink: 0; }
+  .dropdown-btn {
+    font-family: 'DM Sans', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--text3); background: none; border: none; padding: 1rem 1.5rem;
+    cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent;
+    transition: color 0.2s; display: flex; align-items: center; gap: 6px; height: 100%;
+  }
+  .dropdown-btn:hover { color: var(--text2); }
+  .dropdown-btn.open { color: var(--accent); border-bottom-color: var(--accent2); }
+  .dropdown-arrow { font-size: 8px; transition: transform 0.2s; display: inline-block; }
+  .dropdown-btn.open .dropdown-arrow { transform: rotate(180deg); }
+  .dropdown-menu {
+    display: none; position: fixed;
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 4px; min-width: 200px; z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-item {
+    font-family: 'DM Sans', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--text2); background: none; border: none; width: 100%;
+    padding: 0.85rem 1.25rem; text-align: left; cursor: pointer;
+    transition: background 0.15s, color 0.15s; display: block;
+    border-bottom: 1px solid var(--border);
+  }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background: var(--bg2); color: var(--text); }
+  .dropdown-item.active { color: var(--accent); background: var(--bg2); }
+
+  /* OTHERS PANELS */
+  .others-wrap { padding: 2rem; max-width: 800px; }
+  .others-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .others-eyebrow { font-size: 9px; text-transform: uppercase; letter-spacing: 3px; color: var(--text3); margin-bottom: 8px; }
+  .others-title { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 2px; line-height: 1; margin-bottom: 10px; color: var(--text); }
+  .others-lead { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .others-section { margin-bottom: 2rem; }
+  .others-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .note-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem; margin-bottom: 10px; }
+  .note-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .goal-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .goal-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; margin-top: 5px; }
+  .goal-text { font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 3px; }
+  .goal-detail { font-size: 11px; color: var(--text2); line-height: 1.5; }
+  .idea-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .idea-text { font-size: 13px; color: var(--text); }
+  .checklist-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; }
+  .checklist-item .action-check label { margin-top: 0; }
+  .checklist-text { font-size: 12px; color: var(--text2); }
+  .checklist-item.checked .checklist-text { text-decoration: line-through; color: var(--text3); }
+
+  /* CALCULATOR */
+  .calc-wrap { margin-top: 0; }
+  .calc-intro { font-size: 11px; color: var(--text3); line-height: 1.6; margin-bottom: 1.5rem; padding: 10px 14px; background: var(--bg3); border-radius: 3px; border-left: 2px solid var(--accent2); }
+  .calc-input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .calc-input-group { display: flex; flex-direction: column; gap: 6px; }
+  .calc-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); }
+  .calc-input-prefix, .calc-input-suffix { display: flex; align-items: center; background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; overflow: hidden; }
+  .calc-input-prefix span, .calc-input-suffix span { padding: 8px 10px; font-size: 12px; color: var(--text3); background: var(--bg3); border-right: 1px solid var(--border2); flex-shrink: 0; }
+  .calc-input-suffix span { border-right: none; border-left: 1px solid var(--border2); }
+  .calc-input-prefix input, .calc-input-suffix input { border: none; background: transparent; padding: 8px 10px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; width: 100%; outline: none; }
+  .calc-input-prefix input:focus, .calc-input-suffix input:focus { background: var(--bg2); }
+  .calc-results { margin-top: 0.5rem; }
+  .calc-result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 1px; }
+  .calc-result-item { background: var(--bg2); padding: 12px 14px; }
+  .calc-result-item.highlight { background: var(--bg); }
+  .calc-result-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 4px; }
+  .calc-result-value { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; color: var(--text); line-height: 1; }
+  .calc-result-value.red { color: var(--red); }
+  .calc-result-value.green { color: var(--green); }
+  .calc-divider { height: 1px; background: var(--border); margin: 1rem 0 0.75rem; }
+  .calc-sub-title { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 10px; }
+  .calc-note { font-size: 10px; color: var(--text3); margin-top: 1rem; line-height: 1.5; padding: 8px 12px; background: var(--bg3); border-radius: 3px; }
+
+  /* MAINTENANCE */
+  .maint-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+  .maint-section { }
+  .maint-section-title { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .maint-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .maint-item.overdue .maint-name { color: var(--red); }
+  .maint-item.overdue .maint-cycle { color: var(--red-light); }
+  .maint-item.done .maint-name { color: var(--text3); text-decoration: line-through; }
+  .maint-check-wrap input[type="checkbox"] { display: none; }
+  .maint-check-wrap label {
+    display: flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1.5px solid var(--border2); border-radius: 3px;
+    cursor: pointer; background: var(--bg); transition: all 0.15s;
+  }
+  .maint-check-wrap label::after {
+    content: ''; display: block; width: 4px; height: 8px;
+    border-right: 2px solid white; border-bottom: 2px solid white;
+    transform: rotate(45deg) translate(-1px, -1px); opacity: 0; transition: opacity 0.15s;
+  }
+  .maint-check-wrap input:checked + label { background: var(--teal); border-color: var(--teal); }
+  .maint-check-wrap input:checked + label::after { opacity: 1; }
+  .maint-item.overdue .maint-check-wrap label { border-color: var(--red); }
+  .maint-content { flex: 1; }
+  .maint-name { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.3; }
+  .maint-cycle { font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .maint-status { font-size: 9px; color: var(--text3); white-space: nowrap; text-align: right; min-width: 60px; }
+  .maint-item.overdue .maint-status { color: var(--red); font-weight: 500; }
+
+  /* GOLF */
+  .golf-top-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 2rem; }
+  .golf-stat-card { background: var(--bg2); padding: 1.25rem; }
+  .golf-stat-card.goal { background: var(--bg); }
+  .golf-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 6px; }
+  .golf-stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 2px; color: var(--text); line-height: 1; margin-bottom: 8px; }
+  .golf-stat-sub { font-size: 10px; color: var(--text3); }
+  .golf-input-row { display: flex; gap: 6px; margin-top: 4px; }
+  .golf-input { background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; padding: 6px 10px; font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; width: 100%; outline: none; }
+  .golf-input:focus { border-color: var(--accent2); }
+  .golf-select { background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; padding: 6px 10px; font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; width: 100%; outline: none; }
+  .golf-btn { background: var(--accent); color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; }
+  .golf-btn:hover { opacity: 0.8; }
+  .golf-log-form { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem; }
+  .golf-form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+  .golf-field { display: flex; flex-direction: column; gap: 5px; }
+  .golf-field-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); }
+  .golf-submit-btn { background: var(--accent); color: white; border: none; border-radius: 3px; padding: 9px 20px; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; }
+  .golf-submit-btn:hover { opacity: 0.8; }
+  .golf-empty { font-size: 12px; color: var(--text3); padding: 1rem 0; }
+  .golf-round-item { display: grid; grid-template-columns: auto auto 1fr auto auto; gap: 1rem; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
+  .golf-round-date { font-size: 11px; color: var(--text3); white-space: nowrap; }
+  .golf-round-type { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; padding: 2px 7px; border-radius: 2px; background: var(--bg3); color: var(--text2); white-space: nowrap; }
+  .golf-round-type.course { background: rgba(30,140,78,0.12); color: var(--green); }
+  .golf-round-type.sim { background: rgba(30,110,168,0.12); color: var(--blue); }
+  .golf-round-course { font-size: 12px; font-weight: 500; color: var(--text); }
+  .golf-round-notes { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .golf-round-score { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; color: var(--text); line-height: 1; text-align: right; }
+  .golf-round-score.under90 { color: var(--green); }
+  .golf-round-delete { font-size: 10px; color: var(--text3); cursor: pointer; background: none; border: none; padding: 2px 6px; border-radius: 2px; transition: background 0.15s; font-family: 'DM Sans', sans-serif; }
+  .golf-round-delete:hover { background: var(--bg3); color: var(--red); }
+  .golf-textarea { width: 100%; min-height: 120px; background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; padding: 10px 12px; font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; resize: vertical; outline: none; line-height: 1.6; }
+  .golf-textarea:focus { border-color: var(--accent2); }
+  .club-table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .club-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .club-table thead tr { border-bottom: 1px solid var(--border2); background: var(--bg3); }
+  .club-table th { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); padding: 10px 14px; text-align: left; font-weight: 400; }
+  .club-table td { padding: 10px 14px; color: var(--text2); border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .club-table tbody tr:last-child td { border-bottom: none; }
+  .club-table tbody tr:hover td { background: var(--bg3); }
+  .club-carry-val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: var(--text); }
+  .club-name-val { font-weight: 500; color: var(--text); }
+  .club-delete { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 11px; padding: 2px 6px; border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+  .club-delete:hover { background: var(--bg3); color: var(--red); }
+  .club-add-row { display: grid; grid-template-columns: 1fr 100px 1fr auto; gap: 8px; padding: 10px 12px; background: var(--bg); border-top: 1px solid var(--border2); }</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <p class="eyebrow">Personal operating system</p>
+      <h1 class="main-title">Life OS</h1>
+    </div>
+    <div class="header-right">
+      <div class="start-badge">
+        <p class="start-label">Start date</p>
+        <p class="start-date">June 29, 2026</p>
+        <p class="start-company">Chef's Warehouse · West Chester County</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" id="tab-dashboard" onclick="switchTab('dashboard')"><span class="tab-letter">⌂</span> Dashboard</button>
+  <button class="tab-btn" id="tab-work" onclick="switchTab('work')"><span class="tab-letter">A</span> Work</button>
+  <button class="tab-btn" id="tab-finance" onclick="switchTab('finance')"><span class="tab-letter">B</span> Finance</button>
+  <button class="tab-btn" id="tab-structure" onclick="switchTab('structure')"><span class="tab-letter">D</span> Daily Structure</button>
+  <button class="tab-btn" id="tab-social" onclick="switchTab('social')"><span class="tab-letter">E</span> Social & Identity</button>
+  <button class="tab-btn" id="tab-health" onclick="switchTab('health')"><span class="tab-letter">C</span> Health & Fitness</button>
+  <button class="tab-btn" id="tab-callouts" onclick="switchTab('callouts')"><span class="tab-letter">!</span> Callouts</button>
+  <div class="nav-right">
+    <button class="dropdown-btn" id="dropdown-toggle" onclick="toggleDropdown()">
+      Others <span class="dropdown-arrow">▼</span>
+    </button>
+    <div class="dropdown-menu" id="dropdown-menu">
+      <button class="dropdown-item" id="tab-goals" onclick="event.stopPropagation(); switchTab('goals')">Goals</button>
+      <button class="dropdown-item" id="tab-ideas" onclick="event.stopPropagation(); switchTab('ideas')">Ideas</button>
+      <button class="dropdown-item" id="tab-notes" onclick="event.stopPropagation(); switchTab('notes')">Notes</button>
+      <button class="dropdown-item" id="tab-offerletter" onclick="event.stopPropagation(); switchTab('offerletter')">Offer Letter Checklist</button>
+      <button class="dropdown-item" id="tab-maintenance" onclick="event.stopPropagation(); switchTab('maintenance')">Home Maintenance</button>
+      <button class="dropdown-item" id="tab-golf" onclick="event.stopPropagation(); switchTab('golf')">Golf</button>
+    </div>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div id="panel-dashboard" class="panel active">
+  <div class="stats-bar">
+    <div class="stat stat-urgent">
+      <p class="stat-label">Days to start</p>
+      <p class="stat-value" id="days-count">—</p>
+      <p class="stat-sub">June 29th deadline</p>
+    </div>
+    <div class="stat stat-good">
+      <p class="stat-label">Nicotine free</p>
+      <p class="stat-value" id="nic-days">—</p>
+      <p class="stat-sub">days and counting</p>
+    </div>
+    <div class="stat">
+      <p class="stat-label">Salary range</p>
+      <p class="stat-value">$70–110K</p>
+      <p class="stat-sub">Offer letter pending</p>
+    </div>
+    <div class="stat">
+      <p class="stat-label">Portfolio value</p>
+      <p class="stat-value">$45K</p>
+      <p class="stat-sub">JLPSX + JTEK via JPM</p>
+    </div>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card card-work" onclick="switchTab('work')">
+      <span class="card-tag tag-a">A — Work</span>
+      <p class="card-title">Sales performance system</p>
+      <p class="card-desc">8 months inside sales is an audition, not a waiting room. The people who come out as stars treat the training period like it matters.</p>
+      <ul class="action-list">
+        <li><span class="dot dot-a"></span>Text your manager this week with one specific prep question</li>
+        <li><span class="dot dot-a"></span>Learn product divisions cold before June 29</li>
+        <li><span class="dot dot-a"></span>One sharp question per 101 session minimum</li>
+        <li><span class="dot dot-a"></span>Keep the neighbor/boss relationship social only</li>
+      </ul>
+      <div class="card-progress">
+        <p class="card-progress-label" id="prog-label-work">0 of 7 complete</p>
+        <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-work" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="dash-card card-finance" onclick="switchTab('finance')">
+      <span class="card-tag tag-b">B — Finance</span>
+      <p class="card-title">Build from paycheck one</p>
+      <p class="card-desc">No rent, no car, no phone. Almost entirely discretionary income. That sounds good. Without a system it's dangerous.</p>
+      <ul class="action-list">
+        <li><span class="dot dot-b"></span>Bring offer letter here immediately when it arrives</li>
+        <li><span class="dot dot-b"></span>Build budget before first paycheck, not after</li>
+        <li><span class="dot dot-b"></span>Understand draw structure fully before spending</li>
+        <li><span class="dot dot-b"></span>Cut parents' spending hard on income day one</li>
+      </ul>
+      <div class="card-progress">
+        <p class="card-progress-label" id="prog-label-finance">0 of 8 complete</p>
+        <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-finance" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="dash-card card-structure" onclick="switchTab('structure')">
+      <span class="card-tag tag-d">D — Daily Structure</span>
+      <p class="card-title">The operating system</p>
+      <p class="card-desc">Greenwich to Bronx by 8:30 AM means out the door by 7:30. That's a 6:00 AM wake up. You're at 9:30 now. Start shifting today.</p>
+      <ul class="action-list">
+        <li><span class="dot dot-d"></span>Move wake up 20–30 min earlier every few days now</li>
+        <li><span class="dot dot-d"></span>7–8 PM workout block is non-negotiable</li>
+        <li><span class="dot dot-d"></span>Sunday is prep day, not recovery day</li>
+        <li><span class="dot dot-d"></span>Cook your own meals from day one</li>
+      </ul>
+      <div class="card-progress">
+        <p class="card-progress-label" id="prog-label-structure">0 of 4 complete</p>
+        <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-structure" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="dash-card card-social" onclick="switchTab('social')">
+      <span class="card-tag tag-e">E — Social & Identity</span>
+      <p class="card-title">Intentional, not default</p>
+      <p class="card-desc">The frat structure disappears graduation day. Ridgefield friends are your foundation but also the comfort trap. Build new infrastructure deliberately.</p>
+      <ul class="action-list">
+        <li><span class="dot dot-e"></span>Lean on home friends in month one, it's a real transition</li>
+        <li><span class="dot dot-e"></span>New social infrastructure within 90 days of starting</li>
+        <li><span class="dot dot-e"></span>Long distance adds weight — be honest about it</li>
+        <li><span class="dot dot-e"></span>Drinking 2–3x a week doesn't transplant post-grad</li>
+      </ul>
+      <div class="card-progress">
+        <p class="card-progress-label" id="prog-label-social">0 of 5 complete</p>
+        <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-social" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="dash-card card-health" onclick="switchTab('health')">
+      <span class="card-tag tag-c">C — Health & Fitness</span>
+      <p class="card-title">Protect what's working</p>
+      <p class="card-desc">You already have the habits. The job is protecting them through the transition. No infrastructure means no routine.</p>
+      <ul class="action-list">
+        <li><span class="dot dot-c"></span>Join Hydrogen Fitness before June 29</li>
+        <li><span class="dot dot-c"></span>322 days nicotine free — don't let stress become an excuse</li>
+        <li><span class="dot dot-c"></span>Golf sim consistently — it's a sales asset</li>
+        <li><span class="dot dot-c"></span>Evening workout is first thing skipped. Don't let it.</li>
+      </ul>
+      <div class="card-progress">
+        <p class="card-progress-label" id="prog-label-health">0 of 6 complete</p>
+        <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-health" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="dash-card card-alert" onclick="switchTab('callouts')">
+      <span class="card-tag tag-alert">! Callouts</span>
+      <p class="card-title">7 things to hold yourself to</p>
+      <p class="card-desc">The patterns most people fall back into. You named them yourself. Read these when you feel yourself rationalizing.</p>
+      <ul class="action-list">
+        <li><span class="dot dot-alert"></span>The spending lie</li>
+        <li><span class="dot dot-alert"></span>Present but not engaged</li>
+        <li><span class="dot dot-alert"></span>The relationship trap</li>
+        <li><span class="dot dot-alert"></span>The entrepreneur pattern</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="timeline-section">
+    <p class="section-title">Next 8 weeks — before you start</p>
+    <div class="timeline-track">
+      <div class="tl-item"><p class="tl-when">This week</p><p class="tl-what">Start the shift</p><p class="tl-detail">Move wake up 20–30 min earlier. Text your manager one specific prep question.</p></div>
+      <div class="tl-item"><p class="tl-when">Weeks 2–3</p><p class="tl-what">Lock infrastructure</p><p class="tl-detail">Join Hydrogen Fitness. Build full budget draft when offer letter arrives.</p></div>
+      <div class="tl-item"><p class="tl-when">Weeks 4–6</p><p class="tl-what">Product knowledge</p><p class="tl-detail">Learn all division breakdowns cold. Know the catalog before day one.</p></div>
+      <div class="tl-item"><p class="tl-when">Week of June 29</p><p class="tl-what">Show up ready</p><p class="tl-detail">Wake up adjusted. Gym locked. Budget set. Commute tested. Go.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- WORK -->
+<div id="panel-work" class="panel">
+  <div class="pillar-wrap">
+    <div class="pillar-header">
+      <p class="pillar-eyebrow">Pillar A</p>
+      <p class="pillar-title" style="color:#1e6ea8;">Sales Performance System</p>
+      <p class="pillar-lead">You start June 29th. The 8-month inside sales period is not something to survive. It's an 8-month audition. The people who come out as stars treat every part of it like it matters — the boring parts especially.</p>
+    </div>
+    <div class="insight-box"><p class="insight-label">Your advantage</p><p class="insight-text">You know your direct manager — he hired you. His boss is your neighbor. Most new hires walk in knowing nobody. Use this correctly and it's a significant edge. Use it as a shortcut and it quietly destroys your credibility before you've made a single sale.</p></div>
+    <div class="action-section">
+      <p class="action-section-title">Before day one</p>
+      <div class="action-item" id="item-work-1"><div class="action-check"><input type="checkbox" id="chk-work-1"><label for="chk-work-1"></label></div><p class="action-num">01</p><div><p class="urgent-tag">This week</p><p class="action-title">Text your manager one specific question about preparation</p><p class="action-detail">Not generic excitement. One specific question about how to hit the ground running. It signals seriousness and keeps you on his radar before you even start.</p></div></div>
+      <div class="action-item" id="item-work-2"><div class="action-check"><input type="checkbox" id="chk-work-2"><label for="chk-work-2"></label></div><p class="action-num">02</p><div><p class="action-title">Learn the division breakdown cold</p><p class="action-detail">Center of Plate, Produce, Dairy, and every other division. Know what they sell, who their customers are, and how they fit together. You sat through some of this training already — use it.</p></div></div>
+      <div class="action-item" id="item-work-3"><div class="action-check"><input type="checkbox" id="chk-work-3"><label for="chk-work-3"></label></div><p class="action-num">03</p><div><p class="action-title">Research what separates top performers in specialty food sales</p><p class="action-detail">Ask someone in the company directly. One conversation with a senior rep who knows the Westchester territory is worth more than any research you can do on your own.</p></div></div>
+    </div>
+    <div class="action-section">
+      <p class="action-section-title">During the 8-month training period</p>
+      <div class="action-item" id="item-work-4"><div class="action-check"><input type="checkbox" id="chk-work-4"><label for="chk-work-4"></label></div><p class="action-num">04</p><div><p class="action-title">Treat every 101 presenter as a relationship to build</p><p class="action-detail">One sharp question per session minimum. Follow up with a quick email or message after. Most new hires forget these people exist. If you're the one who remembers them, you become memorable across the whole organization before you've made a sale.</p></div></div>
+      <div class="action-item" id="item-work-5"><div class="action-check"><input type="checkbox" id="chk-work-5"><label for="chk-work-5"></label></div><p class="action-num">05</p><div><p class="action-title">Master the product catalog faster than anyone in your class</p><p class="action-detail">Unglamorous. Most people do the bare minimum. Knowing specialty food products cold is what makes you credible with chefs and restaurant buyers who've been in the industry for 20 years.</p></div></div>
+      <div class="action-item" id="item-work-6"><div class="action-check"><input type="checkbox" id="chk-work-6"><label for="chk-work-6"></label></div><p class="action-num">06</p><div><p class="action-title">Monthly check-in with your manager — keep it deliberate</p><p class="action-detail">Not needy, not constant. Once a month. He has reputational skin in the game — you're his hire. If you perform well, he looks smart. Make him look smart.</p></div></div>
+      <div class="action-item" id="item-work-7"><div class="action-check"><input type="checkbox" id="chk-work-7"><label for="chk-work-7"></label></div><p class="action-num">07</p><div><p class="action-title">Keep the neighbor relationship social only — for now</p><p class="action-detail">His boss being your neighbor is a long-term asset. It becomes a liability the second people sense you're using it as a back channel. Let your track record build first. The relationship earns its professional value through your results, not the other way around.</p></div></div>
+    </div>
+    <div class="insight-box"><p class="insight-label">The long game</p><p class="insight-text">A book of business in specialty food sales is genuinely close to running your own business. You own the relationships, you build the revenue, your income is tied directly to how well you manage and grow it. That's the entrepreneur outlet you've been looking for. But it's on the other side of 8 months of unglamorous training. The grind is the price of admission.</p></div>
+  </div>
+</div>
+
+<!-- FINANCE -->
+<div id="panel-finance" class="panel">
+  <div class="pillar-wrap">
+    <div class="pillar-header">
+      <p class="pillar-eyebrow">Pillar B</p>
+      <p class="pillar-title" style="color:#1e8c4e;">Financial System</p>
+      <p class="pillar-lead">You're starting with no debt, no rent, no car payment, no phone bill, and $45K already invested. That's an exceptional position. The only way this goes wrong is if you waste the advantage — which most people in your position do quietly and gradually.</p>
+    </div>
+    <div class="insight-box"><p class="insight-label">Your starting position</p><p class="insight-text">$45K in investments (JLPSX + JTEK via JPM), rent-free in Greenwich, family safety net. This is not normal for 22. The pressure this creates isn't about survival — it's about not squandering a head start most people never get.</p></div>
+    <div class="action-section">
+      <p class="action-section-title">Immediate — offer letter actions</p>
+      <div class="action-item" id="item-finance-1"><div class="action-check"><input type="checkbox" id="chk-finance-1"><label for="chk-finance-1"></label></div><p class="action-num">01</p><div><p class="urgent-tag">When letter arrives</p><p class="action-title">Confirm the exact draw language in writing</p><p class="action-detail">Non-recoverable draw means they advance you money against future commissions that you don't owe back. Get the exact terms confirmed. Don't assume.</p></div></div>
+      <div class="action-item" id="item-finance-2"><div class="action-check"><input type="checkbox" id="chk-finance-2"><label for="chk-finance-2"></label></div><p class="action-num">02</p><div><p class="urgent-tag">When letter arrives</p><p class="action-title">Understand the commission structure above the draw</p><p class="action-detail">That's where the real money is. The draw is a floor. Understand exactly what percentage you earn on new vs. existing accounts, and what the ceiling looks like for top performers in Westchester.</p></div></div>
+      <div class="action-item" id="item-finance-3"><div class="action-check"><input type="checkbox" id="chk-finance-3"><label for="chk-finance-3"></label></div><p class="action-num">03</p><div><p class="action-title">Build your budget before your first paycheck lands</p><p class="action-detail">Two scenarios: $70K and $110K. Come back here with the number and we'll build the actual plan. The framework won't change — only the amounts.</p></div></div>
+    </div>
+    <div class="action-section">
+      <p class="action-section-title">Portfolio — existing $45K</p>
+      <div class="action-item" id="item-finance-4"><div class="action-check"><input type="checkbox" id="chk-finance-4"><label for="chk-finance-4"></label></div><p class="action-num">04</p><div><p class="action-title">JLPSX — 1.39% expense ratio, grade F vs. category</p><p class="action-detail">You're paying ~$350/year in fees on $25K for a fund trying to beat the S&P 500. A Vanguard index fund like VOO charges 0.03% for the same exposure. Money stays put for now — revisit when it's moveable.</p></div></div>
+      <div class="action-item" id="item-finance-5"><div class="action-check"><input type="checkbox" id="chk-finance-5"><label for="chk-finance-5"></label></div><p class="action-num">05</p><div><p class="action-title">JTEK — 0.65% expense ratio, concentrated tech</p><p class="action-detail">Better than JLPSX but still above average for its category. A concentrated tech bet at 22 isn't catastrophic, but it's a sector call. If tech has a bad year, this feels it harder than a broad index would.</p></div></div>
+    </div>
+    <div class="action-section">
+      <p class="action-section-title">Rules from paycheck one</p>
+      <div class="action-item" id="item-finance-6"><div class="action-check"><input type="checkbox" id="chk-finance-6"><label for="chk-finance-6"></label></div><p class="action-num">06</p><div><p class="action-title">Pay yourself first — automate savings before you see the money</p><p class="action-detail">Set up automatic transfers on payday. The money you don't see, you don't spend. Decide the percentage before the first check arrives, not after.</p></div></div>
+      <div class="action-item" id="item-finance-7"><div class="action-check"><input type="checkbox" id="chk-finance-7"><label for="chk-finance-7"></label></div><p class="action-num">07</p><div><p class="action-title">Hard stop on parents' money from income day one</p><p class="action-detail">Not a gradual wind-down. A hard stop. If you do it gradually you won't do it. See Callout #1.</p></div></div>
+      <div class="action-item" id="item-finance-8"><div class="action-check"><input type="checkbox" id="chk-finance-8"><label for="chk-finance-8"></label></div><p class="action-num">08</p><div><p class="action-title">Open a Roth IRA immediately</p><p class="action-detail">You're 22 with no rent. This is the optimal moment to start. Max contribution is $7,000/year. The tax-free compounding over 40 years on money you invest now is one of the highest-leverage financial moves available to you.</p></div></div>
+    </div>
+
+    <!-- BUDGET CALCULATOR -->
+    <div class="action-section">
+      <p class="action-section-title">Budget calculator</p>
+      <div class="calc-wrap">
+        <div class="calc-intro">Enter your salary when the offer letter arrives. The calculator estimates take-home using CT state rates (with NY work credit applied) and federal brackets for 2026. Actual numbers may vary slightly.</div>
+
+        <div class="calc-input-row">
+          <div class="calc-input-group">
+            <label class="calc-label">Annual salary</label>
+            <div class="calc-input-prefix">
+              <span>$</span>
+              <input type="number" id="calc-salary" placeholder="70000" min="0" max="500000" oninput="runCalc()">
+            </div>
+          </div>
+          <div class="calc-input-group">
+            <label class="calc-label">Savings rate</label>
+            <div class="calc-input-suffix">
+              <input type="number" id="calc-savings" placeholder="20" min="0" max="80" oninput="runCalc()">
+              <span>%</span>
+            </div>
+          </div>
+          <div class="calc-input-group">
+            <label class="calc-label">Roth IRA contribution</label>
+            <div class="calc-input-prefix">
+              <span>$</span>
+              <input type="number" id="calc-roth" placeholder="7000" min="0" max="7000" oninput="runCalc()">
+            </div>
+          </div>
+        </div>
+
+        <div class="calc-results" id="calc-results" style="display:none;">
+          <div class="calc-result-grid">
+            <div class="calc-result-item">
+              <p class="calc-result-label">Gross annual</p>
+              <p class="calc-result-value" id="res-gross">—</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">Federal tax (est.)</p>
+              <p class="calc-result-value red" id="res-federal">—</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">CT state tax (est.)</p>
+              <p class="calc-result-value red" id="res-state">—</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">FICA (SS + Medicare)</p>
+              <p class="calc-result-value red" id="res-fica">—</p>
+            </div>
+            <div class="calc-result-item highlight">
+              <p class="calc-result-label">Net take-home / yr</p>
+              <p class="calc-result-value green" id="res-takehome">—</p>
+            </div>
+            <div class="calc-result-item highlight">
+              <p class="calc-result-label">Net take-home / mo</p>
+              <p class="calc-result-value green" id="res-takehome-mo">—</p>
+            </div>
+          </div>
+
+          <div class="calc-divider"></div>
+
+          <p class="calc-sub-title">Monthly breakdown</p>
+          <div class="calc-result-grid">
+            <div class="calc-result-item">
+              <p class="calc-result-label">Auto savings</p>
+              <p class="calc-result-value" id="res-savings">—</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">Roth IRA (monthly)</p>
+              <p class="calc-result-value" id="res-roth-mo">—</p>
+            </div>
+            <div class="calc-result-item highlight">
+              <p class="calc-result-label">Left to spend / mo</p>
+              <p class="calc-result-value green" id="res-spend">—</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">Groceries (est.)</p>
+              <p class="calc-result-value" id="res-groceries">~$400</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">Gas / transport</p>
+              <p class="calc-result-value" id="res-gas">~$300</p>
+            </div>
+            <div class="calc-result-item highlight">
+              <p class="calc-result-label">Truly discretionary</p>
+              <p class="calc-result-value green" id="res-discretionary">—</p>
+            </div>
+          </div>
+
+          <div class="calc-note" id="calc-note"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STRUCTURE -->
+<div id="panel-structure" class="panel">
+  <div class="pillar-wrap">
+    <div class="pillar-header">
+      <p class="pillar-eyebrow">Pillar D</p>
+      <p class="pillar-title" style="color:#b86e1a;">Daily Structure</p>
+      <p class="pillar-lead">When your days have no shape, everything defaults to whatever feels easiest. The fix isn't willpower — it's architecture. You need a structure where the right things are the path of least resistance.</p>
+    </div>
+    <div class="insight-box"><p class="insight-label">The math problem</p><p class="insight-text">8:30 AM start in the Bronx. 60-minute commute minimum. Out the door by 7:30. That means a 6:00–6:15 AM wake up daily. You're currently at 9:30. That's a 3.5-hour shift. It takes weeks to adjust. Start now — not the week before June 29.</p></div>
+    <div class="action-section">
+      <p class="action-section-title">Action items</p>
+      <div class="action-item" id="item-structure-1"><div class="action-check"><input type="checkbox" id="chk-structure-1"><label for="chk-structure-1"></label></div><p class="action-num">01</p><div><p class="action-title">Set alarm 30 minutes earlier starting today</p><p class="action-detail">Not next week. Today. The shift to 6:00 AM takes weeks and needs to start now.</p></div></div>
+      <div class="action-item" id="item-structure-2"><div class="action-check"><input type="checkbox" id="chk-structure-2"><label for="chk-structure-2"></label></div><p class="action-num">02</p><div><p class="action-title">Lock in the 7–8 PM workout slot as non-negotiable</p><p class="action-detail">Practice treating it like a meeting you cannot cancel before June 29 so it's a habit, not something new you're adding mid-transition.</p></div></div>
+      <div class="action-item" id="item-structure-3"><div class="action-check"><input type="checkbox" id="chk-structure-3"><label for="chk-structure-3"></label></div><p class="action-num">03</p><div><p class="action-title">Test the commute to the Bronx on a weekday morning</p><p class="action-detail">Drive or take the route at least once before June 29. Know exactly what you're dealing with before day one.</p></div></div>
+      <div class="action-item" id="item-structure-4"><div class="action-check"><input type="checkbox" id="chk-structure-4"><label for="chk-structure-4"></label></div><p class="action-num">04</p><div><p class="action-title">Establish Sunday as prep day — not a recovery day</p><p class="action-detail">Groceries, meal prep, clothes ready, mental reset. If Saturday night bleeds into Sunday, your Monday is already compromised before the week begins.</p></div></div>
+    </div>
+
+    <div class="action-section">
+      <p class="action-section-title">Weekly training split</p>
+      <div class="time-block"><p class="time-tag">Monday</p><div><p class="time-title">Upper</p><p class="time-note">Chest, back, shoulders, arms. Full upper body volume.</p></div></div>
+      <div class="time-block"><p class="time-tag">Tuesday</p><div><p class="time-title">Lower</p><p class="time-note">Quads, hamstrings, glutes. Two full days before Thursday's run — legs will be recovered.</p></div></div>
+      <div class="time-block"><p class="time-tag">Wednesday</p><div><p class="time-title">Rest</p><p class="time-note">Full recovery. Don't talk yourself into doing something.</p></div></div>
+      <div class="time-block non-neg"><p class="time-tag">Thursday</p><div><p class="time-title">Zone 2 Run</p><p class="time-note">40–45 min. HR 140–150 strictly. Treadmill: 1–1.5% incline, trust HR over pace, trust treadmill display over watch for speed.</p></div></div>
+      <div class="time-block"><p class="time-tag">Friday</p><div><p class="time-title">Upper</p><p class="time-note">Second upper session of the week. No legs — protects Sunday's run.</p></div></div>
+      <div class="time-block"><p class="time-tag">Saturday</p><div><p class="time-title">Rest</p><p class="time-note">Recovery before Sunday run. Don't skip this.</p></div></div>
+      <div class="time-block non-neg"><p class="time-tag">Sunday</p><div><p class="time-title">Zone 2 Run + Prep Day</p><p class="time-note">40–45 min run, then groceries, meal prep, clothes ready. Post-run: calf stretches and frozen water bottle rolling — non-negotiable given plantar fasciitis history.</p></div></div>
+    </div>
+
+    <div class="action-section">
+      <p class="action-section-title">Running protocol notes</p>
+      <div class="insight-box" style="margin-bottom:10px;">
+        <p class="insight-label">Phase 1 — Base building</p>
+        <p class="insight-text">Zone 2 only. HR 140–150. No pushing pace. The goal right now is aerobic base, not speed. Trust the process even when it feels too easy.</p>
+      </div>
+      <div class="insight-box" style="margin-bottom:10px;">
+        <p class="insight-label">Injury protocol</p>
+        <p class="insight-text">Plantar fasciitis history: calf stretches and frozen water bottle rolling after every run. Right glute / piriformis issue: monitor carefully, do not run through sharp pain. Piriformis stretches in warm-up.</p>
+      </div>
+      <div class="insight-box">
+        <p class="insight-label">Progression</p>
+        <p class="insight-text">5K → Half Marathon → Marathon. Do not skip phases. The base building phase exists so the later phases don't destroy you.</p>
+      </div>
+    </div>
+  </div>
+  <div class="schedule-wrap" style="padding-top:0;">
+    <div class="schedule-grid">
+      <div>
+        <p class="schedule-col-title">Weekday schedule</p>
+        <div class="time-block"><p class="time-tag">6:00 AM</p><div><p class="time-title">Wake up — no snooze</p><p class="time-note">Phone across the room if needed. This is the keystone habit. Everything else depends on it.</p></div></div>
+        <div class="time-block"><p class="time-tag">6:15 AM</p><div><p class="time-title">First meal — cook it</p><p class="time-note">Eggs, oats, something real. 10 minutes max. This is also how the cooking habit rebuilds itself.</p></div></div>
+        <div class="time-block"><p class="time-tag">6:45 AM</p><div><p class="time-title">Get ready, out the door</p><p class="time-note">Everything laid out the night before. No decisions in the morning.</p></div></div>
+        <div class="time-block"><p class="time-tag">7:30 AM</p><div><p class="time-title">Commute to Bronx</p><p class="time-note">Use the commute. Podcasts, industry content, calls. Don't waste it scrolling.</p></div></div>
+        <div class="time-block"><p class="time-tag">8:30–5:30</p><div><p class="time-title">Work</p><p class="time-note">Be the most prepared person in the room, every day.</p></div></div>
+        <div class="time-block non-neg"><p class="time-tag">7:00 PM</p><div><p class="time-title">Workout</p><p class="time-note">Hydrogen Fitness. Treat it like a meeting you cannot cancel. This is the first thing that slips — don't let it.</p></div></div>
+        <div class="time-block"><p class="time-tag">8:00 PM</p><div><p class="time-title">Cook dinner</p><p class="time-note">Simple. Consistent. Not elaborate. This is a habit, not a project.</p></div></div>
+        <div class="time-block"><p class="time-tag">9:00 PM</p><div><p class="time-title">Wind down — prep tomorrow</p><p class="time-note">Clothes out, bag packed, in bed by 10:30. Decisions made the night before don't cost you morning energy.</p></div></div>
+      </div>
+      <div>
+        <p class="schedule-col-title">Weekend guardrails</p>
+        <div class="time-block"><p class="time-tag">Saturday</p><div><p class="time-title">One intentional social night</p><p class="time-note">Go out if you want. But Saturday directly affects Sunday, and Sunday directly affects Monday. That chain is real.</p></div></div>
+        <div class="time-block non-neg"><p class="time-tag">Sunday</p><div><p class="time-title">Prep day</p><p class="time-note">Groceries, meal prep, clothes ready, mental reset. Sunday is not a recovery day from Saturday. If it becomes one, your entire week starts in deficit.</p></div></div>
+        <div class="time-block"><p class="time-tag">Both days</p><div><p class="time-title">Workout stays in</p><p class="time-note">Even if shorter. Even if it's just a golf sim session. The habit doesn't take weekends off.</p></div></div>
+        <br>
+        <p class="schedule-col-title" style="margin-top:1.5rem;">8 weeks to June 29</p>
+        <div class="time-block"><p class="time-tag">Week 1</p><div><p class="time-title">Set alarm 30 min earlier today</p><p class="time-note">Not next week. Today. This is the most time-sensitive action item in the entire OS.</p></div></div>
+        <div class="time-block"><p class="time-tag">Weeks 2–3</p><div><p class="time-title">Move another 30 min earlier</p><p class="time-note">Gradual shift. Your body adapts in 2–3 week increments, not overnight.</p></div></div>
+        <div class="time-block"><p class="time-tag">Weeks 4–6</p><div><p class="time-title">Full 6:00 AM wake up locked in</p><p class="time-note">By the time you start, this should feel normal — not like a struggle.</p></div></div>
+        <div class="time-block"><p class="time-tag">Weeks 7–8</p><div><p class="time-title">Test the commute at least once</p><p class="time-note">Drive or take the route to the Bronx on a weekday morning. Know exactly what you're dealing with before day one.</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL -->
+<div id="panel-social" class="panel">
+  <div class="pillar-wrap">
+    <div class="pillar-header">
+      <p class="pillar-eyebrow">Pillar E</p>
+      <p class="pillar-title" style="color:#a04a62;">Social & Identity</p>
+      <p class="pillar-lead">The single biggest transition you're undergoing isn't the job — it's the social structure. Greek life, frat house, built-in community, all of it disappears on graduation day. Most people don't plan for this. They should.</p>
+    </div>
+    <div class="insight-box"><p class="insight-label">The comfort trap</p><p class="insight-text">Greenwich is comfortable in every direction. Ridgefield friends 40 minutes away. Family apartment. Neighbor who's your boss's boss. The risk at 22 with your advantages isn't failure — it's settling into a perfectly pleasant life that never becomes the one you said you wanted.</p></div>
+    <div class="action-section">
+      <p class="action-section-title">Social framework</p>
+      <div class="action-item" id="item-social-1"><div class="action-check"><input type="checkbox" id="chk-social-1"><label for="chk-social-1"></label></div><p class="action-num">01</p><div><p class="action-title">Ridgefield friends — your stability base, not your entire social life</p><p class="action-detail">Lean on them in months one and two. The transition is real and familiar people matter. But if every weekend defaults back to Ridgefield indefinitely, you're living like you never left home.</p></div></div>
+      <div class="action-item" id="item-social-2"><div class="action-check"><input type="checkbox" id="chk-social-2"><label for="chk-social-2"></label></div><p class="action-num">02</p><div><p class="action-title">Coworker relationships during training — genuinely invest</p><p class="action-detail">You're all going through the same thing at the same time. Some become real friends. Some become colleagues in other territories who send referrals. Both matter.</p></div></div>
+      <div class="action-item" id="item-social-3"><div class="action-check"><input type="checkbox" id="chk-social-3"><label for="chk-social-3"></label></div><p class="action-num">03</p><div><p class="action-title">Build new social infrastructure within 90 days of starting</p><p class="action-detail">A gym community, recreational sport, industry events — whatever fits your personality. Waiting until you feel lonely to start building is too late. Social networks take time to form.</p></div></div>
+      <div class="action-item" id="item-social-4"><div class="action-check"><input type="checkbox" id="chk-social-4"><label for="chk-social-4"></label></div><p class="action-num">04</p><div><p class="action-title">Drinking frequency — be deliberate, not reactive</p><p class="action-detail">2–3x a week in Greek life is context-dependent. Without the frat infrastructure, that same frequency in your new life looks completely different and costs you more than you realize in energy, performance, and morning quality.</p></div></div>
+      <div class="action-item" id="item-social-5"><div class="action-check"><input type="checkbox" id="chk-social-5"><label for="chk-social-5"></label></div><p class="action-num">05</p><div><p class="action-title">Long distance relationship — be honest about the weight it adds</p><p class="action-detail">4 months in, both entering new chapters, she's in NC. It's real and it matters. Just be honest with yourself about how it affects your weekends, your budget, your energy, and your ability to build a life in a new place. Don't let it happen to you — manage it intentionally.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- HEALTH -->
+<div id="panel-health" class="panel">
+  <div class="pillar-wrap">
+    <div class="pillar-header">
+      <p class="pillar-eyebrow">Pillar C</p>
+      <p class="pillar-title" style="color:#167a60;">Health & Fitness</p>
+      <p class="pillar-lead">You already have the habits. Nicotine free for 322 days. You lift, you run, you cook your own food when the environment allows it. The goal here isn't to build from scratch — it's to protect what's working through the biggest transition of your life so far.</p>
+    </div>
+    <div class="insight-box"><p class="insight-label">Why routines die in transitions</p><p class="insight-text">New job stress, new city, new schedule, new social dynamics — these all compete for the exact time and energy your fitness habits need. The people who maintain their routines through a transition are the ones who set the infrastructure up before the transition happens, not after.</p></div>
+    <div class="action-section">
+      <p class="action-section-title">Immediate actions — before June 29</p>
+      <div class="action-item" id="item-health-1"><div class="action-check"><input type="checkbox" id="chk-health-1"><label for="chk-health-1"></label></div><p class="action-num">01</p><div><p class="urgent-tag">Before you start</p><p class="action-title">Join Hydrogen Fitness — don't figure it out after you start</p><p class="action-detail">You did the virtual tour. It looks good. Showing up on day one of a new job without a gym already locked in is how the habit quietly dies during the first month. Join before June 29.</p></div></div>
+      <div class="action-item" id="item-health-2"><div class="action-check"><input type="checkbox" id="chk-health-2"><label for="chk-health-2"></label></div><p class="action-num">02</p><div><p class="action-title">Test your evening workout slot before you start</p><p class="action-detail">The 7–8 PM window is your realistic slot. Practice treating it as non-negotiable now so it's a locked habit by June 29, not something new you're trying to add during an already stressful transition.</p></div></div>
+    </div>
+    <div class="action-section">
+      <p class="action-section-title">Ongoing</p>
+      <div class="action-item" id="item-health-3"><div class="action-check"><input type="checkbox" id="chk-health-3"><label for="chk-health-3"></label></div><p class="action-num">03</p><div><p class="action-title">Golf sim — consistently, not occasionally</p><p class="action-detail">Hydrogen Fitness has one. Use it at least once a week. Getting genuinely good at golf by 25 is a real professional asset in specialty food and hospitality sales. The people you'll eventually be selling to live on golf courses. This isn't just a hobby.</p></div></div>
+      <div class="action-item" id="item-health-4"><div class="action-check"><input type="checkbox" id="chk-health-4"><label for="chk-health-4"></label></div><p class="action-num">04</p><div><p class="action-title">322 days nicotine free — protect it</p><p class="action-detail">Work stress is the #1 relapse trigger for nicotine. You will have hard days in the first few months. Know in advance that stress is not a reason to revisit it — it's exactly the test you've been preparing for.</p></div></div>
+      <div class="action-item" id="item-health-5"><div class="action-check"><input type="checkbox" id="chk-health-5"><label for="chk-health-5"></label></div><p class="action-num">05</p><div><p class="action-title">Skincare routine travels with you</p><p class="action-detail">PanOxyl, the Skin Medicinals compound, La Roche-Posay. Keep it consistent through the move. Small habits that slip during transitions are annoying to restart.</p></div></div>
+      <div class="action-item" id="item-health-6"><div class="action-check"><input type="checkbox" id="chk-health-6"><label for="chk-health-6"></label></div><p class="action-num">06</p><div><p class="action-title">Cooking stays in — groceries are your main expense</p><p class="action-detail">You cook well when the environment allows it. Greenwich apartment, no roommates, functional kitchen. The environment will allow it. Do it.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CALLOUTS -->
+<div id="panel-callouts" class="panel">
+  <div class="callouts-wrap">
+    <p class="callouts-intro">These are the patterns you identified in yourself. Read them when you feel yourself rationalizing. Read them when something gets hard and the easy option is right there. These aren't warnings from a stranger — they're from a conversation where you named them yourself.</p>
+    <div class="callouts-grid">
+      <div class="callout-card"><p class="callout-num">01</p><p class="callout-heading">The spending lie</p><p class="callout-body">Everyone in your position says they'll cut their parents' money once they have income. Lifestyle spending expands to meet income if there's no hard system in place from day one. "Gradually winding down" is not a plan. A hard stop on income day one is a plan.</p></div>
+      <div class="callout-card"><p class="callout-num">02</p><p class="callout-heading">Present but not engaged</p><p class="callout-body">You sat through sales training last summer and didn't pay attention because it didn't feel immediately relevant to you. That same pattern — being in the room but not really in it — will cost you in a job where details compound and first impressions at 101 sessions become relationships that matter months later.</p></div>
+      <div class="callout-card"><p class="callout-num">03</p><p class="callout-heading">The relationship trap</p><p class="callout-body">You know your manager and his boss personally before you've made a single sale. That's an edge. It becomes a liability the moment anyone senses you're using it as a shortcut or back channel. Build your reputation through your work first. The relationships amplify it — they don't replace it.</p></div>
+      <div class="callout-card"><p class="callout-num">04</p><p class="callout-heading">The sleep excuse</p><p class="callout-body">You have 8 weeks before June 29. Every week you stay on a 9:30 AM wake up is adaptation time you're burning through. The shift to 6:00 AM takes weeks and needs to start now. "I'll fix my sleep schedule before I start" said the week before June 29 is already too late.</p></div>
+      <div class="callout-card"><p class="callout-num">05</p><p class="callout-heading">The Sunday trap</p><p class="callout-body">If Saturday night bleeds into Sunday, your Monday is already compromised before the week begins. Sunday is a preparation day. That's not optional — it's the structural difference between a week that builds momentum and a week that's spent catching up from the start.</p></div>
+      <div class="callout-card"><p class="callout-num">06</p><p class="callout-heading">Comfortable is the enemy</p><p class="callout-body">Greenwich is comfortable in every direction. Rent-free. Family nearby. Ridgefield friends 40 minutes away. A neighbor who's your boss's boss. The risk at 22 with your advantages isn't failure. It's settling into a perfectly pleasant life that never becomes the one you said you wanted.</p></div>
+      <div class="callout-card"><p class="callout-num">07</p><p class="callout-heading">The entrepreneur pattern</p><p class="callout-body">Dropshipping. TikTok creator program. Every venture so far has the same fingerprint: high excitement at the start, no follow-through when it got slow or hard. The 8-month inside sales training period is the first real test of whether that pattern has changed. It's designed to be boring. That's the point.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- GOALS -->
+<div id="panel-goals" class="panel">
+  <div class="others-wrap">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Goals</p>
+      <p class="others-title">Goals</p>
+      <p class="others-lead">Where you're trying to go. Short term and long term. Be specific — "be successful" isn't a goal, it's a feeling.</p>
+    </div>
+    <div class="others-section">
+      <p class="others-section-title">Short term — next 12 months</p>
+      <div class="goal-item"><span class="goal-dot"></span><div><p class="goal-text">Complete inside sales training and earn outside territory</p><p class="goal-detail">Finish the 8-month program as the standout new hire. Be the obvious choice when territory assignments are made.</p></div></div>
+      <div class="goal-item"><span class="goal-dot"></span><div><p class="goal-text">Full financial independence from family</p><p class="goal-detail">Hard stop on parents' money from the first paycheck. Pay your own groceries, your own clothes, your own everything. No soft launch.</p></div></div>
+      <div class="goal-item"><span class="goal-dot"></span><div><p class="goal-text">Open Roth IRA and max the contribution in year one</p><p class="goal-detail">$7,000. Do it before the end of the tax year. The compounding starts now.</p></div></div>
+      <div class="goal-item"><span class="goal-dot"></span><div><p class="goal-text">Build a running base and progress to half marathon</p><p class="goal-detail">Currently in Phase 1 base building — Zone 2 only, HR 140–150, Thursdays and Sundays, 40–45 min. Progression: 5K first, then half marathon, then full marathon. Protect the plantar fasciitis and piriformis — the calf stretches and rolling protocol aren't optional.</p></div></div><p class="goal-detail">      <div class="goal-item"><span class="goal-dot"></span><div><p class="goal-text">Get genuinely good at golf</p><p class="goal-detail">Not casual. Consistent practice on the sim at Hydrogen Fitness. Break 90 by end of year one. This is a professional asset, not just a hobby.</p></div></div>
+    </div>
+    <div class="others-section">
+      <p class="others-section-title">Long term — 3–5 years</p>
+      <div class="goal-item"><span class="goal-dot" style="background:var(--amber)"></span><div><p class="goal-text">Own a high-performing book of business in Westchester</p><p class="goal-detail">Build the territory into something real. Top relationships, consistent growth, income that reflects the effort put in.</p></div></div>
+      <div class="goal-item"><span class="goal-dot" style="background:var(--amber)"></span><div><p class="goal-text">Build meaningful net worth from scratch</p><p class="goal-detail">The $45K head start is a foundation, not the goal. Build on top of it with your own earnings. Make the number mean something you did yourself.</p></div></div>
+      <div class="goal-item"><span class="goal-dot" style="background:var(--amber)"></span><div><p class="goal-text">Find a real outlet for the entrepreneurial instinct</p><p class="goal-detail">The dropshipping and TikTok stuff never stuck, but the instinct is real. The book of business at Chef's Warehouse is the first legitimate version of it. Let that develop before chasing the next thing.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- IDEAS -->
+<div id="panel-ideas" class="panel">
+  <div class="others-wrap">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Ideas</p>
+      <p class="others-title">Ideas</p>
+      <p class="others-lead">A running list. No filter, no judgment. The point is to capture them before they disappear. Good ones survive multiple reads.</p>
+    </div>
+    <div class="others-section">
+      <p class="others-section-title">Current ideas</p>
+      <div class="idea-item"><p class="idea-text">— Use the AI-powered CRM demo you built for the Chef's Warehouse interview as a template for other sales tools</p></div>
+      <div class="idea-item"><p class="idea-text">— The Backyard 9 golf course — document it properly once it's fully built out</p></div>
+      <div class="idea-item"><p class="idea-text">— Add your own ideas here as they come</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div id="panel-notes" class="panel">
+  <div class="others-wrap">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Notes</p>
+      <p class="others-title">Notes</p>
+      <p class="others-lead">Freeform. Things worth remembering that don't fit anywhere else.</p>
+    </div>
+    <div class="others-section">
+      <p class="others-section-title">Notes</p>
+      <div class="note-block"><p class="note-text">This section is a blank canvas. Use it for anything — observations, things people told you, lessons from early days at Chef's Warehouse, anything you want to capture and come back to.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- OFFER LETTER CHECKLIST -->
+<div id="panel-offerletter" class="panel">
+  <div class="others-wrap">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Offer Letter</p>
+      <p class="others-title">Offer Letter Checklist</p>
+      <p class="others-lead">Four things to confirm the moment that letter arrives. Don't sign anything or spend a dollar until you have answers to all of these.</p>
+    </div>
+    <div class="others-section">
+      <p class="others-section-title">Confirm before signing</p>
+      <div class="checklist-item" id="item-offer-1"><div class="action-check"><input type="checkbox" id="chk-offer-1"><label for="chk-offer-1"></label></div><p class="checklist-text">Is the draw truly non-recoverable? Get the exact language in writing.</p></div>
+      <div class="checklist-item" id="item-offer-2"><div class="action-check"><input type="checkbox" id="chk-offer-2"><label for="chk-offer-2"></label></div><p class="checklist-text">What is the commission structure above the draw? New vs. existing accounts?</p></div>
+      <div class="checklist-item" id="item-offer-3"><div class="action-check"><input type="checkbox" id="chk-offer-3"><label for="chk-offer-3"></label></div><p class="checklist-text">Confirm start time — is it 8:30 AM? This determines the entire daily schedule.</p></div>
+      <div class="checklist-item" id="item-offer-4"><div class="action-check"><input type="checkbox" id="chk-offer-4"><label for="chk-offer-4"></label></div><p class="checklist-text">Confirm base salary — $70K or $110K? These are two completely different financial plans.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAINTENANCE -->
+<div id="panel-maintenance" class="panel">
+  <div class="others-wrap" style="max-width:900px;">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Maintenance</p>
+      <p class="others-title">Home & Body Upkeep</p>
+      <p class="others-lead">Check things off when done. They reset automatically based on their cycle. Overdue items show in red.</p>
+    </div>
+
+    <div class="maint-grid">
+
+      <div class="maint-section">
+        <p class="maint-section-title">Bedding & Linens</p>
+        <div class="maint-item" data-key="m-pillowcase" data-days="3">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-pillowcase" class="maint-chk">
+            <label for="m-pillowcase"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Pillowcases</p>
+            <p class="maint-cycle">Every 3 days — acne priority</p>
+          </div>
+          <div class="maint-status" id="status-m-pillowcase"></div>
+        </div>
+        <div class="maint-item" data-key="m-sheets" data-days="7">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-sheets" class="maint-chk">
+            <label for="m-sheets"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Bed sheets</p>
+            <p class="maint-cycle">Every 7 days</p>
+          </div>
+          <div class="maint-status" id="status-m-sheets"></div>
+        </div>
+        <div class="maint-item" data-key="m-duvet" data-days="30">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-duvet" class="maint-chk">
+            <label for="m-duvet"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Duvet cover</p>
+            <p class="maint-cycle">Every 30 days</p>
+          </div>
+          <div class="maint-status" id="status-m-duvet"></div>
+        </div>
+        <div class="maint-item" data-key="m-pillow" data-days="90">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-pillow" class="maint-chk">
+            <label for="m-pillow"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Pillow (wash or replace)</p>
+            <p class="maint-cycle">Every 90 days</p>
+          </div>
+          <div class="maint-status" id="status-m-pillow"></div>
+        </div>
+      </div>
+
+      <div class="maint-section">
+        <p class="maint-section-title">Towels</p>
+        <div class="maint-item" data-key="m-facetowel" data-days="2">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-facetowel" class="maint-chk">
+            <label for="m-facetowel"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Face towel</p>
+            <p class="maint-cycle">Every 2 days — acne priority</p>
+          </div>
+          <div class="maint-status" id="status-m-facetowel"></div>
+        </div>
+        <div class="maint-item" data-key="m-bodytowel" data-days="4">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-bodytowel" class="maint-chk">
+            <label for="m-bodytowel"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Body towel</p>
+            <p class="maint-cycle">Every 4 days</p>
+          </div>
+          <div class="maint-status" id="status-m-bodytowel"></div>
+        </div>
+        <div class="maint-item" data-key="m-handtowel" data-days="3">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-handtowel" class="maint-chk">
+            <label for="m-handtowel"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Hand towel</p>
+            <p class="maint-cycle">Every 3 days</p>
+          </div>
+          <div class="maint-status" id="status-m-handtowel"></div>
+        </div>
+      </div>
+
+      <div class="maint-section">
+        <p class="maint-section-title">Bathroom</p>
+        <div class="maint-item" data-key="m-toilet" data-days="7">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-toilet" class="maint-chk">
+            <label for="m-toilet"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Toilet</p>
+            <p class="maint-cycle">Every 7 days</p>
+          </div>
+          <div class="maint-status" id="status-m-toilet"></div>
+        </div>
+        <div class="maint-item" data-key="m-sink" data-days="7">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-sink" class="maint-chk">
+            <label for="m-sink"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Sink & countertop</p>
+            <p class="maint-cycle">Every 7 days</p>
+          </div>
+          <div class="maint-status" id="status-m-sink"></div>
+        </div>
+        <div class="maint-item" data-key="m-shower" data-days="7">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-shower" class="maint-chk">
+            <label for="m-shower"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Shower / tub</p>
+            <p class="maint-cycle">Every 7 days</p>
+          </div>
+          <div class="maint-status" id="status-m-shower"></div>
+        </div>
+        <div class="maint-item" data-key="m-bathmat" data-days="7">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-bathmat" class="maint-chk">
+            <label for="m-bathmat"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Bath mat (wash)</p>
+            <p class="maint-cycle">Every 7 days</p>
+          </div>
+          <div class="maint-status" id="status-m-bathmat"></div>
+        </div>
+        <div class="maint-item" data-key="m-razor" data-days="10">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-razor" class="maint-chk">
+            <label for="m-razor"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Swap razor blade</p>
+            <p class="maint-cycle">Every 10 days (~5 shaves)</p>
+          </div>
+          <div class="maint-status" id="status-m-razor"></div>
+        </div>
+      </div>
+
+      <div class="maint-section">
+        <p class="maint-section-title">Kitchen</p>
+        <div class="maint-item" data-key="m-dishcloth" data-days="3">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-dishcloth" class="maint-chk">
+            <label for="m-dishcloth"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Dish cloth / sponge</p>
+            <p class="maint-cycle">Every 3 days</p>
+          </div>
+          <div class="maint-status" id="status-m-dishcloth"></div>
+        </div>
+        <div class="maint-item" data-key="m-counters" data-days="3">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-counters" class="maint-chk">
+            <label for="m-counters"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Kitchen counters</p>
+            <p class="maint-cycle">Every 3 days</p>
+          </div>
+          <div class="maint-status" id="status-m-counters"></div>
+        </div>
+        <div class="maint-item" data-key="m-floors" data-days="7">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-floors" class="maint-chk">
+            <label for="m-floors"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Sweep / vacuum floors</p>
+            <p class="maint-cycle">Every 7 days</p>
+          </div>
+          <div class="maint-status" id="status-m-floors"></div>
+        </div>
+        <div class="maint-item" data-key="m-fridge" data-days="30">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-fridge" class="maint-chk">
+            <label for="m-fridge"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Fridge wipe-down</p>
+            <p class="maint-cycle">Every 30 days</p>
+          </div>
+          <div class="maint-status" id="status-m-fridge"></div>
+        </div>
+      </div>
+
+      <div class="maint-section">
+        <p class="maint-section-title">Skincare Tools</p>
+        <div class="maint-item" data-key="m-washcloth" data-days="2">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-washcloth" class="maint-chk">
+            <label for="m-washcloth"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Face washcloth</p>
+            <p class="maint-cycle">Every 2 days — acne priority</p>
+          </div>
+          <div class="maint-status" id="status-m-washcloth"></div>
+        </div>
+        <div class="maint-item" data-key="m-brush" data-days="7">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-brush" class="maint-chk">
+            <label for="m-brush"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Cleansing brush / tool (if used)</p>
+            <p class="maint-cycle">Every 7 days</p>
+          </div>
+          <div class="maint-status" id="status-m-brush"></div>
+        </div>
+        <div class="maint-item" data-key="m-phone" data-days="1">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-phone" class="maint-chk">
+            <label for="m-phone"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Phone screen wipe</p>
+            <p class="maint-cycle">Daily — acne priority</p>
+          </div>
+          <div class="maint-status" id="status-m-phone"></div>
+        </div>
+      </div>
+
+      <div class="maint-section">
+        <p class="maint-section-title">Clothing</p>
+        <div class="maint-item" data-key="m-workout" data-days="1">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-workout" class="maint-chk">
+            <label for="m-workout"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Workout clothes</p>
+            <p class="maint-cycle">After every use</p>
+          </div>
+          <div class="maint-status" id="status-m-workout"></div>
+        </div>
+        <div class="maint-item" data-key="m-work-clothes" data-days="3">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-work-clothes" class="maint-chk">
+            <label for="m-work-clothes"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Work shirts / clothes</p>
+            <p class="maint-cycle">Every 1–2 wears</p>
+          </div>
+          <div class="maint-status" id="status-m-work-clothes"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- GOLF -->
+<div id="panel-golf" class="panel">
+  <div class="others-wrap" style="max-width:960px;">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Golf</p>
+      <p class="others-title">Golf</p>
+      <p class="others-lead">Track your game. Log rounds and sim sessions. Break 90 by end of year one.</p>
+    </div>
+
+    <!-- HANDICAP & GOAL -->
+    <div class="golf-top-grid">
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Current handicap</p>
+        <p class="golf-stat-value" id="golf-hcp-display">—</p>
+        <div class="golf-input-row">
+          <input type="number" id="golf-hcp-input" placeholder="e.g. 18.4" step="0.1" class="golf-input">
+          <button class="golf-btn" onclick="saveGolfStat('hcp')">Save</button>
+        </div>
+      </div>
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Best round (18 holes)</p>
+        <p class="golf-stat-value" id="golf-best-display">—</p>
+        <div class="golf-input-row">
+          <input type="number" id="golf-best-input" placeholder="e.g. 94" class="golf-input">
+          <button class="golf-btn" onclick="saveGolfStat('best')">Save</button>
+        </div>
+      </div>
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Rounds logged</p>
+        <p class="golf-stat-value" id="golf-rounds-count">0</p>
+        <p class="golf-stat-sub">course + sim combined</p>
+      </div>
+      <div class="golf-stat-card goal">
+        <p class="golf-stat-label">Goal</p>
+        <p class="golf-stat-value" style="color:var(--green)">Break 90</p>
+        <p class="golf-stat-sub">by end of year one</p>
+      </div>
+    </div>
+
+    <!-- LOG A ROUND -->
+    <div class="others-section">
+      <p class="others-section-title">Log a round</p>
+      <div class="golf-log-form">
+        <div class="golf-form-grid">
+          <div class="golf-field">
+            <label class="golf-field-label">Type</label>
+            <select id="log-type" class="golf-select">
+              <option value="course">Course</option>
+              <option value="sim">Sim / Practice</option>
+            </select>
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Date</label>
+            <input type="date" id="log-date" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Location / Course</label>
+            <input type="text" id="log-course" placeholder="e.g. Hydrogen Fitness Sim" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Score (gross)</label>
+            <input type="number" id="log-score" placeholder="e.g. 92" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Holes played</label>
+            <select id="log-holes" class="golf-select">
+              <option value="18">18</option>
+              <option value="9">9</option>
+              <option value="practice">Practice only</option>
+            </select>
+          </div>
+          <div class="golf-field" style="grid-column: span 2;">
+            <label class="golf-field-label">Notes</label>
+            <input type="text" id="log-notes" placeholder="e.g. Driver felt good, putting needs work" class="golf-input">
+          </div>
+        </div>
+        <button class="golf-submit-btn" onclick="logGolfRound()">Log Round</button>
+      </div>
+    </div>
+
+    <!-- ROUND HISTORY -->
+    <div class="others-section">
+      <p class="others-section-title">Round history</p>
+      <div id="golf-log-list">
+        <p class="golf-empty">No rounds logged yet. Add your first one above.</p>
+      </div>
+    </div>
+
+    <!-- SWING ANALYSIS LOG -->
+    <div class="others-section">
+      <p class="others-section-title">Swing analysis log</p>
+      <div class="golf-log-form">
+        <div class="golf-form-grid">
+          <div class="golf-field">
+            <label class="golf-field-label">Date</label>
+            <input type="date" id="swing-date" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Club analyzed</label>
+            <input type="text" id="swing-club" placeholder="e.g. 60 Wedge" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Score</label>
+            <input type="text" id="swing-score" placeholder="e.g. 6/10" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Top priority to fix</label>
+            <input type="text" id="swing-priority" placeholder="e.g. Butt position in backswing" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Passing</label>
+            <input type="text" id="swing-pass" placeholder="e.g. Lead arm, spine angle, hip rotation" class="golf-input">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Needs work</label>
+            <input type="text" id="swing-improve" placeholder="e.g. Butt position, head movement, tempo" class="golf-input">
+          </div>
+          <div class="golf-field" style="grid-column: span 3;">
+            <label class="golf-field-label">Notes</label>
+            <input type="text" id="swing-notes" placeholder="e.g. Armsy swing on wedges, need to rotate through" class="golf-input">
+          </div>
+        </div>
+        <button class="golf-submit-btn" onclick="logSwingAnalysis()">Log Analysis</button>
+      </div>
+      <div id="swing-log-list" style="margin-top:1rem;"></div>
+    </div>
+
+    <!-- CLUB DISTANCES -->
+    <div class="others-section">
+      <p class="others-section-title">Club distances</p>
+      <div class="club-table-wrap">
+        <table class="club-table">
+          <thead>
+            <tr>
+              <th>Club</th>
+              <th>Carry (yds)</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="club-table-body"></tbody>
+        </table>
+        <div class="club-add-row">
+          <input type="text" id="club-name" placeholder="e.g. 7 Iron" class="golf-input">
+          <input type="number" id="club-carry" placeholder="e.g. 155" class="golf-input" style="max-width:100px;">
+          <input type="text" id="club-notes" placeholder="e.g. Tends to fade" class="golf-input">
+          <button class="golf-btn" onclick="addClub()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div class="others-section">
+      <p class="others-section-title">Equipment notes</p>
+      <div class="golf-equipment-wrap">
+        <textarea id="golf-equipment" class="golf-textarea" placeholder="e.g. Driver: TaylorMade SIM2, Irons: Callaway Apex, Putter: Odyssey White Hot..." oninput="saveEquipment()"></textarea>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  <p class="footer-text">Conor's Life OS — built May 2026</p>
+  <button class="export-btn" onclick="exportToClause()">Export to Claude</button>
+  <p class="version-tag">Version 1.0 — update when offer letter arrives</p>
+</div>
+
+<script>
+  // Dropdown toggle
+  function toggleDropdown() {
+    const btn = document.getElementById('dropdown-toggle');
+    const menu = document.getElementById('dropdown-menu');
+    const isOpen = menu.classList.contains('open');
+    if (isOpen) {
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+    } else {
+      const rect = btn.getBoundingClientRect();
+      menu.style.top = rect.bottom + 'px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      menu.classList.add('open');
+      btn.classList.add('open');
+    }
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const nav = document.querySelector('.nav-right');
+    if (nav && !nav.contains(e.target)) {
+      document.getElementById('dropdown-toggle').classList.remove('open');
+      document.getElementById('dropdown-menu').classList.remove('open');
+    }
+  });
+
+  // Tab switching
+  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'golf'];
+  function switchTab(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.dropdown-item').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('panel-' + id);
+    if (panel) panel.classList.add('active');
+    const btn = document.getElementById('tab-' + id);
+    if (btn) btn.classList.add('active');
+    if (otherTabs.includes(id)) {
+      document.getElementById('dropdown-toggle').style.color = 'var(--accent)';
+      const activeItem = document.getElementById('tab-' + id);
+      if (activeItem) activeItem.classList.add('active');
+    } else {
+      document.getElementById('dropdown-toggle').style.color = '';
+    }
+    document.getElementById('dropdown-menu').classList.remove('open');
+    document.getElementById('dropdown-toggle').classList.remove('open');
+    window.scrollTo(0, 0);
+  }
+
+  // Counters
+  const start = new Date('2026-06-29');
+  const today = new Date();
+  const diff = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+  document.getElementById('days-count').textContent = diff > 0 ? diff : '0';
+  const nicStart = new Date('2025-06-16T12:00:00');
+  const nicDays = Math.floor((today - nicStart) / (1000 * 60 * 60 * 24));
+  document.getElementById('nic-days').textContent = nicDays;
+
+  // Checkbox config
+  const pillars = {
+    work:      ['chk-work-1','chk-work-2','chk-work-3','chk-work-4','chk-work-5','chk-work-6','chk-work-7'],
+    finance:   ['chk-finance-1','chk-finance-2','chk-finance-3','chk-finance-4','chk-finance-5','chk-finance-6','chk-finance-7','chk-finance-8'],
+    structure: ['chk-structure-1','chk-structure-2','chk-structure-3','chk-structure-4'],
+    social:    ['chk-social-1','chk-social-2','chk-social-3','chk-social-4','chk-social-5'],
+    health:    ['chk-health-1','chk-health-2','chk-health-3','chk-health-4','chk-health-5','chk-health-6'],
+    offer:     ['chk-offer-1','chk-offer-2','chk-offer-3','chk-offer-4']
+  };
+
+  function updateProgress(pillar) {
+    const ids = pillars[pillar];
+    if (!ids) return;
+    const checked = ids.filter(id => localStorage.getItem(id) === 'true').length;
+    const total = ids.length;
+    const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+    const fill = document.getElementById('prog-fill-' + pillar);
+    const label = document.getElementById('prog-label-' + pillar);
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = checked + ' of ' + total + ' complete';
+  }
+
+  function initCheckboxes() {
+    Object.entries(pillars).forEach(([pillar, ids]) => {
+      ids.forEach(id => {
+        const checkbox = document.getElementById(id);
+        if (!checkbox) return;
+        if (localStorage.getItem(id) === 'true') {
+          checkbox.checked = true;
+          const item = checkbox.closest('.action-item, .checklist-item');
+          if (item) item.classList.add('checked');
+        }
+        checkbox.addEventListener('change', function() {
+          localStorage.setItem(id, this.checked);
+          const item = this.closest('.action-item, .checklist-item');
+          if (item) item.classList.toggle('checked', this.checked);
+          updateProgress(pillar);
+        });
+      });
+      updateProgress(pillar);
+    });
+  }
+
+  // MAINTENANCE CYCLE LOGIC
+  function initMaintenance() {
+    const items = document.querySelectorAll('.maint-item');
+    const now = Date.now();
+
+    items.forEach(item => {
+      const key = item.dataset.key;
+      const cycleDays = parseInt(item.dataset.days);
+      const cycleMs = cycleDays * 24 * 60 * 60 * 1000;
+      const checkbox = document.getElementById(key);
+      const statusEl = document.getElementById('status-' + key);
+      if (!checkbox) return;
+
+      const lastDone = parseInt(localStorage.getItem('maint-' + key) || '0');
+      const elapsed = now - lastDone;
+      const daysAgo = Math.floor(elapsed / (24 * 60 * 60 * 1000));
+      const daysLeft = cycleDays - daysAgo;
+
+      // Auto-reset if cycle elapsed
+      if (lastDone > 0 && elapsed > cycleMs) {
+        checkbox.checked = false;
+        item.classList.remove('done');
+        item.classList.add('overdue');
+        const daysOverdue = daysAgo - cycleDays;
+        if (statusEl) statusEl.textContent = daysOverdue + 'd overdue';
+      } else if (lastDone > 0) {
+        checkbox.checked = true;
+        item.classList.add('done');
+        item.classList.remove('overdue');
+        if (statusEl) statusEl.textContent = daysLeft + 'd left';
+      } else {
+        item.classList.add('overdue');
+        if (statusEl) statusEl.textContent = 'due';
+      }
+
+      checkbox.addEventListener('change', function() {
+        if (this.checked) {
+          localStorage.setItem('maint-' + key, Date.now().toString());
+          item.classList.add('done');
+          item.classList.remove('overdue');
+          if (statusEl) statusEl.textContent = cycleDays + 'd left';
+        } else {
+          localStorage.removeItem('maint-' + key);
+          item.classList.remove('done');
+          item.classList.add('overdue');
+          if (statusEl) statusEl.textContent = 'due';
+        }
+      });
+    });
+  }
+
+  function exportToClause() {
+    const lines = [];
+    lines.push('=== CONOR\'S LIFE OS EXPORT ===');
+    lines.push('Generated: ' + new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+    lines.push('');
+
+    // Stats
+    const daysLeft = Math.ceil((new Date('2026-06-29') - new Date()) / (1000*60*60*24));
+    const nicDays = Math.floor((new Date() - new Date('2025-06-16T12:00:00')) / (1000*60*60*24));
+    lines.push('--- STATS ---');
+    lines.push('Days to start at Chef\'s Warehouse: ' + daysLeft);
+    lines.push('Nicotine free: ' + nicDays + ' days (since June 16, 2025)');
+    lines.push('Salary: Offer letter pending ($70K-$110K range)');
+    lines.push('Portfolio: $45K (JLPSX + JTEK via JPM)');
+    lines.push('');
+
+    // Pillar progress
+    lines.push('--- PILLAR PROGRESS ---');
+    Object.entries(pillars).forEach(([pillar, ids]) => {
+      if (pillar === 'offer') return;
+      const checked = ids.filter(id => localStorage.getItem(id) === 'true').length;
+      lines.push(pillar.charAt(0).toUpperCase() + pillar.slice(1) + ': ' + checked + '/' + ids.length + ' complete');
+    });
+    lines.push('');
+
+    // Offer letter checklist
+    const offerIds = pillars['offer'];
+    const offerChecked = offerIds.filter(id => localStorage.getItem(id) === 'true').length;
+    lines.push('--- OFFER LETTER CHECKLIST ---');
+    lines.push(offerChecked + '/4 items confirmed');
+    lines.push('');
+
+    // Golf stats
+    const hcp = localStorage.getItem('golf-hcp');
+    const best = localStorage.getItem('golf-best');
+    const rounds = JSON.parse(localStorage.getItem('golf-rounds') || '[]');
+    const swings = JSON.parse(localStorage.getItem('golf-swings') || '[]');
+    const clubs = JSON.parse(localStorage.getItem('golf-clubs') || '[]');
+    lines.push('--- GOLF ---');
+    if (hcp) lines.push('Handicap: ' + hcp);
+    if (best) lines.push('Best round: ' + best);
+    lines.push('Total rounds logged: ' + rounds.length);
+    if (rounds.length > 0) {
+      lines.push('Recent rounds:');
+      rounds.slice(0, 5).forEach(r => {
+        const d = r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        lines.push('  ' + d + ' | ' + (r.type === 'sim' ? 'Sim' : 'Course') + ' | ' + r.course + ' | Score: ' + (r.score || '—') + (r.notes ? ' | ' + r.notes : ''));
+      });
+    }
+    if (clubs.length > 0) {
+      lines.push('Club distances:');
+      clubs.forEach(c => lines.push('  ' + c.name + ': ' + (c.carry || '—') + ' yds' + (c.notes ? ' — ' + c.notes : '')));
+    }
+    if (swings.length > 0) {
+      lines.push('Swing analyses (' + swings.length + ' logged):');
+      swings.slice(0, 3).forEach(s => {
+        const d = s.date ? new Date(s.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        lines.push('  ' + d + ' | ' + s.club + ' | Score: ' + (s.score || '—'));
+        if (s.priority) lines.push('    Priority: ' + s.priority);
+        if (s.improve) lines.push('    Improve: ' + s.improve);
+        if (s.pass) lines.push('    Passing: ' + s.pass);
+        if (s.notes) lines.push('    Notes: ' + s.notes);
+      });
+    }
+    lines.push('');
+
+    // Maintenance status
+    const maintItems = document.querySelectorAll('.maint-item');
+    const overdue = [];
+    const upcoming = [];
+    maintItems.forEach(item => {
+      const name = item.querySelector('.maint-name');
+      const status = item.querySelector('.maint-status');
+      if (!name || !status) return;
+      if (item.classList.contains('overdue')) {
+        overdue.push(name.textContent + ' (' + status.textContent + ')');
+      } else if (item.classList.contains('done')) {
+        upcoming.push(name.textContent + ' (' + status.textContent + ')');
+      }
+    });
+    if (overdue.length > 0 || upcoming.length > 0) {
+      lines.push('--- MAINTENANCE ---');
+      if (overdue.length > 0) lines.push('Overdue: ' + overdue.join(', '));
+      if (upcoming.length > 0) lines.push('Upcoming: ' + upcoming.join(', '));
+      lines.push('');
+    }
+
+    // Goals
+    lines.push('--- GOALS ---');
+    lines.push('Short term: Complete inside sales training, full financial independence, open Roth IRA, get good at golf, build running base to half marathon');
+    lines.push('Long term: High-performing Westchester book of business, meaningful net worth from scratch, find real entrepreneurial outlet');
+    lines.push('');
+
+    const text = lines.join('\n');
+
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.export-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Export to Claude';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      // Fallback for environments where clipboard API is blocked
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = document.querySelector('.export-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Export to Claude';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+  initMaintenance();
+  initCheckboxes();
+
+  // GOLF
+  function logSwingAnalysis() {
+    const date = document.getElementById('swing-date').value;
+    const club = document.getElementById('swing-club').value.trim();
+    const score = document.getElementById('swing-score').value.trim();
+    const priority = document.getElementById('swing-priority').value.trim();
+    const pass = document.getElementById('swing-pass').value.trim();
+    const improve = document.getElementById('swing-improve').value.trim();
+    const notes = document.getElementById('swing-notes').value.trim();
+    if (!date || !club) return;
+
+    const analyses = JSON.parse(localStorage.getItem('golf-swings') || '[]');
+    analyses.unshift({ date, club, score, priority, pass, improve, notes, id: Date.now() });
+    localStorage.setItem('golf-swings', JSON.stringify(analyses));
+
+    document.getElementById('swing-club').value = '';
+    document.getElementById('swing-score').value = '';
+    document.getElementById('swing-priority').value = '';
+    document.getElementById('swing-pass').value = '';
+    document.getElementById('swing-improve').value = '';
+    document.getElementById('swing-notes').value = '';
+
+    renderSwingLog();
+  }
+
+  function deleteSwing(id) {
+    const analyses = JSON.parse(localStorage.getItem('golf-swings') || '[]');
+    localStorage.setItem('golf-swings', JSON.stringify(analyses.filter(a => a.id !== id)));
+    renderSwingLog();
+  }
+
+  function editSwing(id) {
+    const analyses = JSON.parse(localStorage.getItem('golf-swings') || '[]');
+    const a = analyses.find(s => s.id === id);
+    if (!a) return;
+    const container = document.getElementById('swing-item-' + id);
+    if (!container) return;
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;">
+        <div><label class="golf-field-label">Date</label><input type="date" id="sedit-date-${id}" value="${a.date}" class="golf-input"></div>
+        <div><label class="golf-field-label">Club</label><input type="text" id="sedit-club-${id}" value="${a.club}" class="golf-input"></div>
+        <div><label class="golf-field-label">Score</label><input type="text" id="sedit-score-${id}" value="${a.score || ''}" class="golf-input"></div>
+        <div><label class="golf-field-label">Top priority</label><input type="text" id="sedit-priority-${id}" value="${a.priority || ''}" class="golf-input"></div>
+        <div><label class="golf-field-label">Passing</label><input type="text" id="sedit-pass-${id}" value="${a.pass || ''}" class="golf-input"></div>
+        <div><label class="golf-field-label">Needs work</label><input type="text" id="sedit-improve-${id}" value="${a.improve || ''}" class="golf-input"></div>
+        <div style="grid-column:span 3;"><label class="golf-field-label">Notes</label><input type="text" id="sedit-notes-${id}" value="${a.notes || ''}" class="golf-input"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="golf-btn" onclick="saveSwingEdit(${id})">Save</button>
+        <button class="club-delete" onclick="renderSwingLog()">Cancel</button>
+      </div>`;
+  }
+
+  function saveSwingEdit(id) {
+    const analyses = JSON.parse(localStorage.getItem('golf-swings') || '[]');
+    const idx = analyses.findIndex(a => a.id === id);
+    if (idx === -1) return;
+    analyses[idx].date = document.getElementById('sedit-date-' + id).value;
+    analyses[idx].club = document.getElementById('sedit-club-' + id).value.trim();
+    analyses[idx].score = document.getElementById('sedit-score-' + id).value.trim();
+    analyses[idx].priority = document.getElementById('sedit-priority-' + id).value.trim();
+    analyses[idx].pass = document.getElementById('sedit-pass-' + id).value.trim();
+    analyses[idx].improve = document.getElementById('sedit-improve-' + id).value.trim();
+    analyses[idx].notes = document.getElementById('sedit-notes-' + id).value.trim();
+    localStorage.setItem('golf-swings', JSON.stringify(analyses));
+    renderSwingLog();
+  }
+
+  function renderSwingLog() {
+    const analyses = JSON.parse(localStorage.getItem('golf-swings') || '[]');
+    const list = document.getElementById('swing-log-list');
+    if (!list) return;
+    if (analyses.length === 0) {
+      list.innerHTML = '<p class="golf-empty">No swing analyses logged yet.</p>';
+      return;
+    }
+    list.innerHTML = analyses.map(a => {
+      const dateFormatted = a.date ? new Date(a.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      return `<div id="swing-item-${a.id}" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1rem 1.25rem;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="font-size:11px;color:var(--text3);">${dateFormatted}</span>
+            <span style="font-size:11px;font-weight:500;color:var(--text);">${a.club}</span>
+            ${a.score ? `<span style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--accent);">${a.score}</span>` : ''}
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="club-delete" onclick="editSwing(${a.id})">Edit</button>
+            <button class="golf-round-delete" onclick="deleteSwing(${a.id})">✕</button>
+          </div>
+        </div>
+        ${a.priority ? `<p style="font-size:11px;margin-bottom:4px;"><span style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);margin-right:6px;">Top priority</span>${a.priority}</p>` : ''}
+        ${a.pass ? `<p style="font-size:11px;margin-bottom:4px;color:var(--text2);"><span style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-right:6px;">Passing</span>${a.pass}</p>` : ''}
+        ${a.improve ? `<p style="font-size:11px;margin-bottom:4px;color:var(--text2);"><span style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-right:6px;">Improve</span>${a.improve}</p>` : ''}
+        ${a.notes ? `<p style="font-size:11px;color:var(--text3);margin-top:6px;border-top:1px solid var(--border);padding-top:6px;">${a.notes}</p>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  function initGolf() {
+    // Load saved stats
+    const hcp = localStorage.getItem('golf-hcp');
+    const best = localStorage.getItem('golf-best');
+    if (hcp) document.getElementById('golf-hcp-display').textContent = hcp;
+    if (best) document.getElementById('golf-best-display').textContent = best;
+
+    // Load equipment notes
+    const equip = localStorage.getItem('golf-equipment');
+    if (equip) document.getElementById('golf-equipment').value = equip;
+
+    // Set today's date as default
+    document.getElementById('log-date').valueAsDate = new Date();
+    if (document.getElementById('swing-date')) {
+      document.getElementById('swing-date').valueAsDate = new Date();
+    }
+
+    renderGolfLog();
+    renderClubs();
+    renderSwingLog();
+  }
+
+  function saveGolfStat(type) {
+    const val = document.getElementById('golf-' + type + '-input').value;
+    if (!val) return;
+    localStorage.setItem('golf-' + type, val);
+    document.getElementById('golf-' + type + '-display').textContent = val;
+    document.getElementById('golf-' + type + '-input').value = '';
+  }
+
+  function saveEquipment() {
+    localStorage.setItem('golf-equipment', document.getElementById('golf-equipment').value);
+  }
+
+  function logGolfRound() {
+    const type = document.getElementById('log-type').value;
+    const date = document.getElementById('log-date').value;
+    const course = document.getElementById('log-course').value;
+    const score = document.getElementById('log-score').value;
+    const holes = document.getElementById('log-holes').value;
+    const notes = document.getElementById('log-notes').value;
+    if (!date || !course) return;
+
+    const rounds = JSON.parse(localStorage.getItem('golf-rounds') || '[]');
+    rounds.unshift({ type, date, course, score, holes, notes, id: Date.now() });
+    localStorage.setItem('golf-rounds', JSON.stringify(rounds));
+
+    // Clear form
+    document.getElementById('log-course').value = '';
+    document.getElementById('log-score').value = '';
+    document.getElementById('log-notes').value = '';
+
+    renderGolfLog();
+  }
+
+  function deleteRound(id) {
+    const rounds = JSON.parse(localStorage.getItem('golf-rounds') || '[]');
+    const filtered = rounds.filter(r => r.id !== id);
+    localStorage.setItem('golf-rounds', JSON.stringify(filtered));
+    renderGolfLog();
+  }
+
+  function editRound(id) {
+    const rounds = JSON.parse(localStorage.getItem('golf-rounds') || '[]');
+    const r = rounds.find(r => r.id === id);
+    if (!r) return;
+    const container = document.getElementById('round-item-' + id);
+    if (!container) return;
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;">
+        <div><label class="golf-field-label">Type</label><select id="redit-type-${id}" class="golf-select"><option value="course" ${r.type==='course'?'selected':''}>Course</option><option value="sim" ${r.type==='sim'?'selected':''}>Sim / Practice</option></select></div>
+        <div><label class="golf-field-label">Date</label><input type="date" id="redit-date-${id}" value="${r.date}" class="golf-input"></div>
+        <div><label class="golf-field-label">Location</label><input type="text" id="redit-course-${id}" value="${r.course}" class="golf-input"></div>
+        <div><label class="golf-field-label">Score</label><input type="number" id="redit-score-${id}" value="${r.score || ''}" class="golf-input"></div>
+        <div><label class="golf-field-label">Holes</label><select id="redit-holes-${id}" class="golf-select"><option value="18" ${r.holes==='18'?'selected':''}>18</option><option value="9" ${r.holes==='9'?'selected':''}>9</option><option value="practice" ${r.holes==='practice'?'selected':''}>Practice only</option></select></div>
+        <div><label class="golf-field-label">Notes</label><input type="text" id="redit-notes-${id}" value="${r.notes || ''}" class="golf-input"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="golf-btn" onclick="saveRoundEdit(${id})">Save</button>
+        <button class="club-delete" onclick="renderGolfLog()">Cancel</button>
+      </div>`;
+  }
+
+  function saveRoundEdit(id) {
+    const rounds = JSON.parse(localStorage.getItem('golf-rounds') || '[]');
+    const idx = rounds.findIndex(r => r.id === id);
+    if (idx === -1) return;
+    rounds[idx].type = document.getElementById('redit-type-' + id).value;
+    rounds[idx].date = document.getElementById('redit-date-' + id).value;
+    rounds[idx].course = document.getElementById('redit-course-' + id).value.trim();
+    rounds[idx].score = document.getElementById('redit-score-' + id).value;
+    rounds[idx].holes = document.getElementById('redit-holes-' + id).value;
+    rounds[idx].notes = document.getElementById('redit-notes-' + id).value.trim();
+    localStorage.setItem('golf-rounds', JSON.stringify(rounds));
+    renderGolfLog();
+  }
+
+  function renderGolfLog() {
+    const rounds = JSON.parse(localStorage.getItem('golf-rounds') || '[]');
+    const list = document.getElementById('golf-log-list');
+    const countEl = document.getElementById('golf-rounds-count');
+    if (countEl) countEl.textContent = rounds.length;
+    if (rounds.length === 0) {
+      list.innerHTML = '<p class="golf-empty">No rounds logged yet. Add your first one above.</p>';
+      return;
+    }
+    list.innerHTML = rounds.map(r => {
+      const scoreDisplay = r.score ? r.score : '—';
+      const under90 = r.score && parseInt(r.score) < 90 ? 'under90' : '';
+      const dateFormatted = r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      const holesLabel = r.holes === 'practice' ? 'Practice' : r.holes + ' holes';
+      return `<div id="round-item-${r.id}" class="golf-round-item">
+        <span class="golf-round-date">${dateFormatted}</span>
+        <span class="golf-round-type ${r.type}">${r.type === 'sim' ? 'Sim' : 'Course'}</span>
+        <div><p class="golf-round-course">${r.course} <span style="font-weight:300;color:var(--text3);font-size:10px;">${holesLabel}</span></p>${r.notes ? '<p class="golf-round-notes">' + r.notes + '</p>' : ''}</div>
+        <span class="golf-round-score ${under90}">${scoreDisplay}</span>
+        <div style="display:flex;gap:4px;">
+          <button class="club-delete" onclick="editRound(${r.id})">Edit</button>
+          <button class="golf-round-delete" onclick="deleteRound(${r.id})">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function addClub() {
+    const name = document.getElementById('club-name').value.trim();
+    const carry = document.getElementById('club-carry').value;
+    const notes = document.getElementById('club-notes').value.trim();
+    if (!name) return;
+    const clubs = JSON.parse(localStorage.getItem('golf-clubs') || '[]');
+    clubs.push({ name, carry, notes, id: Date.now() });
+    localStorage.setItem('golf-clubs', JSON.stringify(clubs));
+    document.getElementById('club-name').value = '';
+    document.getElementById('club-carry').value = '';
+    document.getElementById('club-notes').value = '';
+    renderClubs();
+  }
+
+  function deleteClub(id) {
+    const clubs = JSON.parse(localStorage.getItem('golf-clubs') || '[]');
+    localStorage.setItem('golf-clubs', JSON.stringify(clubs.filter(c => c.id !== id)));
+    renderClubs();
+  }
+
+  function editClub(id) {
+    const clubs = JSON.parse(localStorage.getItem('golf-clubs') || '[]');
+    const club = clubs.find(c => c.id === id);
+    if (!club) return;
+    const tbody = document.getElementById('club-table-body');
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => {
+      if (row.dataset.id == id) {
+        row.innerHTML = `
+          <td><input type="text" value="${club.name}" id="edit-name-${id}" class="golf-input"></td>
+          <td><input type="number" value="${club.carry || ''}" id="edit-carry-${id}" class="golf-input" style="max-width:80px;"></td>
+          <td><input type="text" value="${club.notes || ''}" id="edit-notes-${id}" class="golf-input"></td>
+          <td style="white-space:nowrap;">
+            <button class="golf-btn" style="margin-right:4px;" onclick="saveClubEdit(${id})">Save</button>
+            <button class="club-delete" onclick="renderClubs()">Cancel</button>
+          </td>`;
+      }
+    });
+  }
+
+  function saveClubEdit(id) {
+    const clubs = JSON.parse(localStorage.getItem('golf-clubs') || '[]');
+    const idx = clubs.findIndex(c => c.id === id);
+    if (idx === -1) return;
+    clubs[idx].name = document.getElementById('edit-name-' + id).value.trim();
+    clubs[idx].carry = document.getElementById('edit-carry-' + id).value;
+    clubs[idx].notes = document.getElementById('edit-notes-' + id).value.trim();
+    localStorage.setItem('golf-clubs', JSON.stringify(clubs));
+    renderClubs();
+  }
+
+  function renderClubs() {
+    const clubs = JSON.parse(localStorage.getItem('golf-clubs') || '[]');
+    const tbody = document.getElementById('club-table-body');
+    if (!tbody) return;
+    if (clubs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text3);font-size:11px;">No clubs added yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = clubs.map(c => `
+      <tr data-id="${c.id}">
+        <td class="club-name-val">${c.name}</td>
+        <td><span class="club-carry-val">${c.carry || '—'}</span></td>
+        <td style="color:var(--text3)">${c.notes || '—'}</td>
+        <td style="white-space:nowrap;">
+          <button class="club-delete" style="margin-right:4px;" onclick="editClub(${c.id})">Edit</button>
+          <button class="club-delete" onclick="deleteClub(${c.id})">✕</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  initGolf();
+
+  // BUDGET CALCULATOR
+  function calcFederalTax(income) {
+    // 2026 federal brackets (single filer, estimated)
+    const brackets = [
+      { limit: 11925,  rate: 0.10 },
+      { limit: 48475,  rate: 0.12 },
+      { limit: 103350, rate: 0.22 },
+      { limit: 197300, rate: 0.24 },
+      { limit: 250525, rate: 0.32 },
+      { limit: 626350, rate: 0.35 },
+      { limit: Infinity, rate: 0.37 }
+    ];
+    const standardDeduction = 15000;
+    const taxable = Math.max(0, income - standardDeduction);
+    let tax = 0; let prev = 0;
+    for (const b of brackets) {
+      if (taxable <= prev) break;
+      const chunk = Math.min(taxable, b.limit) - prev;
+      tax += chunk * b.rate;
+      prev = b.limit;
+    }
+    return tax;
+  }
+
+  function calcCTTax(income) {
+    // CT 2026 brackets (single filer)
+    const brackets = [
+      { limit: 10000,  rate: 0.02 },
+      { limit: 50000,  rate: 0.045 },
+      { limit: 100000, rate: 0.055 },
+      { limit: 200000, rate: 0.06 },
+      { limit: 250000, rate: 0.065 },
+      { limit: 500000, rate: 0.069 },
+      { limit: Infinity, rate: 0.0699 }
+    ];
+    let tax = 0; let prev = 0;
+    for (const b of brackets) {
+      if (income <= prev) break;
+      const chunk = Math.min(income, b.limit) - prev;
+      tax += chunk * b.rate;
+      prev = b.limit;
+    }
+    return tax;
+  }
+
+  function fmt(n) {
+    return '$' + Math.round(n).toLocaleString();
+  }
+
+  function runCalc() {
+    const salary = parseFloat(document.getElementById('calc-salary').value) || 0;
+    const savingsRate = parseFloat(document.getElementById('calc-savings').value) / 100 || 0.20;
+    const rothAnnual = parseFloat(document.getElementById('calc-roth').value) || 7000;
+    if (salary === 0) { document.getElementById('calc-results').style.display = 'none'; return; }
+
+    const federal = calcFederalTax(salary);
+    const ct = calcCTTax(salary);
+    const fica = salary * 0.0765; // SS 6.2% + Medicare 1.45%
+    const totalTax = federal + ct + fica;
+    const takeHome = salary - totalTax;
+    const takeHomeMo = takeHome / 12;
+
+    const savingsMo = takeHomeMo * savingsRate;
+    const rothMo = Math.min(rothAnnual, 7000) / 12;
+    const spendMo = takeHomeMo - savingsMo - rothMo;
+    const discretionary = spendMo - 400 - 300; // minus groceries and gas estimate
+
+    document.getElementById('res-gross').textContent = fmt(salary);
+    document.getElementById('res-federal').textContent = '-' + fmt(federal);
+    document.getElementById('res-state').textContent = '-' + fmt(ct);
+    document.getElementById('res-fica').textContent = '-' + fmt(fica);
+    document.getElementById('res-takehome').textContent = fmt(takeHome);
+    document.getElementById('res-takehome-mo').textContent = fmt(takeHomeMo);
+    document.getElementById('res-savings').textContent = fmt(savingsMo);
+    document.getElementById('res-roth-mo').textContent = fmt(rothMo);
+    document.getElementById('res-spend').textContent = fmt(spendMo);
+    document.getElementById('res-discretionary').textContent = fmt(Math.max(0, discretionary));
+
+    const effRate = Math.round((totalTax / salary) * 100);
+    document.getElementById('calc-note').textContent =
+      'Effective tax rate: ~' + effRate + '%. These are estimates — actual numbers depend on final withholding, any 401k contributions, and how the NY/CT credit shakes out at filing time. Use this as a planning baseline, not a guarantee.';
+
+    document.getElementById('calc-results').style.display = 'block';
+  }
+</script>
+</body>
+</html>
