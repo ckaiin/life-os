@@ -1824,9 +1824,9 @@
 
     // Greeting based on time
     const hour = now.getHours();
-    let greeting = 'Good morning.';
-    if (hour >= 12 && hour < 17) greeting = 'Good afternoon.';
-    else if (hour >= 17) greeting = 'Good evening.';
+    let greeting = 'Good morning, Conor.';
+    if (hour >= 12 && hour < 17) greeting = 'Good afternoon, Conor.';
+    else if (hour >= 17) greeting = 'Good evening, Conor.';
     document.getElementById('brief-greeting').textContent = greeting;
 
     // Workout for today
@@ -1897,6 +1897,34 @@
         <p style="font-size:9px;color:var(--text3);">${minsToTime(startWake)} → 6:00 AM &nbsp;·&nbsp; Step ${currentStep}/${totalSteps}</p>`;
     }
   }
+
+  // JARVIS GREETING
+  function speakGreeting(timeOfDay) {
+    const files = {
+      morning: 'audio/ElevenLabs-GoodMorning.mp3',
+      afternoon: 'audio/ElevenLabs-GoodAfternoon.mp3',
+      evening: 'audio/ElevenLabs-GoodEvening.mp3'
+    };
+    const audio = new Audio(files[timeOfDay]);
+    audio.volume = 0.9;
+    audio.play().catch(() => {});
+  }
+
+  // Trigger on first user interaction
+  let greetingPlayed = false;
+  function playGreetingOnce() {
+    if (greetingPlayed) return;
+    greetingPlayed = true;
+    const hour = new Date().getHours();
+    let timeOfDay = 'morning';
+    if (hour >= 12 && hour < 17) timeOfDay = 'afternoon';
+    else if (hour >= 17) timeOfDay = 'evening';
+    speakGreeting(timeOfDay);
+    document.removeEventListener('click', playGreetingOnce);
+    document.removeEventListener('touchstart', playGreetingOnce);
+  }
+  document.addEventListener('click', playGreetingOnce);
+  document.addEventListener('touchstart', playGreetingOnce);
 
   initMorningBrief();
   initMaintenance();
