@@ -1898,16 +1898,73 @@
     }
   }
 
-  // JARVIS GREETING
-  function speakGreeting(timeOfDay) {
-    const files = {
-      morning: 'audio/ElevenLab-GoodMorning.mp3',
-      afternoon: 'audio/ElevenLab-GoodAfternoon.mp3',
-      evening: 'audio/ElevenLabs-GoodEvening.mp3'
+  // JARVIS DYNAMIC BRIEF — ElevenLabs API
+  const ELEVEN_API_KEY = 'sk_3dff6c42c2abacef6f87c4e80c0657bfb091dafe1344debe';
+  const ELEVEN_VOICE_ID = 'zNsotODqUhvbJ5wMG7Ei';
+
+  async function speakBrief() {
+    const now = new Date();
+    const hour = now.getHours();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const day = days[now.getDay()];
+    const dateStr = months[now.getMonth()] + ' ' + now.getDate();
+
+    let greeting = 'Good morning';
+    if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
+    else if (hour >= 17) greeting = 'Good evening';
+
+    const workoutMap = {
+      Monday: 'Upper body today.',
+      Tuesday: 'Lower body today.',
+      Wednesday: 'Rest day.',
+      Thursday: 'Zone 2 run today. 40 to 45 minutes, heart rate 140 to 150.',
+      Friday: 'Upper body today.',
+      Saturday: 'Rest day.',
+      Sunday: 'Zone 2 run today, followed by your weekly prep.'
     };
-    const audio = new Audio(files[timeOfDay]);
-    audio.volume = 0.9;
-    audio.play().catch(() => {});
+    const workout = workoutMap[day] || '';
+
+    // Check overdue maintenance
+    const maintItems = document.querySelectorAll('.maint-item.overdue');
+    let maintText = '';
+    if (maintItems.length > 0) {
+      const names = Array.from(maintItems).slice(0, 3).map(el => el.querySelector('.maint-name').textContent);
+      maintText = `You have ${maintItems.length} overdue maintenance item${maintItems.length > 1 ? 's' : ''}: ${names.join(', ')}.`;
+    }
+
+    const briefText = `${greeting}, Conor. Today is ${day}, ${dateStr}. ${workout} Don't forget your morning supplement stack and 5 grams of creatine. ${maintText} Have a good one.`.trim();
+
+    try {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVEN_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: briefText,
+          model_id: 'eleven_monolingual_v1',
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+        })
+      });
+      if (!response.ok) throw new Error('API error');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.play();
+    } catch (e) {
+      // Fallback to pre-recorded files if API fails
+      const files = {
+        morning: 'audio/ElevenLab-GoodMorning.mp3',
+        afternoon: 'audio/ElevenLab-GoodAfternoon.mp3',
+        evening: 'audio/ElevenLabs-GoodEvening.mp3'
+      };
+      let timeOfDay = 'morning';
+      if (hour >= 12 && hour < 17) timeOfDay = 'afternoon';
+      else if (hour >= 17) timeOfDay = 'evening';
+      new Audio(files[timeOfDay]).play().catch(() => {});
+    }
   }
 
   // Trigger on first user interaction
@@ -1915,11 +1972,7 @@
   function playGreetingOnce() {
     if (greetingPlayed) return;
     greetingPlayed = true;
-    const hour = new Date().getHours();
-    let timeOfDay = 'morning';
-    if (hour >= 12 && hour < 17) timeOfDay = 'afternoon';
-    else if (hour >= 17) timeOfDay = 'evening';
-    speakGreeting(timeOfDay);
+    speakBrief();
     document.removeEventListener('click', playGreetingOnce);
     document.removeEventListener('touchstart', playGreetingOnce);
   }
