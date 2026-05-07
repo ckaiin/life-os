@@ -49,6 +49,81 @@
   .panel.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
+  /* MORNING BRIEF */
+  .morning-brief {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    min-height: 90px;
+  }
+  .brief-left {
+    padding: 1.25rem 1.5rem;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .brief-date {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text3);
+    margin-bottom: 5px;
+  }
+  .brief-greeting {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .brief-center {
+    padding: 1.25rem 1.5rem;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+  }
+  .brief-item {
+    font-size: 12px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.4;
+  }
+  .brief-item:empty { display: none; }
+  .brief-badge {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  .badge-workout { background: rgba(30,110,168,0.12); color: var(--blue); }
+  .badge-run { background: rgba(22,122,96,0.12); color: var(--teal); }
+  .badge-rest { background: var(--bg3); color: var(--text3); }
+  .badge-overdue { background: rgba(184,48,48,0.12); color: var(--red); }
+  .badge-clear { background: rgba(30,140,78,0.12); color: var(--green); }
+  .brief-right {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+  }
+  .brief-callout {
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.6;
+    font-style: italic;
+    border-left: 2px solid var(--border2);
+    padding-left: 12px;
+  }
+
   .dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid var(--border); }
   .dash-card { padding: 1.5rem 1.5rem 1.5rem 2rem; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; position: relative; overflow: hidden; }
 
@@ -329,6 +404,21 @@
   </div>
 </div>
 
+  <div class="morning-brief" id="morning-brief">
+    <div class="brief-left">
+      <p class="brief-date" id="brief-date"></p>
+      <p class="brief-greeting" id="brief-greeting"></p>
+    </div>
+    <div class="brief-center">
+      <div class="brief-item" id="brief-workout"></div>
+      <div class="brief-item" id="brief-run"></div>
+      <div class="brief-item" id="brief-overdue"></div>
+    </div>
+    <div class="brief-right">
+      <div id="brief-sleep"></div>
+    </div>
+  </div>
+
 <nav class="nav-tabs">
   <button class="tab-btn active" id="tab-dashboard" onclick="switchTab('dashboard')"><span class="tab-letter">⌂</span> Dashboard</button>
   <button class="tab-btn" id="tab-work" onclick="switchTab('work')"><span class="tab-letter">A</span> Work</button>
@@ -376,6 +466,7 @@
       <p class="stat-sub">JLPSX + JTEK via JPM</p>
     </div>
   </div>
+
   <div class="dash-grid">
     <div class="dash-card card-work" onclick="switchTab('work')">
       <span class="card-tag tag-a">A — Work</span>
@@ -984,6 +1075,17 @@
           </div>
           <div class="maint-status" id="status-m-razor"></div>
         </div>
+        <div class="maint-item" data-key="m-toothbrush" data-days="60">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-toothbrush" class="maint-chk">
+            <label for="m-toothbrush"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Replace toothbrush head</p>
+            <p class="maint-cycle">Every 60 days</p>
+          </div>
+          <div class="maint-status" id="status-m-toothbrush"></div>
+        </div>
       </div>
 
       <div class="maint-section">
@@ -1265,7 +1367,7 @@
 
 <div class="footer">
   <p class="footer-text">Conor's Life OS — built May 2026</p>
-  <button class="export-btn" onclick="exportToClause()">Export to Claude</button>
+  <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <p class="version-tag">Version 1.0 — update when offer letter arrives</p>
 </div>
 
@@ -1417,11 +1519,12 @@
           item.classList.add('overdue');
           if (statusEl) statusEl.textContent = 'due';
         }
+        updateBriefOverdue();
       });
     });
   }
 
-  function exportToClause() {
+  function exportToClaude() {
     const lines = [];
     lines.push('=== CONOR\'S LIFE OS EXPORT ===');
     lines.push('Generated: ' + new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
@@ -1543,6 +1646,106 @@
       }, 2000);
     });
   }
+  // MORNING BRIEF
+  function updateBriefOverdue() {
+    const maintItems = document.querySelectorAll('.maint-item.overdue');
+    const overdueEl = document.getElementById('brief-overdue');
+    if (!overdueEl) return;
+    if (maintItems.length > 0) {
+      const names = Array.from(maintItems).slice(0, 3).map(el => el.querySelector('.maint-name').textContent);
+      const extra = maintItems.length > 3 ? ' +' + (maintItems.length - 3) + ' more' : '';
+      overdueEl.innerHTML = `<span class="brief-badge badge-overdue">${maintItems.length} overdue</span>${names.join(', ')}${extra}`;
+    } else {
+      overdueEl.innerHTML = `<span class="brief-badge badge-clear">All clear</span>Maintenance up to date.`;
+    }
+  }
+
+  function initMorningBrief() {
+    const now = new Date();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const day = days[now.getDay()];
+    const dateStr = day + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+
+    document.getElementById('brief-date').textContent = dateStr;
+
+    // Greeting based on time
+    const hour = now.getHours();
+    let greeting = 'Good morning.';
+    if (hour >= 12 && hour < 17) greeting = 'Good afternoon.';
+    else if (hour >= 17) greeting = 'Good evening.';
+    document.getElementById('brief-greeting').textContent = greeting;
+
+    // Workout for today
+    const workoutMap = {
+      Monday: { label: 'Upper', badge: 'workout', text: 'Upper body — chest, back, shoulders, arms.' },
+      Tuesday: { label: 'Lower', badge: 'workout', text: 'Lower body — quads, hamstrings, glutes.' },
+      Wednesday: { label: 'Rest', badge: 'rest', text: 'Full recovery day. Don\'t talk yourself into something.' },
+      Thursday: { label: 'Zone 2 Run', badge: 'run', text: 'Zone 2 run — 40–45 min, HR 140–150.' },
+      Friday: { label: 'Upper', badge: 'workout', text: 'Upper body — second session of the week.' },
+      Saturday: { label: 'Rest', badge: 'rest', text: 'Recovery before Sunday\'s run.' },
+      Sunday: { label: 'Zone 2 Run', badge: 'run', text: 'Zone 2 run + prep day. Groceries, meal prep, reset.' }
+    };
+    const todayWorkout = workoutMap[day];
+    if (todayWorkout) {
+      document.getElementById('brief-workout').innerHTML =
+        `<span class="brief-badge badge-${todayWorkout.badge}">${todayWorkout.label}</span>${todayWorkout.text}`;
+    }
+
+    // Days to start
+    const daysLeft = Math.ceil((new Date('2026-06-29') - now) / (1000*60*60*24));
+    if (daysLeft > 0) {
+      document.getElementById('brief-run').innerHTML =
+        `<span class="brief-badge badge-workout">${daysLeft}d</span>Until Chef's Warehouse. Use every day.`;
+    } else {
+      document.getElementById('brief-run').innerHTML =
+        `<span class="brief-badge badge-run">Started</span>You're in it. Make today count.`;
+    }
+
+    // Overdue maintenance
+    setTimeout(updateBriefOverdue, 200);
+
+    // Sleep shift tracker
+    const startDate = new Date('2026-05-06T12:00:00'); // today baseline
+    const endDate = new Date('2026-06-29T12:00:00');
+    const startWake = 9 * 60 + 30; // 9:30 AM in minutes
+    const targetWake = 6 * 60;     // 6:00 AM in minutes
+    const totalShift = startWake - targetWake; // 210 mins
+    const shiftPerStep = 30; // mins per step
+    const daysPerStep = 7;
+    const totalSteps = totalShift / shiftPerStep; // 7 steps
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const daysElapsed = Math.floor((now - startDate) / msPerDay);
+    const currentStep = Math.min(Math.floor(daysElapsed / daysPerStep), totalSteps);
+    const currentWakeMins = startWake - (currentStep * shiftPerStep);
+    const nextStepDay = (currentStep + 1) * daysPerStep - daysElapsed;
+
+    function minsToTime(mins) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+      return h12 + (m > 0 ? ':' + String(m).padStart(2, '0') : '') + ' ' + ampm;
+    }
+
+    const sleepEl = document.getElementById('brief-sleep');
+    if (sleepEl) {
+      const progressPct = Math.min(100, Math.round((currentStep / totalSteps) * 100));
+      const isComplete = currentWakeMins <= targetWake;
+      sleepEl.innerHTML = `
+        <p style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:6px;">Wake-up shift</p>
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--accent);line-height:1;margin-bottom:3px;">${isComplete ? '6:00 AM' : minsToTime(currentWakeMins)}</p>
+        <p style="font-size:10px;color:var(--text3);margin-bottom:3px;">Bed by ${minsToTime(((currentWakeMins - (8 * 60)) + 1440) % 1440)}</p>
+        <p style="font-size:10px;color:var(--text2);margin-bottom:8px;">${isComplete ? 'Target reached' : 'Next shift in ' + nextStepDay + 'd'}</p>
+        <div style="height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:6px;">
+          <div style="height:100%;width:${progressPct}%;background:${isComplete ? 'var(--green)' : 'var(--accent2)'};border-radius:2px;transition:width 0.3s;"></div>
+        </div>
+        <p style="font-size:9px;color:var(--text3);">${minsToTime(startWake)} → 6:00 AM &nbsp;·&nbsp; Step ${currentStep}/${totalSteps}</p>`;
+    }
+  }
+
+  initMorningBrief();
   initMaintenance();
   initCheckboxes();
 
