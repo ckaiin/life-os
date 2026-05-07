@@ -491,9 +491,9 @@
       <p class="stat-sub">days and counting</p>
     </div>
     <div class="stat">
-      <p class="stat-label">Salary range</p>
-      <p class="stat-value">$70–110K</p>
-      <p class="stat-sub">Offer letter pending</p>
+      <p class="stat-label">Base salary</p>
+      <p class="stat-value">$70K</p>
+      <p class="stat-sub">+ $500/mo tax-free travel</p>
     </div>
     <div class="stat">
       <p class="stat-label">Portfolio value</p>
@@ -948,11 +948,15 @@
       <p class="others-lead">Four things to confirm the moment that letter arrives. Don't sign anything or spend a dollar until you have answers to all of these.</p>
     </div>
     <div class="others-section">
-      <p class="others-section-title">Confirm before signing</p>
-      <div class="checklist-item" id="item-offer-1"><div class="action-check"><input type="checkbox" id="chk-offer-1"><label for="chk-offer-1"></label></div><p class="checklist-text">Is the draw truly non-recoverable? Get the exact language in writing.</p></div>
-      <div class="checklist-item" id="item-offer-2"><div class="action-check"><input type="checkbox" id="chk-offer-2"><label for="chk-offer-2"></label></div><p class="checklist-text">What is the commission structure above the draw? New vs. existing accounts?</p></div>
-      <div class="checklist-item" id="item-offer-3"><div class="action-check"><input type="checkbox" id="chk-offer-3"><label for="chk-offer-3"></label></div><p class="checklist-text">Confirm start time — is it 8:30 AM? This determines the entire daily schedule.</p></div>
-      <div class="checklist-item" id="item-offer-4"><div class="action-check"><input type="checkbox" id="chk-offer-4"><label for="chk-offer-4"></label></div><p class="checklist-text">Confirm base salary — $70K or $110K? These are two completely different financial plans.</p></div>
+      <p class="others-section-title">Confirmed</p>
+      <div class="checklist-item" id="item-offer-1"><div class="action-check"><input type="checkbox" id="chk-offer-1"><label for="chk-offer-1"></label></div><p class="checklist-text">Base salary: $70,000 confirmed.</p></div>
+      <div class="checklist-item" id="item-offer-2"><div class="action-check"><input type="checkbox" id="chk-offer-2"><label for="chk-offer-2"></label></div><p class="checklist-text">$500/month tax-free travel expense confirmed.</p></div>
+      <div class="checklist-item" id="item-offer-3"><div class="action-check"><input type="checkbox" id="chk-offer-3"><label for="chk-offer-3"></label></div><p class="checklist-text">Full benefits confirmed — health, dental, vision, 401k, employee stock program.</p></div>
+      <p class="others-section-title" style="margin-top:1.5rem;">Still need to confirm</p>
+      <div class="checklist-item" id="item-offer-4"><div class="action-check"><input type="checkbox" id="chk-offer-4"><label for="chk-offer-4"></label></div><p class="checklist-text">Draw structure — is it non-recoverable? Get the exact language in writing.</p></div>
+      <div class="checklist-item" id="item-offer-5"><div class="action-check"><input type="checkbox" id="chk-offer-5"><label for="chk-offer-5"></label></div><p class="checklist-text">Commission structure above the draw — percentage on new vs. existing accounts.</p></div>
+      <div class="checklist-item" id="item-offer-6"><div class="action-check"><input type="checkbox" id="chk-offer-6"><label for="chk-offer-6"></label></div><p class="checklist-text">401k match — does Chef's Warehouse match contributions and at what percentage?</p></div>
+      <div class="checklist-item" id="item-offer-7"><div class="action-check"><input type="checkbox" id="chk-offer-7"><label for="chk-offer-7"></label></div><p class="checklist-text">Start time — confirm 8:30 AM for commute planning.</p></div>
     </div>
   </div>
 </div>
@@ -1521,7 +1525,7 @@
 <div class="footer">
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
-  <p class="version-tag">Version 1.0 — update when offer letter arrives</p>
+  <p class="version-tag">Version 1.1 — $70K confirmed, draw pending</p>
 </div>
 
 <script>
@@ -1589,7 +1593,7 @@
     structure: ['chk-structure-1','chk-structure-2','chk-structure-3','chk-structure-4'],
     social:    ['chk-social-1','chk-social-2','chk-social-3','chk-social-4','chk-social-5'],
     health:    ['chk-health-1','chk-health-2','chk-health-3','chk-health-4','chk-health-5','chk-health-6'],
-    offer:     ['chk-offer-1','chk-offer-2','chk-offer-3','chk-offer-4']
+    offer:     ['chk-offer-1','chk-offer-2','chk-offer-3','chk-offer-4','chk-offer-5','chk-offer-6','chk-offer-7']
   };
 
   function updateProgress(pillar) {
@@ -1689,7 +1693,7 @@
     lines.push('--- STATS ---');
     lines.push('Days to start at Chef\'s Warehouse: ' + daysLeft);
     lines.push('Nicotine free: ' + nicDays + ' days (since June 16, 2025)');
-    lines.push('Salary: Offer letter pending ($70K-$110K range)');
+    lines.push('Salary: $70K base confirmed + $500/mo tax-free travel expense');
     lines.push('Portfolio: $45K (JLPSX + JTEK via JPM)');
     lines.push('');
 
