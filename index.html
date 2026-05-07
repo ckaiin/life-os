@@ -220,6 +220,28 @@
   .time-note { font-size: 11px; color: var(--text2); line-height: 1.4; }
   .time-block.non-neg .time-title::after { content: ' —'; color: var(--red-light); }
 
+  /* WORKOUT DAY CHECKBOXES */
+  .workout-day { cursor: pointer; transition: background 0.15s; user-select: none; }
+  .workout-day:hover { background: var(--bg3); }
+  .workout-day.done { opacity: 0.5; }
+  .workout-day.done .time-title { text-decoration: line-through; color: var(--text3); }
+  .workout-day.done .time-tag { color: var(--text3); }
+  .workout-check {
+    width: 16px; height: 16px; border-radius: 3px;
+    border: 1.5px solid var(--border2); background: var(--bg);
+    flex-shrink: 0; margin-top: 2px; margin-right: 4px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .workout-day.done .workout-check {
+    background: var(--teal); border-color: var(--teal);
+  }
+  .workout-day.done .workout-check::after {
+    content: ''; display: block; width: 4px; height: 8px;
+    border-right: 2px solid white; border-bottom: 2px solid white;
+    transform: rotate(45deg) translate(-1px,-1px);
+  }
+
   .callouts-wrap { padding: 2rem; }
   .callouts-intro { font-size: 12px; color: var(--text2); max-width: 600px; margin-bottom: 2rem; line-height: 1.6; }
   .callouts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
@@ -457,9 +479,9 @@
   <button class="tab-btn active" id="tab-dashboard" onclick="switchTab('dashboard')"><span class="tab-letter">⌂</span> Dashboard</button>
   <button class="tab-btn" id="tab-work" onclick="switchTab('work')"><span class="tab-letter">A</span> Work</button>
   <button class="tab-btn" id="tab-finance" onclick="switchTab('finance')"><span class="tab-letter">B</span> Finance</button>
+  <button class="tab-btn" id="tab-health" onclick="switchTab('health')"><span class="tab-letter">C</span> Health & Fitness</button>
   <button class="tab-btn" id="tab-structure" onclick="switchTab('structure')"><span class="tab-letter">D</span> Daily Structure</button>
   <button class="tab-btn" id="tab-social" onclick="switchTab('social')"><span class="tab-letter">E</span> Social & Identity</button>
-  <button class="tab-btn" id="tab-health" onclick="switchTab('health')"><span class="tab-letter">C</span> Health & Fitness</button>
   <button class="tab-btn" id="tab-callouts" onclick="switchTab('callouts')"><span class="tab-letter">!</span> Callouts</button>
   <div class="nav-right">
     <button class="dropdown-btn" id="dropdown-toggle" onclick="toggleDropdown()">
@@ -533,6 +555,21 @@
         <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-finance" style="width:0%"></div></div>
       </div>
     </div>
+    <div class="dash-card card-health" onclick="switchTab('health')">
+      <span class="card-tag tag-c">C — Health & Fitness</span>
+      <p class="card-title">Protect what's working</p>
+      <p class="card-desc">You already have the habits. The job is protecting them through the transition. No infrastructure means no routine.</p>
+      <ul class="action-list">
+        <li><span class="dot dot-c"></span>Join Hydrogen Fitness before June 29</li>
+        <li><span class="dot dot-c"></span>322 days nicotine free — don't let stress become an excuse</li>
+        <li><span class="dot dot-c"></span>Golf sim consistently — it's a sales asset</li>
+        <li><span class="dot dot-c"></span>Evening workout is first thing skipped. Don't let it.</li>
+      </ul>
+      <div class="card-progress">
+        <p class="card-progress-label" id="prog-label-health">0 of 6 complete</p>
+        <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-health" style="width:0%"></div></div>
+      </div>
+    </div>
     <div class="dash-card card-structure" onclick="switchTab('structure')">
       <span class="card-tag tag-d">D — Daily Structure</span>
       <p class="card-title">The operating system</p>
@@ -561,21 +598,6 @@
       <div class="card-progress">
         <p class="card-progress-label" id="prog-label-social">0 of 5 complete</p>
         <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-social" style="width:0%"></div></div>
-      </div>
-    </div>
-    <div class="dash-card card-health" onclick="switchTab('health')">
-      <span class="card-tag tag-c">C — Health & Fitness</span>
-      <p class="card-title">Protect what's working</p>
-      <p class="card-desc">You already have the habits. The job is protecting them through the transition. No infrastructure means no routine.</p>
-      <ul class="action-list">
-        <li><span class="dot dot-c"></span>Join Hydrogen Fitness before June 29</li>
-        <li><span class="dot dot-c"></span>322 days nicotine free — don't let stress become an excuse</li>
-        <li><span class="dot dot-c"></span>Golf sim consistently — it's a sales asset</li>
-        <li><span class="dot dot-c"></span>Evening workout is first thing skipped. Don't let it.</li>
-      </ul>
-      <div class="card-progress">
-        <p class="card-progress-label" id="prog-label-health">0 of 6 complete</p>
-        <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-health" style="width:0%"></div></div>
       </div>
     </div>
     <div class="dash-card card-alert" onclick="switchTab('callouts')">
@@ -768,21 +790,21 @@
     </div>
 
     <div class="action-section">
-      <p class="action-section-title">Weekly training split</p>
-      <div class="time-block"><p class="time-tag">Monday</p><div><p class="time-title">Upper</p><p class="time-note">Chest, back, shoulders, arms. Full upper body volume.</p></div></div>
-      <div class="time-block"><p class="time-tag">Tuesday</p><div><p class="time-title">Lower</p><p class="time-note">Quads, hamstrings, glutes. Two full days before Thursday's run — legs will be recovered.</p></div></div>
-      <div class="time-block"><p class="time-tag">Wednesday</p><div><p class="time-title">Rest</p><p class="time-note">Full recovery. Don't talk yourself into doing something.</p></div></div>
-      <div class="time-block non-neg"><p class="time-tag">Thursday</p><div><p class="time-title">Zone 2 Run</p><p class="time-note">40–45 min. HR 140–150 strictly. Treadmill: 1–1.5% incline, trust HR over pace, trust treadmill display over watch for speed.</p></div></div>
-      <div class="time-block"><p class="time-tag">Friday</p><div><p class="time-title">Upper</p><p class="time-note">Second upper session of the week. No legs — protects Sunday's run.</p></div></div>
-      <div class="time-block"><p class="time-tag">Saturday</p><div><p class="time-title">Rest</p><p class="time-note">Recovery before Sunday run. Don't skip this.</p></div></div>
-      <div class="time-block non-neg"><p class="time-tag">Sunday</p><div><p class="time-title">Zone 2 Run + Prep Day</p><p class="time-note">40–45 min run, then groceries, meal prep, clothes ready. Post-run: calf stretches and frozen water bottle rolling — non-negotiable given plantar fasciitis history.</p></div></div>
+      <p class="action-section-title">Weekly training split <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">Resets every Sunday</span></p>
+      <div class="time-block workout-day" id="wd-monday" onclick="toggleWorkoutDay('monday')"><div class="workout-check" id="wc-monday"></div><p class="time-tag">Monday</p><div><p class="time-title">Upper</p><p class="time-note">Chest, back, shoulders, arms. Full upper body volume.</p></div></div>
+      <div class="time-block workout-day" id="wd-tuesday" onclick="toggleWorkoutDay('tuesday')"><div class="workout-check" id="wc-tuesday"></div><p class="time-tag">Tuesday</p><div><p class="time-title">Lower</p><p class="time-note">Quads, hamstrings, glutes. Two full days before Thursday's run — legs will be recovered.</p></div></div>
+      <div class="time-block workout-day" id="wd-wednesday" onclick="toggleWorkoutDay('wednesday')"><div class="workout-check" id="wc-wednesday"></div><p class="time-tag">Wednesday</p><div><p class="time-title">Rest</p><p class="time-note">Full recovery. Don't talk yourself into doing something.</p></div></div>
+      <div class="time-block non-neg workout-day" id="wd-thursday" onclick="toggleWorkoutDay('thursday')"><div class="workout-check" id="wc-thursday"></div><p class="time-tag">Thursday</p><div><p class="time-title">Zone 2 Run</p><p class="time-note">5 min fast walk warmup. Start at 5.0–5.1 mph. Adjustments in 0.2 mph increments only — wait 3–4 min between each. Target HR 143–148. If it spikes past 150, drop speed immediately, don't wait.</p></div></div>
+      <div class="time-block workout-day" id="wd-friday" onclick="toggleWorkoutDay('friday')"><div class="workout-check" id="wc-friday"></div><p class="time-tag">Friday</p><div><p class="time-title">Upper</p><p class="time-note">Second upper session of the week. No legs — protects Sunday's run.</p></div></div>
+      <div class="time-block workout-day" id="wd-saturday" onclick="toggleWorkoutDay('saturday')"><div class="workout-check" id="wc-saturday"></div><p class="time-tag">Saturday</p><div><p class="time-title">Rest</p><p class="time-note">Recovery before Sunday run. Don't skip this.</p></div></div>
+      <div class="time-block non-neg workout-day" id="wd-sunday" onclick="toggleWorkoutDay('sunday')"><div class="workout-check" id="wc-sunday"></div><p class="time-tag">Sunday</p><div><p class="time-title">Zone 2 Run + Prep Day</p><p class="time-note">5 min fast walk warmup. Start at 5.0–5.1 mph. Adjustments in 0.2 mph increments only — wait 3–4 min between each. Target HR 143–148. If it spikes past 150, drop speed immediately. Then groceries, meal prep, clothes ready.</p></div></div>
     </div>
 
     <div class="action-section">
       <p class="action-section-title">Running protocol notes</p>
       <div class="insight-box" style="margin-bottom:10px;">
         <p class="insight-label">Phase 1 — Base building</p>
-        <p class="insight-text">Zone 2 only. HR 140–150. No pushing pace. The goal right now is aerobic base, not speed. Trust the process even when it feels too easy.</p>
+        <p class="insight-text">Zone 2 only. Target HR 143–148. Start at 5.0–5.1 mph. Speed adjustments in 0.2 mph increments, minimum 3–4 minutes between changes. If HR spikes past 150, drop speed immediately — don't wait. Begin each session with a 5 min fast walk warmup.</p>
       </div>
       <div class="insight-box" style="margin-bottom:10px;">
         <p class="insight-label">Injury protocol</p>
@@ -834,11 +856,11 @@
     <div class="insight-box"><p class="insight-label">The comfort trap</p><p class="insight-text">Greenwich is comfortable in every direction. Ridgefield friends 40 minutes away. Family apartment. Neighbor who's your boss's boss. The risk at 22 with your advantages isn't failure — it's settling into a perfectly pleasant life that never becomes the one you said you wanted.</p></div>
     <div class="action-section">
       <p class="action-section-title">Social framework</p>
-      <div class="action-item" id="item-social-1"><div class="action-check"><input type="checkbox" id="chk-social-1"><label for="chk-social-1"></label></div><p class="action-num">01</p><div><p class="action-title">Ridgefield friends — your stability base, not your entire social life</p><p class="action-detail">Lean on them in months one and two. The transition is real and familiar people matter. But if every weekend defaults back to Ridgefield indefinitely, you're living like you never left home.</p></div></div>
-      <div class="action-item" id="item-social-2"><div class="action-check"><input type="checkbox" id="chk-social-2"><label for="chk-social-2"></label></div><p class="action-num">02</p><div><p class="action-title">Coworker relationships during training — genuinely invest</p><p class="action-detail">You're all going through the same thing at the same time. Some become real friends. Some become colleagues in other territories who send referrals. Both matter.</p></div></div>
-      <div class="action-item" id="item-social-3"><div class="action-check"><input type="checkbox" id="chk-social-3"><label for="chk-social-3"></label></div><p class="action-num">03</p><div><p class="action-title">Build new social infrastructure within 90 days of starting</p><p class="action-detail">A gym community, recreational sport, industry events — whatever fits your personality. Waiting until you feel lonely to start building is too late. Social networks take time to form.</p></div></div>
-      <div class="action-item" id="item-social-4"><div class="action-check"><input type="checkbox" id="chk-social-4"><label for="chk-social-4"></label></div><p class="action-num">04</p><div><p class="action-title">Drinking frequency — be deliberate, not reactive</p><p class="action-detail">2–3x a week in Greek life is context-dependent. Without the frat infrastructure, that same frequency in your new life looks completely different and costs you more than you realize in energy, performance, and morning quality.</p></div></div>
-      <div class="action-item" id="item-social-5"><div class="action-check"><input type="checkbox" id="chk-social-5"><label for="chk-social-5"></label></div><p class="action-num">05</p><div><p class="action-title">Long distance relationship — be honest about the weight it adds</p><p class="action-detail">4 months in, both entering new chapters, she's in NC. It's real and it matters. Just be honest with yourself about how it affects your weekends, your budget, your energy, and your ability to build a life in a new place. Don't let it happen to you — manage it intentionally.</p></div></div>
+      <div class="action-item" id="item-social-1"><p class="action-num">01</p><div><p class="action-title">Ridgefield friends — your stability base, not your entire social life</p><p class="action-detail">Lean on them in months one and two. The transition is real and familiar people matter. But if every weekend defaults back to Ridgefield indefinitely, you're living like you never left home.</p></div></div>
+      <div class="action-item" id="item-social-2"><p class="action-num">02</p><div><p class="action-title">Coworker relationships during training — genuinely invest</p><p class="action-detail">You're all going through the same thing at the same time. Some become real friends. Some become colleagues in other territories who send referrals. Both matter.</p></div></div>
+      <div class="action-item" id="item-social-3"><p class="action-num">03</p><div><p class="action-title">Build new social infrastructure within 90 days of starting</p><p class="action-detail">A gym community, recreational sport, industry events — whatever fits your personality. Waiting until you feel lonely to start building is too late. Social networks take time to form.</p></div></div>
+      <div class="action-item" id="item-social-4"><p class="action-num">04</p><div><p class="action-title">Drinking frequency — be deliberate, not reactive</p><p class="action-detail">2–3x a week in Greek life is context-dependent. Without the frat infrastructure, that same frequency in your new life looks completely different and costs you more than you realize in energy, performance, and morning quality.</p></div></div>
+      <div class="action-item" id="item-social-5"><p class="action-num">05</p><div><p class="action-title">Long distance relationship — be honest about the weight it adds</p><p class="action-detail">4 months in, both entering new chapters, she's in NC. It's real and it matters. Just be honest with yourself about how it affects your weekends, your budget, your energy, and your ability to build a life in a new place. Don't let it happen to you — manage it intentionally.</p></div></div>
     </div>
   </div>
 </div>
@@ -1591,7 +1613,7 @@
     work:      ['chk-work-1','chk-work-2','chk-work-3','chk-work-4','chk-work-5','chk-work-6','chk-work-7'],
     finance:   ['chk-finance-1','chk-finance-2','chk-finance-3','chk-finance-4','chk-finance-5','chk-finance-6','chk-finance-7','chk-finance-8'],
     structure: ['chk-structure-1','chk-structure-2','chk-structure-3','chk-structure-4'],
-    social:    ['chk-social-1','chk-social-2','chk-social-3','chk-social-4','chk-social-5'],
+    social:    [],
     health:    ['chk-health-1','chk-health-2','chk-health-3','chk-health-4','chk-health-5','chk-health-6'],
     offer:     ['chk-offer-1','chk-offer-2','chk-offer-3','chk-offer-4','chk-offer-5','chk-offer-6','chk-offer-7']
   };
@@ -1918,6 +1940,40 @@
   document.addEventListener('click', playGreetingOnce);
   document.addEventListener('touchstart', playGreetingOnce);
 
+  // WORKOUT DAY TRACKER — resets every Sunday
+  function getWeekNumber() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    return Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+  }
+
+  function initWorkoutDays() {
+    const currentWeek = getWeekNumber();
+    const savedWeek = parseInt(localStorage.getItem('workout-week') || '0');
+    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+
+    // Reset if new week
+    if (currentWeek !== savedWeek) {
+      days.forEach(d => localStorage.removeItem('workout-' + d));
+      localStorage.setItem('workout-week', currentWeek);
+    }
+
+    // Restore state
+    days.forEach(d => {
+      if (localStorage.getItem('workout-' + d) === 'true') {
+        document.getElementById('wd-' + d).classList.add('done');
+      }
+    });
+  }
+
+  function toggleWorkoutDay(day) {
+    const el = document.getElementById('wd-' + day);
+    const isDone = el.classList.contains('done');
+    el.classList.toggle('done', !isDone);
+    localStorage.setItem('workout-' + day, !isDone);
+  }
+
+  initWorkoutDays();
   initMorningBrief();
   initMaintenance();
   initCheckboxes();
