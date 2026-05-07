@@ -1899,7 +1899,7 @@
   }
 
   // JARVIS DYNAMIC BRIEF — ElevenLabs API
-  const ELEVEN_API_KEY = 'sk_3dff6c42c2abacef6f87c4e80c0657bfb091dafe1344debe';
+  const ELEVEN_API_KEY = '334b767bbb5d3cf8472bcb950194e5662b5a088bb7293cd40a349be009264e75';
   const ELEVEN_VOICE_ID = 'zNsotODqUhvbJ5wMG7Ei';
 
   async function speakBrief() {
@@ -1944,11 +1944,15 @@
         },
         body: JSON.stringify({
           text: briefText,
-          model_id: 'eleven_monolingual_v1',
+          model_id: 'eleven_flash_v2_5',
           voice_settings: { stability: 0.5, similarity_boost: 0.75 }
         })
       });
-      if (!response.ok) throw new Error('API error');
+      if (!response.ok) {
+        const err = await response.text();
+        console.error('ElevenLabs API error:', response.status, err);
+        throw new Error('API error');
+      }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
