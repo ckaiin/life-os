@@ -1539,6 +1539,54 @@
         <div class="note-block" style="border-left-color:var(--amber);">
           <p class="note-text"><strong>CDP Choline watch</strong> — If anxiety increases after restarting, drop CDP Choline first and keep Lion's Mane. Give it two weeks before making that call.</p>
         </div>
+
+        <p class="supp-section-title" style="margin-top:2rem;">Sunday fill checklist <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">Resets every Sunday</span></p>
+        <div id="sunday-fill-list">
+          <div class="supp-item" style="cursor:pointer;" id="sf-omega3" onclick="toggleSundayFill('sf-omega3')">
+            <div class="workout-check" id="sfc-omega3"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Omega-3 (Fish Oil)</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-vitc" onclick="toggleSundayFill('sf-vitc')">
+            <div class="workout-check" id="sfc-vitc"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Vitamin C</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-zinc" onclick="toggleSundayFill('sf-zinc')">
+            <div class="workout-check" id="sfc-zinc"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Zinc Picolinate</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-vitd3" onclick="toggleSundayFill('sf-vitd3')">
+            <div class="workout-check" id="sfc-vitd3"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Vitamin D3</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-cdp" onclick="toggleSundayFill('sf-cdp')">
+            <div class="workout-check" id="sfc-cdp"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">CDP Choline</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-bcomplex" onclick="toggleSundayFill('sf-bcomplex')">
+            <div class="workout-check" id="sfc-bcomplex"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">B-Complex #12</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-lionsm" onclick="toggleSundayFill('sf-lionsm')">
+            <div class="workout-check" id="sfc-lionsm"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Lion's Mane</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-rhodiola" onclick="toggleSundayFill('sf-rhodiola')">
+            <div class="workout-check" id="sfc-rhodiola"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Rhodiola Rosea</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-creatine" onclick="toggleSundayFill('sf-creatine')">
+            <div class="workout-check" id="sfc-creatine"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Creatine Monohydrate</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-mag" onclick="toggleSundayFill('sf-mag')">
+            <div class="workout-check" id="sfc-mag"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Magnesium Glycinate</p></div>
+          </div>
+          <div class="supp-item" style="cursor:pointer;" id="sf-apigenin" onclick="toggleSundayFill('sf-apigenin')">
+            <div class="workout-check" id="sfc-apigenin"></div>
+            <div class="supp-body"><p class="supp-name" style="font-size:12px;">Apigenin</p></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2325,8 +2373,35 @@
     initSupplements();
   }
 
+  function toggleSundayFill(id) {
+    const el = document.getElementById(id);
+    const check = document.getElementById('sfc-' + id.replace('sf-', ''));
+    const isDone = el.classList.contains('done');
+    el.classList.toggle('done', !isDone);
+    localStorage.setItem('sundayfill-' + id, !isDone);
+  }
+
+  function initSundayFill() {
+    const currentWeek = getWeekNumber();
+    const savedWeek = parseInt(localStorage.getItem('sundayfill-week') || '0');
+    const ids = ['sf-omega3','sf-vitc','sf-zinc','sf-vitd3','sf-cdp','sf-bcomplex','sf-lionsm','sf-rhodiola','sf-creatine','sf-mag','sf-apigenin'];
+
+    if (currentWeek !== savedWeek) {
+      ids.forEach(id => localStorage.removeItem('sundayfill-' + id));
+      localStorage.setItem('sundayfill-week', currentWeek);
+    }
+
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && localStorage.getItem('sundayfill-' + id) === 'true') {
+        el.classList.add('done');
+      }
+    });
+  }
+
   initGolf();
   initSupplements();
+  initSundayFill();
 
   // BUDGET CALCULATOR
   function calcFederalTax(income) {
