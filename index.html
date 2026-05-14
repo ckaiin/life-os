@@ -96,6 +96,7 @@
     line-height: 1.4;
   }
   .brief-item:empty { display: none; }
+  #brief-todo-text { transition: opacity 0.3s ease; }
   .brief-badge {
     font-size: 8px;
     text-transform: uppercase;
@@ -407,6 +408,19 @@
   .club-delete { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 11px; padding: 2px 6px; border-radius: 2px; font-family: 'DM Sans', sans-serif; }
   .club-delete:hover { background: var(--bg3); color: var(--red); }
   .club-add-row { display: grid; grid-template-columns: 1fr 100px 1fr auto; gap: 8px; padding: 10px 12px; background: var(--bg); border-top: 1px solid var(--border2); }
+  .weight-input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+  .weight-entry { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .weight-entry-date { color: var(--text3); }
+  .weight-entry-val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: var(--text); }
+  .weight-entry-delta { font-size: 11px; }
+  .weight-entry-delta.up { color: var(--red); }
+  .weight-entry-delta.down { color: var(--green); }
+  .weight-entry-delete { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 2px 6px; border-radius: 2px; }
+  .weight-entry-delete:hover { background: var(--bg3); color: var(--red); }
+  .weight-stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; min-width: 100px; }
+  .weight-stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 4px; }
+  .weight-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; color: var(--text); line-height: 1; }
+  .weight-chart { width: 100%; height: 120px; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
 
   /* SUPPLEMENTS */
   .supp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
@@ -440,7 +454,31 @@
   .supp-countdown-days.critical { color: var(--red); }
   .supp-countdown-label { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); text-align: center; }
   .supp-countdown-input { font-size: 9px; color: var(--accent2); cursor: pointer; text-decoration: underline; background: none; border: none; font-family: 'DM Sans', sans-serif; padding: 0; }
-  .supp-countdown-date-input { font-size: 10px; color: var(--text); background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; padding: 2px 5px; font-family: 'DM Sans', sans-serif; width: 110px; margin-top: 2px; }</style>
+  .supp-countdown-date-input { font-size: 10px; color: var(--text); background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; padding: 2px 5px; font-family: 'DM Sans', sans-serif; width: 110px; margin-top: 2px; }
+
+  /* TO-DO */
+  .todo-form { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem; margin-bottom: 0; }
+  .todo-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .todo-item.done .todo-text { text-decoration: line-through; color: var(--text3); }
+  .todo-item.done .todo-meta { opacity: 0.5; }
+  .todo-check-wrap input[type="checkbox"] { display: none; }
+  .todo-check-wrap label { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: pointer; background: var(--bg); transition: all 0.15s; flex-shrink: 0; margin-top: 2px; }
+  .todo-check-wrap label::after { content: ''; display: block; width: 4px; height: 8px; border-right: 2px solid white; border-bottom: 2px solid white; transform: rotate(45deg) translate(-1px,-1px); opacity: 0; transition: opacity 0.15s; }
+  .todo-check-wrap input:checked + label { background: var(--green); border-color: var(--green); }
+  .todo-check-wrap input:checked + label::after { opacity: 1; }
+  .todo-body { flex: 1; }
+  .todo-text { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .todo-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .todo-priority { font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; padding: 2px 7px; border-radius: 2px; font-weight: 500; }
+  .todo-priority.high { background: rgba(184,48,48,0.12); color: var(--red); }
+  .todo-priority.medium { background: rgba(184,110,26,0.12); color: var(--amber); }
+  .todo-priority.low { background: rgba(30,140,78,0.12); color: var(--green); }
+  .todo-due { font-size: 10px; color: var(--text3); }
+  .todo-due.overdue { color: var(--red); font-weight: 500; }
+  .todo-delete { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 11px; padding: 2px 6px; border-radius: 2px; font-family: 'DM Sans', sans-serif; }
+  .todo-delete:hover { background: var(--bg3); color: var(--red); }
+  .todo-empty { font-size: 11px; color: var(--text3); padding: 8px 0; }</style>
 </head>
 <body>
 
@@ -886,6 +924,19 @@
       <div class="action-item" id="item-health-5"><div class="action-check"><input type="checkbox" id="chk-health-5"><label for="chk-health-5"></label></div><p class="action-num">05</p><div><p class="action-title">Skincare routine travels with you</p><p class="action-detail">PanOxyl, the Skin Medicinals compound, La Roche-Posay. Keep it consistent through the move. Small habits that slip during transitions are annoying to restart.</p></div></div>
       <div class="action-item" id="item-health-6"><div class="action-check"><input type="checkbox" id="chk-health-6"><label for="chk-health-6"></label></div><p class="action-num">06</p><div><p class="action-title">Cooking stays in — groceries are your main expense</p><p class="action-detail">You cook well when the environment allows it. Greenwich apartment, no roommates, functional kitchen. The environment will allow it. Do it.</p></div></div>
     </div>
+
+    <!-- WEIGHT TRACKER -->
+    <div class="action-section">
+      <p class="action-section-title">Daily weight tracker</p>
+      <div class="weight-input-row">
+        <input type="number" id="weight-input" placeholder="lbs" step="0.1" class="golf-input" style="max-width:100px;">
+        <button class="golf-btn" onclick="logWeight()">Log</button>
+        <span id="weight-today-label" style="font-size:11px;color:var(--text3);align-self:center;"></span>
+      </div>
+      <div id="weight-chart-wrap" style="margin-top:1rem;"></div>
+      <div id="weight-stats" style="display:none;margin-top:0.75rem;display:flex;gap:1.5rem;flex-wrap:wrap;"></div>
+      <div id="weight-log-list" style="margin-top:1rem;"></div>
+    </div>
   </div>
 </div>
 
@@ -912,6 +963,31 @@
       <p class="others-eyebrow">Others — Goals</p>
       <p class="others-title">Goals</p>
       <p class="others-lead">Where you're trying to go. Short term and long term. Be specific — "be successful" isn't a goal, it's a feeling.</p>
+    </div>
+    <div class="others-section">
+      <p class="others-section-title">To-Do</p>
+      <div class="todo-form">
+        <div class="todo-form-grid">
+          <div class="golf-field" style="grid-column:span 2;">
+            <label class="golf-field-label">Task</label>
+            <input type="text" id="todo-text" placeholder="e.g. Text manager before June 29" class="golf-input" onkeydown="if(event.key==='Enter') addTodo()">
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Priority</label>
+            <select id="todo-priority" class="golf-select">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="golf-field">
+            <label class="golf-field-label">Due date</label>
+            <input type="date" id="todo-due" class="golf-input">
+          </div>
+        </div>
+        <button class="golf-submit-btn" onclick="addTodo()">Add</button>
+      </div>
+      <div id="todo-list" style="margin-top:1rem;"></div>
     </div>
     <div class="others-section">
       <p class="others-section-title">Short term — next 12 months</p>
@@ -1227,11 +1303,24 @@
         </div>
       </div>
 
+      <div class="maint-section">
+        <p class="maint-section-title">Miscellaneous</p>
+        <div class="maint-item" data-key="m-weighin" data-days="1">
+          <div class="maint-check-wrap">
+            <input type="checkbox" id="m-weighin" class="maint-chk">
+            <label for="m-weighin"></label>
+          </div>
+          <div class="maint-content">
+            <p class="maint-name">Weigh in</p>
+            <p class="maint-cycle">Daily — at the gym</p>
+          </div>
+          <div class="maint-status" id="status-m-weighin"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
-
-<!-- GOLF -->
 <div id="panel-golf" class="panel">
   <div class="others-wrap" style="max-width:960px;">
     <div class="others-header">
@@ -1890,7 +1979,7 @@
     const daysLeft = Math.ceil((new Date('2026-06-29') - now) / (1000*60*60*24));
     if (daysLeft > 0) {
       document.getElementById('brief-run').innerHTML =
-        `<span class="brief-badge badge-workout">Supplements</span>Morning stack + 5g creatine. Night: magnesium 30–60 min before bed.`;
+        `<span class="brief-badge badge-workout">To-Do</span><span id="brief-todo-text">Loading...</span>`;
     } else {
       document.getElementById('brief-run').innerHTML =
         `<span class="brief-badge badge-run">Started</span>You're in it. Make today count.`;
@@ -1988,7 +2077,222 @@
     localStorage.setItem('workout-' + day, !isDone);
   }
 
+  // WEIGHT TRACKER
+  function logWeight() {
+    const input = document.getElementById('weight-input');
+    const val = parseFloat(input.value);
+    if (!val || val < 50 || val > 400) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const entries = JSON.parse(localStorage.getItem('weight-log') || '[]');
+
+    // Replace today's entry if already exists
+    const existingIdx = entries.findIndex(e => e.date === today);
+    if (existingIdx >= 0) entries.splice(existingIdx, 1);
+    entries.unshift({ date: today, weight: val });
+    entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    localStorage.setItem('weight-log', JSON.stringify(entries));
+
+    // Auto-check the maintenance weigh-in
+    const maintChk = document.getElementById('m-weighin');
+    if (maintChk && !maintChk.checked) {
+      maintChk.checked = true;
+      localStorage.setItem('maint-m-weighin', Date.now().toString());
+      const item = maintChk.closest('.maint-item');
+      if (item) {
+        item.classList.add('done');
+        item.classList.remove('overdue');
+        const statusEl = document.getElementById('status-m-weighin');
+        if (statusEl) statusEl.textContent = '1d left';
+      }
+      updateBriefOverdue();
+    }
+
+    input.value = '';
+    renderWeightTracker();
+  }
+
+  function deleteWeightEntry(date) {
+    const entries = JSON.parse(localStorage.getItem('weight-log') || '[]');
+    localStorage.setItem('weight-log', JSON.stringify(entries.filter(e => e.date !== date)));
+    renderWeightTracker();
+  }
+
+  function renderWeightTracker() {
+    const entries = JSON.parse(localStorage.getItem('weight-log') || '[]');
+    const today = new Date().toISOString().split('T')[0];
+    const todayEntry = entries.find(e => e.date === today);
+    const label = document.getElementById('weight-today-label');
+    if (label) label.textContent = todayEntry ? 'Today: ' + todayEntry.weight + ' lbs' : '';
+
+    // Stats
+    const statsEl = document.getElementById('weight-stats');
+    if (statsEl && entries.length > 0) {
+      statsEl.style.display = 'flex';
+      const weights = entries.map(e => e.weight);
+      const latest = weights[0];
+      const lowest = Math.min(...weights);
+      const highest = Math.max(...weights);
+      const change = entries.length > 1 ? (latest - weights[weights.length - 1]).toFixed(1) : null;
+      statsEl.innerHTML = `
+        <div class="weight-stat"><p class="weight-stat-label">Current</p><p class="weight-stat-val">${latest} lbs</p></div>
+        <div class="weight-stat"><p class="weight-stat-label">Lowest</p><p class="weight-stat-val">${lowest} lbs</p></div>
+        <div class="weight-stat"><p class="weight-stat-label">Highest</p><p class="weight-stat-val">${highest} lbs</p></div>
+        ${change !== null ? `<div class="weight-stat"><p class="weight-stat-label">Overall</p><p class="weight-stat-val" style="color:${parseFloat(change) <= 0 ? 'var(--green)' : 'var(--red)'}">${parseFloat(change) > 0 ? '+' : ''}${change} lbs</p></div>` : ''}`;
+    }
+
+    // Mini chart
+    const chartWrap = document.getElementById('weight-chart-wrap');
+    if (chartWrap && entries.length > 1) {
+      const recent = entries.slice(0, 30).reverse();
+      const weights = recent.map(e => e.weight);
+      const min = Math.min(...weights) - 2;
+      const max = Math.max(...weights) + 2;
+      const w = 600; const h = 120; const pad = 10;
+      const points = weights.map((wt, i) => {
+        const x = pad + (i / (weights.length - 1)) * (w - pad * 2);
+        const y = h - pad - ((wt - min) / (max - min)) * (h - pad * 2);
+        return `${x},${y}`;
+      }).join(' ');
+      chartWrap.innerHTML = `<svg viewBox="0 0 ${w} ${h}" class="weight-chart" preserveAspectRatio="none">
+        <polyline points="${points}" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linejoin="round"/>
+        ${weights.map((wt, i) => {
+          const x = pad + (i / (weights.length - 1)) * (w - pad * 2);
+          const y = h - pad - ((wt - min) / (max - min)) * (h - pad * 2);
+          return `<circle cx="${x}" cy="${y}" r="3" fill="var(--teal)"/>`;
+        }).join('')}
+      </svg>`;
+    } else if (chartWrap) {
+      chartWrap.innerHTML = '';
+    }
+
+    // Log list
+    const logList = document.getElementById('weight-log-list');
+    if (!logList) return;
+    if (entries.length === 0) {
+      logList.innerHTML = '<p style="font-size:11px;color:var(--text3);">No entries yet. Log your first weight above.</p>';
+      return;
+    }
+    logList.innerHTML = entries.slice(0, 14).map((e, i) => {
+      const prev = entries[i + 1];
+      const delta = prev ? (e.weight - prev.weight).toFixed(1) : null;
+      const deltaClass = delta ? (parseFloat(delta) > 0 ? 'up' : 'down') : '';
+      const deltaStr = delta ? `${parseFloat(delta) > 0 ? '+' : ''}${delta} lbs` : '';
+      const dateFormatted = new Date(e.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `<div class="weight-entry">
+        <span class="weight-entry-date">${dateFormatted}</span>
+        <span class="weight-entry-val">${e.weight} lbs</span>
+        <span class="weight-entry-delta ${deltaClass}">${deltaStr}</span>
+        <button class="weight-entry-delete" onclick="deleteWeightEntry('${e.date}')">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  // TO-DO SYSTEM
+  function addTodo() {
+    const text = document.getElementById('todo-text').value.trim();
+    if (!text) return;
+    const priority = document.getElementById('todo-priority').value;
+    const due = document.getElementById('todo-due').value;
+    const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    todos.unshift({ id: Date.now(), text, priority, due, done: false });
+    localStorage.setItem('todos', JSON.stringify(todos));
+    document.getElementById('todo-text').value = '';
+    document.getElementById('todo-due').value = '';
+    renderTodos();
+    startTodoCycle();
+  }
+
+  function toggleTodo(id) {
+    const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    const idx = todos.findIndex(t => t.id === id);
+    if (idx >= 0) todos[idx].done = !todos[idx].done;
+    localStorage.setItem('todos', JSON.stringify(todos));
+    renderTodos();
+    startTodoCycle();
+  }
+
+  function deleteTodo(id) {
+    const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    localStorage.setItem('todos', JSON.stringify(todos.filter(t => t.id !== id)));
+    renderTodos();
+    startTodoCycle();
+  }
+
+  function renderTodos() {
+    const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    const list = document.getElementById('todo-list');
+    if (!list) return;
+    if (todos.length === 0) {
+      list.innerHTML = '<p class="todo-empty">No to-dos yet. Add one above.</p>';
+      return;
+    }
+    // Sort: incomplete first by priority (high→medium→low), then due date, then done
+    const order = { high: 0, medium: 1, low: 2 };
+    const sorted = [...todos].sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      if (order[a.priority] !== order[b.priority]) return order[a.priority] - order[b.priority];
+      if (a.due && b.due) return new Date(a.due) - new Date(b.due);
+      if (a.due) return -1;
+      if (b.due) return 1;
+      return 0;
+    });
+    const today = new Date().toISOString().split('T')[0];
+    list.innerHTML = sorted.map(t => {
+      const isOverdue = t.due && t.due < today && !t.done;
+      const dueFmt = t.due ? new Date(t.due + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      return `<div class="todo-item ${t.done ? 'done' : ''}" id="todo-${t.id}">
+        <div class="todo-check-wrap"><input type="checkbox" id="tc-${t.id}" ${t.done ? 'checked' : ''} onchange="toggleTodo(${t.id})"><label for="tc-${t.id}"></label></div>
+        <div class="todo-body">
+          <p class="todo-text">${t.text}</p>
+          <div class="todo-meta">
+            <span class="todo-priority ${t.priority}">${t.priority}</span>
+            ${dueFmt ? `<span class="todo-due ${isOverdue ? 'overdue' : ''}">${isOverdue ? 'Overdue · ' : ''}${dueFmt}</span>` : ''}
+          </div>
+        </div>
+        <button class="todo-delete" onclick="deleteTodo(${t.id})">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Cycling brief ticker
+  let todoCycleInterval = null;
+  let todoCycleIdx = 0;
+
+  function startTodoCycle() {
+    const textEl = document.getElementById('brief-todo-text');
+    if (!textEl) return;
+    const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+    const incomplete = todos.filter(t => !t.done);
+    if (incomplete.length === 0) {
+      textEl.textContent = 'No pending to-dos.';
+      if (todoCycleInterval) { clearInterval(todoCycleInterval); todoCycleInterval = null; }
+      return;
+    }
+    todoCycleIdx = 0;
+    function show() {
+      const t = incomplete[todoCycleIdx % incomplete.length];
+      const order = { high: '🔴', medium: '🟡', low: '🟢' };
+      textEl.textContent = t.text + (t.due ? ' · Due ' + new Date(t.due + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '');
+      textEl.style.opacity = '1';
+      todoCycleIdx++;
+    }
+    show();
+    if (todoCycleInterval) clearInterval(todoCycleInterval);
+    if (incomplete.length > 1) {
+      todoCycleInterval = setInterval(() => {
+        const textEl = document.getElementById('brief-todo-text');
+        if (!textEl) { clearInterval(todoCycleInterval); return; }
+        textEl.style.opacity = '0';
+        setTimeout(show, 300);
+      }, 4000);
+    }
+  }
+
   initWorkoutDays();
+  renderWeightTracker();
+  renderTodos();
+  startTodoCycle();
   initMorningBrief();
   initMaintenance();
   initCheckboxes();
