@@ -1290,7 +1290,7 @@
 
       <div class="maint-section">
         <p class="maint-section-title">Clothing</p>
-        <div class="maint-item" data-key="m-laundry" data-days="7">
+        <div class="maint-item" data-key="m-laundry" data-days="7" data-sunday-reset="true">
           <div class="maint-check-wrap">
             <input type="checkbox" id="m-laundry" class="maint-chk">
             <label for="m-laundry"></label>
@@ -1774,6 +1774,52 @@
       const daysLeft = cycleDays - daysAgo;
 
       const noOverdue = item.dataset.noOverdue === 'true';
+      const sundayReset = item.dataset.sundayReset === 'true';
+
+      // For Sunday-reset items, check if it's past Sunday and wasn't done this week
+      if (sundayReset) {
+        const now2 = new Date();
+        const dayOfWeek = now2.getDay(); // 0=Sun, 1=Mon...
+        // Get last Sunday's date
+        const lastSunday = new Date(now2);
+        lastSunday.setDate(now2.getDate() - (dayOfWeek === 0 ? 0 : dayOfWeek));
+        lastSunday.setHours(0, 0, 0, 0);
+        const doneThisWeek = lastDone > 0 && lastDone >= lastSunday.getTime();
+
+        if (doneThisWeek) {
+          checkbox.checked = true;
+          item.classList.add('done');
+          item.classList.remove('overdue');
+          if (statusEl) statusEl.textContent = '';
+        } else if (dayOfWeek === 0) {
+          // It's Sunday — show as due, not overdue
+          checkbox.checked = false;
+          item.classList.remove('done', 'overdue');
+          if (statusEl) statusEl.textContent = 'due today';
+        } else {
+          // It's Mon–Sat and wasn't done last Sunday — overdue
+          checkbox.checked = false;
+          item.classList.remove('done');
+          item.classList.add('overdue');
+          if (statusEl) statusEl.textContent = 'overdue';
+        }
+
+        checkbox.addEventListener('change', function() {
+          if (this.checked) {
+            localStorage.setItem('maint-' + key, Date.now().toString());
+            item.classList.add('done');
+            item.classList.remove('overdue');
+            if (statusEl) statusEl.textContent = '';
+          } else {
+            localStorage.removeItem('maint-' + key);
+            item.classList.remove('done');
+            if (dayOfWeek !== 0) item.classList.add('overdue');
+            if (statusEl) statusEl.textContent = dayOfWeek === 0 ? 'due today' : 'overdue';
+          }
+          updateBriefOverdue();
+        });
+        return;
+      }
 
       // Auto-reset if cycle elapsed
       if (lastDone > 0 && elapsed > cycleMs) {
