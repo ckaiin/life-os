@@ -1651,7 +1651,8 @@
 <div class="footer">
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
-  <p class="version-tag">Version 1.1 — $70K confirmed, draw pending</p>
+  <p class="version-tag">Version 1.21 — $70K confirmed, draw pending</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">1.21: Fixed to-do ticker persistence on page reload</p>
 </div>
 
 <script>
@@ -2347,8 +2348,8 @@
   initWorkoutDays();
   renderWeightTracker();
   renderTodos();
-  startTodoCycle();
   initMorningBrief();
+  startTodoCycle();
   initMaintenance();
   initCheckboxes();
 
