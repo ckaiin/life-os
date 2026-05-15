@@ -600,7 +600,7 @@
       <ul class="action-list">
         <li><span class="dot dot-c"></span>Join Hydrogen Fitness before June 29</li>
         <li><span class="dot dot-c"></span>322 days nicotine free — don't let stress become an excuse</li>
-        <li><span class="dot dot-c"></span>Golf sim consistently — it's a sales asset</li>
+        <li><span class="dot dot-c"></span>Find a local golf sim before June 29</li>
         <li><span class="dot dot-c"></span>Evening workout is first thing skipped. Don't let it.</li>
       </ul>
       <div class="card-progress">
@@ -919,7 +919,7 @@
     </div>
     <div class="action-section">
       <p class="action-section-title">Ongoing</p>
-      <div class="action-item" id="item-health-3"><div class="action-check"><input type="checkbox" id="chk-health-3"><label for="chk-health-3"></label></div><p class="action-num">03</p><div><p class="action-title">Golf sim — consistently, not occasionally</p><p class="action-detail">Hydrogen Fitness has one. Use it at least once a week. Getting genuinely good at golf by 25 is a real professional asset in specialty food and hospitality sales. The people you'll eventually be selling to live on golf courses. This isn't just a hobby.</p></div></div>
+      <div class="action-item" id="item-health-3"><div class="action-check"><input type="checkbox" id="chk-health-3"><label for="chk-health-3"></label></div><p class="action-num">03</p><div><p class="action-title">Find a local golf sim — consistently, not occasionally</p><p class="action-detail">Hydrogen Fitness no longer has a sim. Find a local alternative. Getting genuinely good at golf by 25 is a real professional asset in specialty food and hospitality sales. The people you'll eventually be selling to live on golf courses. This isn't just a hobby.</p></div></div>
       <div class="action-item" id="item-health-4"><div class="action-check"><input type="checkbox" id="chk-health-4"><label for="chk-health-4"></label></div><p class="action-num">04</p><div><p class="action-title">322 days nicotine free — protect it</p><p class="action-detail">Work stress is the #1 relapse trigger for nicotine. You will have hard days in the first few months. Know in advance that stress is not a reason to revisit it — it's exactly the test you've been preparing for.</p></div></div>
       <div class="action-item" id="item-health-5"><div class="action-check"><input type="checkbox" id="chk-health-5"><label for="chk-health-5"></label></div><p class="action-num">05</p><div><p class="action-title">Skincare routine travels with you</p><p class="action-detail">PanOxyl, the Skin Medicinals compound, La Roche-Posay. Keep it consistent through the move. Small habits that slip during transitions are annoying to restart.</p></div></div>
       <div class="action-item" id="item-health-6"><div class="action-check"><input type="checkbox" id="chk-health-6"><label for="chk-health-6"></label></div><p class="action-num">06</p><div><p class="action-title">Cooking stays in — groceries are your main expense</p><p class="action-detail">You cook well when the environment allows it. Greenwich apartment, no roommates, functional kitchen. The environment will allow it. Do it.</p></div></div>
@@ -1305,7 +1305,7 @@
 
       <div class="maint-section">
         <p class="maint-section-title">Miscellaneous</p>
-        <div class="maint-item" data-key="m-weighin" data-days="1">
+        <div class="maint-item" data-key="m-weighin" data-days="1" data-no-overdue="true">
           <div class="maint-check-wrap">
             <input type="checkbox" id="m-weighin" class="maint-chk">
             <label for="m-weighin"></label>
@@ -1773,21 +1773,30 @@
       const daysAgo = Math.floor(elapsed / (24 * 60 * 60 * 1000));
       const daysLeft = cycleDays - daysAgo;
 
+      const noOverdue = item.dataset.noOverdue === 'true';
+
       // Auto-reset if cycle elapsed
       if (lastDone > 0 && elapsed > cycleMs) {
         checkbox.checked = false;
         item.classList.remove('done');
-        item.classList.add('overdue');
-        const daysOverdue = daysAgo - cycleDays;
-        if (statusEl) statusEl.textContent = daysOverdue + 'd overdue';
+        if (!noOverdue) {
+          item.classList.add('overdue');
+          const daysOverdue = daysAgo - cycleDays;
+          if (statusEl) statusEl.textContent = daysOverdue + 'd overdue';
+        } else {
+          item.classList.remove('overdue');
+          if (statusEl) statusEl.textContent = '';
+        }
       } else if (lastDone > 0) {
         checkbox.checked = true;
         item.classList.add('done');
         item.classList.remove('overdue');
         if (statusEl) statusEl.textContent = daysLeft + 'd left';
       } else {
-        item.classList.add('overdue');
-        if (statusEl) statusEl.textContent = 'due';
+        if (!noOverdue) {
+          item.classList.add('overdue');
+          if (statusEl) statusEl.textContent = 'due';
+        }
       }
 
       checkbox.addEventListener('change', function() {
