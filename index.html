@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Life OS — Conor</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -314,7 +315,7 @@
   /* CALCULATOR */
   .calc-wrap { margin-top: 0; }
   .calc-intro { font-size: 11px; color: var(--text3); line-height: 1.6; margin-bottom: 1.5rem; padding: 10px 14px; background: var(--bg3); border-radius: 3px; border-left: 2px solid var(--accent2); }
-  .calc-input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .calc-input-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
   .calc-input-group { display: flex; flex-direction: column; gap: 6px; }
   .calc-label { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); }
   .calc-input-prefix, .calc-input-suffix { display: flex; align-items: center; background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; overflow: hidden; }
@@ -481,6 +482,20 @@
   .todo-empty { font-size: 11px; color: var(--text3); padding: 8px 0; }</style>
 </head>
 <body>
+
+<div id="auth-overlay" style="display:flex;position:fixed;inset:0;background:var(--bg);z-index:10000;align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:2rem 1.5rem;max-width:340px;width:100%;">
+    <p style="font-size:10px;text-transform:uppercase;letter-spacing:3px;color:var(--accent2);margin-bottom:6px;">Personal operating system</p>
+    <p style="font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:4px;line-height:0.9;background:linear-gradient(135deg,#1a1e26 0%,#2c5080 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:2rem;">Life OS</p>
+    <div id="auth-loading" style="color:var(--text3);font-size:11px;letter-spacing:2px;text-transform:uppercase;">Loading...</div>
+    <div id="auth-form" style="display:none;">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.5;">Enter your email to sign in.</p>
+      <input type="email" id="auth-email" placeholder="your@email.com" style="width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:3px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg2);color:var(--text);outline:none;margin-bottom:8px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')sendMagicLink()">
+      <button onclick="sendMagicLink()" style="width:100%;padding:11px;background:var(--accent);color:white;border:none;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:2px;cursor:pointer;">Send Magic Link</button>
+      <p id="auth-msg" style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5;"></p>
+    </div>
+  </div>
+</div>
 
 <div class="header">
   <div class="header-inner">
@@ -743,6 +758,14 @@
               <input type="number" id="calc-roth" placeholder="7000" min="0" max="7000" oninput="runCalc()">
             </div>
           </div>
+          <div class="calc-input-group">
+            <label class="calc-label">Hydrogen Fitness</label>
+            <select id="calc-gym" class="golf-select" onchange="runCalc()">
+              <option value="0">None</option>
+              <option value="149.99">Basic — $149.99/mo</option>
+              <option value="220">Advanced — $220/mo</option>
+            </select>
+          </div>
         </div>
 
         <div class="calc-results" id="calc-results" style="display:none;">
@@ -796,6 +819,10 @@
             <div class="calc-result-item">
               <p class="calc-result-label">Gas / transport</p>
               <p class="calc-result-value" id="res-gas">~$300</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">Gym membership</p>
+              <p class="calc-result-value" id="res-gym">—</p>
             </div>
             <div class="calc-result-item highlight">
               <p class="calc-result-label">Truly discretionary</p>
@@ -914,7 +941,7 @@
     <div class="insight-box"><p class="insight-label">Why routines die in transitions</p><p class="insight-text">New job stress, new city, new schedule, new social dynamics — these all compete for the exact time and energy your fitness habits need. The people who maintain their routines through a transition are the ones who set the infrastructure up before the transition happens, not after.</p></div>
     <div class="action-section">
       <p class="action-section-title">Immediate actions — before June 29</p>
-      <div class="action-item" id="item-health-1"><div class="action-check"><input type="checkbox" id="chk-health-1"><label for="chk-health-1"></label></div><p class="action-num">01</p><div><p class="urgent-tag">Before you start</p><p class="action-title">Join Hydrogen Fitness — don't figure it out after you start</p><p class="action-detail">You did the virtual tour. It looks good. Showing up on day one of a new job without a gym already locked in is how the habit quietly dies during the first month. Join before June 29.</p></div></div>
+      <div class="action-item" id="item-health-1"><div class="action-check"><input type="checkbox" id="chk-health-1"><label for="chk-health-1"></label></div><p class="action-num">01</p><div><p class="urgent-tag">Before you start</p><p class="action-title">Join Hydrogen Fitness — decide on Basic ($149.99) or Advanced ($220) before signing</p><p class="action-detail">Advanced adds 12 small group training sessions/mo, cold plunge, red light therapy, and infrared sauna — worth it given your training load and plantar fasciitis history. You get 30 days free either way. Sign up before June 29, use the trial, and make a deliberate call before you're locked in. At $110K base the Advanced is a non-issue. At $70K it's manageable with no rent.</p></div></div>
       <div class="action-item" id="item-health-2"><div class="action-check"><input type="checkbox" id="chk-health-2"><label for="chk-health-2"></label></div><p class="action-num">02</p><div><p class="action-title">Test your evening workout slot before you start</p><p class="action-detail">The 7–8 PM window is your realistic slot. Practice treating it as non-negotiable now so it's a locked habit by June 29, not something new you're trying to add during an already stressful transition.</p></div></div>
     </div>
     <div class="action-section">
@@ -1651,11 +1678,108 @@
 <div class="footer">
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
-  <p class="version-tag">Version 1.21 — $70K confirmed, draw pending</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">1.21: Fixed to-do ticker persistence on page reload</p>
+  <p class="version-tag">Version 1.24 — $70K confirmed, draw pending</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">1.24: Added Hydrogen Fitness gym membership to budget calculator</p>
 </div>
 
 <script>
+  // === SUPABASE BACKEND ===
+  const SUPABASE_URL = 'https://bvecxrwdmddaduwxynfe.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_slKvEmK8eJubQxdevDvm9Q_bxFpaith';
+  const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Proxy shadows window.localStorage in this script scope.
+  // All existing localStorage.getItem/setItem/removeItem calls work unchanged
+  // but writes transparently sync to Supabase once _sbReady is true.
+  let _sbReady = false;
+  const localStorage = new Proxy(window.localStorage, {
+    get(target, prop) {
+      if (prop === 'setItem') return (key, value) => {
+        target.setItem(key, value);
+        if (_sbReady) _sb.from('kv_store').upsert({ key, value: String(value) }, { onConflict: 'key' }).catch(() => {});
+      };
+      if (prop === 'removeItem') return (key) => {
+        target.removeItem(key);
+        if (_sbReady) _sb.from('kv_store').delete().eq('key', key).catch(() => {});
+      };
+      const v = target[prop];
+      return typeof v === 'function' ? v.bind(target) : v;
+    }
+  });
+
+  async function sendMagicLink() {
+    const email = document.getElementById('auth-email').value.trim();
+    const msg = document.getElementById('auth-msg');
+    if (!email) { msg.textContent = 'Enter your email address.'; return; }
+    msg.textContent = 'Sending...';
+    const { error } = await _sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
+    });
+    if (error) { msg.textContent = 'Error: ' + error.message; }
+    else { msg.textContent = 'Check your email — click the link to sign in.'; document.getElementById('auth-email').disabled = true; }
+  }
+
+  async function initApp() {
+    const { data: { session } } = await _sb.auth.getSession();
+    const overlay = document.getElementById('auth-overlay');
+    if (!session) {
+      document.getElementById('auth-loading').style.display = 'none';
+      document.getElementById('auth-form').style.display = 'block';
+      _sb.auth.onAuthStateChange((event, s) => {
+        if (event === 'SIGNED_IN' && s) { overlay.style.display = 'none'; loadAndRun(); }
+      });
+      return;
+    }
+    await loadAndRun();
+    overlay.style.display = 'none';
+  }
+
+  async function loadAndRun() {
+    try {
+      const { data, error } = await _sb.from('kv_store').select('key, value');
+      if (!error && data) {
+        if (data.length === 0) {
+          // First login — migrate existing localStorage data up to Supabase
+          const upserts = Object.keys(window.localStorage)
+            .map(k => ({ key: k, value: window.localStorage.getItem(k) }))
+            .filter(r => r.value !== null);
+          if (upserts.length) await _sb.from('kv_store').upsert(upserts, { onConflict: 'key' });
+        } else {
+          // Load cloud data into real localStorage (overwrites local with synced values)
+          data.forEach(({ key, value }) => { if (value !== null) window.localStorage.setItem(key, value); });
+        }
+      }
+    } catch (e) { console.warn('[Life OS] Supabase load failed, continuing with localStorage:', e); }
+
+    _sbReady = true;
+
+    // Counters
+    const start = new Date('2026-06-29');
+    const today = new Date();
+    const diff = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+    document.getElementById('days-count').textContent = diff > 0 ? diff : '0';
+    const nicStart = new Date('2025-06-16T12:00:00');
+    const nicDays = Math.floor((today - nicStart) / (1000 * 60 * 60 * 24));
+    document.getElementById('nic-days').textContent = nicDays;
+
+    // Init sequence (order matters — do not reorder)
+    initWorkoutDays();
+    renderWeightTracker();
+    renderTodos();
+    initMorningBrief();
+    startTodoCycle();
+    initMaintenance();
+    initCheckboxes();
+    initGolf();
+    initSupplements();
+    initSundayFill();
+
+    // Audio greeting registered after auth so overlay clicks don't trigger it
+    document.addEventListener('click', playGreetingOnce);
+    document.addEventListener('touchstart', playGreetingOnce);
+  }
+
   // Dropdown toggle
   function toggleDropdown() {
     const btn = document.getElementById('dropdown-toggle');
@@ -1703,15 +1827,6 @@
     document.getElementById('dropdown-toggle').classList.remove('open');
     window.scrollTo(0, 0);
   }
-
-  // Counters
-  const start = new Date('2026-06-29');
-  const today = new Date();
-  const diff = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
-  document.getElementById('days-count').textContent = diff > 0 ? diff : '0';
-  const nicStart = new Date('2025-06-16T12:00:00');
-  const nicDays = Math.floor((today - nicStart) / (1000 * 60 * 60 * 24));
-  document.getElementById('nic-days').textContent = nicDays;
 
   // Checkbox config
   const pillars = {
@@ -2097,9 +2212,6 @@
     document.removeEventListener('click', playGreetingOnce);
     document.removeEventListener('touchstart', playGreetingOnce);
   }
-  document.addEventListener('click', playGreetingOnce);
-  document.addEventListener('touchstart', playGreetingOnce);
-
   // WORKOUT DAY TRACKER — resets every Sunday
   function getWeekNumber() {
     const now = new Date();
@@ -2344,14 +2456,6 @@
       }, 4000);
     }
   }
-
-  initWorkoutDays();
-  renderWeightTracker();
-  renderTodos();
-  initMorningBrief();
-  startTodoCycle();
-  initMaintenance();
-  initCheckboxes();
 
   // GOLF
   function logSwingAnalysis() {
@@ -2726,10 +2830,6 @@
     });
   }
 
-  initGolf();
-  initSupplements();
-  initSundayFill();
-
   // BUDGET CALCULATOR
   function calcFederalTax(income) {
     // 2026 federal brackets (single filer, estimated)
@@ -2783,11 +2883,12 @@
     const salary = parseFloat(document.getElementById('calc-salary').value) || 0;
     const savingsRate = parseFloat(document.getElementById('calc-savings').value) / 100 || 0.20;
     const rothAnnual = parseFloat(document.getElementById('calc-roth').value) || 7000;
+    const gymMo = parseFloat(document.getElementById('calc-gym').value) || 0;
     if (salary === 0) { document.getElementById('calc-results').style.display = 'none'; return; }
 
     const federal = calcFederalTax(salary);
     const ct = calcCTTax(salary);
-    const fica = salary * 0.0765; // SS 6.2% + Medicare 1.45%
+    const fica = salary * 0.0765;
     const totalTax = federal + ct + fica;
     const takeHome = salary - totalTax;
     const takeHomeMo = takeHome / 12;
@@ -2795,7 +2896,7 @@
     const savingsMo = takeHomeMo * savingsRate;
     const rothMo = Math.min(rothAnnual, 7000) / 12;
     const spendMo = takeHomeMo - savingsMo - rothMo;
-    const discretionary = spendMo - 400 - 300; // minus groceries and gas estimate
+    const discretionary = spendMo - 400 - 300 - gymMo;
 
     document.getElementById('res-gross').textContent = fmt(salary);
     document.getElementById('res-federal').textContent = '-' + fmt(federal);
@@ -2807,6 +2908,8 @@
     document.getElementById('res-roth-mo').textContent = fmt(rothMo);
     document.getElementById('res-spend').textContent = fmt(spendMo);
     document.getElementById('res-discretionary').textContent = fmt(Math.max(0, discretionary));
+    const gymEl = document.getElementById('res-gym');
+    if (gymEl) gymEl.textContent = gymMo > 0 ? fmt(gymMo) : '—';
 
     const effRate = Math.round((totalTax / salary) * 100);
     document.getElementById('calc-note').textContent =
@@ -2814,6 +2917,8 @@
 
     document.getElementById('calc-results').style.display = 'block';
   }
+
+  initApp();
 </script>
 </body>
 </html>
