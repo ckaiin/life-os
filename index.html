@@ -2701,19 +2701,36 @@
       const rec = r.recovery_score == null ? '—' : Math.round(r.recovery_score) + '%';
       const slp = r.sleep_performance == null ? '—' : Math.round(r.sleep_performance) + '%';
       const str = r.strain == null ? '—' : Number(r.strain).toFixed(1);
-      return '<div class="lift-row" style="cursor:default;">' +
+      const color = recoveryColor(r.recovery_score);
+      return '<div class="lift-row" style="cursor:default;border-left:3px solid ' + color + ';">' +
         '<div class="lift-row-head"><span class="lift-row-title">' + dateStr + '</span>' +
-        '<span class="lift-row-meta">Recovery ' + rec + '</span></div>' +
+        '<span class="lift-row-meta" style="color:' + color + ';font-weight:600;">Recovery ' + rec + '</span></div>' +
         '<p class="lift-row-sub">Sleep ' + slp + ' · Strain ' + str + '</p>' +
       '</div>';
     }).join('');
   }
 
+  // Whoop recovery zones: green ≥67, yellow 34–66, red <34.
+  function recoveryColor(s) {
+    if (s == null) return 'var(--text3)';
+    if (s >= 67) return '#2f9e44';
+    if (s >= 34) return '#e0a008';
+    return '#e5484d';
+  }
+
   function renderWhoop(row) {
     const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-    set('whoop-recovery', row.recovery_score == null ? '—' : Math.round(row.recovery_score) + '%');
+    const recEl = document.getElementById('whoop-recovery');
+    if (recEl) {
+      recEl.textContent = row.recovery_score == null ? '—' : Math.round(row.recovery_score) + '%';
+      recEl.style.color = recoveryColor(row.recovery_score);
+    }
     set('whoop-sleep', row.sleep_performance == null ? '—' : Math.round(row.sleep_performance) + '%');
-    set('whoop-strain', row.strain == null ? '—' : Number(row.strain).toFixed(1));
+    const strainEl = document.getElementById('whoop-strain');
+    if (strainEl) {
+      strainEl.textContent = row.strain == null ? '—' : Number(row.strain).toFixed(1);
+      strainEl.style.color = 'var(--accent2)';
+    }
     set('whoop-hrv', row.hrv == null ? '—' : Math.round(row.hrv) + ' ms');
     set('whoop-rhr', row.resting_hr == null ? '' : 'RHR ' + Math.round(row.resting_hr) + ' bpm');
     set('whoop-date', row.date ? new Date(row.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '');
