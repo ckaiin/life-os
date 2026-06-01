@@ -2907,7 +2907,10 @@
     if (!svgWrap) return;
     const now = new Date();
     const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const recent = {}; // muscle -> { daysAgo, sets }
+    // Per muscle: the most recent session that trained it, and that session's
+    // load = tonnage (sum of weight_kg × reps). Heavy work => longer recovery.
+    const BODYWEIGHT_KG = 40; // nominal resistance for bodyweight reps (no logged weight)
+    const recent = {}; // muscle -> { daysAgo, load }
     (_hevyWorkouts || []).forEach(w => {
       if (!w.start_time) return;
       const d = new Date(w.start_time);
@@ -2917,10 +2920,17 @@
       exs.forEach(e => {
         const m = musclesFor(e.title);
         if (!m) return;
-        const sets = (e.sets || []).length;
-        const apply = (mus, weight) => {
-          if (!recent[mus] || daysAgo < recent[mus].daysAgo) recent[mus] = { daysAgo, sets: 0 };
-          if (daysAgo === recent[mus].daysAgo) recent[mus].sets += sets * weight;
+        let exLoad = 0; // tonnage for this exercise (kg)
+        (e.sets || []).forEach(s => {
+          const reps = s.reps || 0;
+          if (reps <= 0) return;
+          const wkg = (s.weight_kg && s.weight_kg > 0) ? s.weight_kg : BODYWEIGHT_KG;
+          exLoad += wkg * reps;
+        });
+        if (exLoad <= 0) return;
+        const apply = (mus, factor) => {
+          if (!recent[mus] || daysAgo < recent[mus].daysAgo) recent[mus] = { daysAgo, load: 0 };
+          if (daysAgo === recent[mus].daysAgo) recent[mus].load += exLoad * factor;
         };
         m.primary.forEach(mus => apply(mus, 1));
         m.secondary.forEach(mus => apply(mus, 0.5));
@@ -2935,7 +2945,8 @@
       if (!r) {
         baseFresh = 1;
       } else {
-        const recoveryDays = Math.min(4, Math.max(2, 1.5 + r.sets * 0.12));
+        // Recovery time scales with tonnage: light day ~2d, heavy/high-volume day ~5d.
+        const recoveryDays = Math.min(5, Math.max(2, 1.5 + r.load / 2000));
         baseFresh = Math.min(1, r.daysAgo / recoveryDays);
       }
       const fresh = baseFresh * recFactor;
