@@ -1651,7 +1651,6 @@
         <span><i style="background:#2f9e44;"></i> Fresh</span>
         <span><i style="background:#e0a008;"></i> Moderate</span>
         <span><i style="background:#e5484d;"></i> Fatigued</span>
-        <span><i style="background:#d0d3d8;"></i> No data</span>
       </div>
       <p class="bodymap-note" id="bodymap-note">Based on recent training load, tinted by today's Whoop recovery.</p>
     </aside>
@@ -2931,16 +2930,21 @@
     const recFactor = recovery == null ? 1 : (0.4 + 0.6 * (recovery / 100));
     const colorFor = (mus) => {
       const r = recent[mus];
-      if (!r) return null;
-      const recoveryDays = Math.min(4, Math.max(2, 1.5 + r.sets * 0.12));
-      let fresh = Math.min(1, r.daysAgo / recoveryDays) * recFactor;
+      // No recent training = rested = fully fresh (still tinted by Whoop recovery).
+      let baseFresh;
+      if (!r) {
+        baseFresh = 1;
+      } else {
+        const recoveryDays = Math.min(4, Math.max(2, 1.5 + r.sets * 0.12));
+        baseFresh = Math.min(1, r.daysAgo / recoveryDays);
+      }
+      const fresh = baseFresh * recFactor;
       if (fresh >= 0.66) return '#2f9e44';
       if (fresh >= 0.33) return '#e0a008';
       return '#e5484d';
     };
     svgWrap.querySelectorAll('[data-muscle]').forEach(el => {
-      const c = colorFor(el.getAttribute('data-muscle'));
-      el.style.fill = c || '';
+      el.style.fill = colorFor(el.getAttribute('data-muscle'));
     });
   }
 
