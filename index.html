@@ -574,6 +574,7 @@
       <button class="dropdown-item" id="tab-offerletter" onclick="event.stopPropagation(); switchTab('offerletter')">Offer Letter Checklist</button>
       <button class="dropdown-item" id="tab-maintenance" onclick="event.stopPropagation(); switchTab('maintenance')">Home Maintenance</button>
       <button class="dropdown-item" id="tab-lifting" onclick="event.stopPropagation(); switchTab('lifting')">Lifting</button>
+      <button class="dropdown-item" id="tab-recovery" onclick="event.stopPropagation(); switchTab('recovery')">Recovery</button>
       <button class="dropdown-item" id="tab-golf" onclick="event.stopPropagation(); switchTab('golf')">Golf</button>
       <button class="dropdown-item" id="tab-supplements" onclick="event.stopPropagation(); switchTab('supplements')">Supplements</button>
     </div>
@@ -1425,6 +1426,48 @@
     </div>
   </div>
 </div>
+<div id="panel-recovery" class="panel">
+  <div class="others-wrap" style="max-width:960px;">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Recovery</p>
+      <p class="others-title">Recovery</p>
+      <p class="others-lead">Synced from Whoop. Recovery, sleep, and strain for your latest day.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="golf-top-grid">
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Recovery</p>
+        <p class="golf-stat-value" id="whoop-recovery">—</p>
+        <p class="golf-stat-sub" id="whoop-date"></p>
+      </div>
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Sleep performance</p>
+        <p class="golf-stat-value" id="whoop-sleep">—</p>
+        <p class="golf-stat-sub">% of need met</p>
+      </div>
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Day strain</p>
+        <p class="golf-stat-value" id="whoop-strain">—</p>
+        <p class="golf-stat-sub">0–21 scale</p>
+      </div>
+      <div class="golf-stat-card goal">
+        <p class="golf-stat-label">HRV / Resting HR</p>
+        <p class="golf-stat-value" id="whoop-hrv" style="color:var(--green);font-size:1.1rem;">—</p>
+        <p class="golf-stat-sub" id="whoop-rhr"></p>
+      </div>
+    </div>
+
+    <!-- CONNECT / SYNC -->
+    <div class="others-section">
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <button class="golf-btn" id="whoop-connect-btn" onclick="connectWhoop()">Connect Whoop</button>
+        <button class="golf-btn" id="whoop-sync-btn" onclick="syncWhoop()" style="display:none;">Sync from Whoop</button>
+        <span id="whoop-msg" style="color:var(--text3);font-size:0.85rem;"></span>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="panel-golf" class="panel">
   <div class="others-wrap" style="max-width:960px;">
     <div class="others-header">
@@ -1933,6 +1976,8 @@
     initSupplements();
     initSundayFill();
     loadLifting();
+    loadWhoop();
+    handleWhoopRedirect();
 
     // Audio greeting registered after auth so overlay clicks don't trigger it
     document.addEventListener('click', playGreetingOnce);
@@ -1966,7 +2011,7 @@
   });
 
   // Tab switching
-  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'lifting', 'golf', 'supplements'];
+  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'lifting', 'recovery', 'golf', 'supplements'];
   function switchTab(id) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -2573,6 +2618,87 @@
     } finally {
       btn.disabled = false;
       setTimeout(() => { msg.textContent = ''; }, 6000);
+    }
+  }
+
+  // RECOVERY (Whoop)
+  async function whoopAuthHeader() {
+    const { data: { session } } = await _sb.auth.getSession();
+    return session ? { Authorization: 'Bearer ' + session.access_token } : null;
+  }
+
+  async function connectWhoop() {
+    const msg = document.getElementById('whoop-msg');
+    msg.textContent = 'Opening Whoop…';
+    try {
+      const headers = await whoopAuthHeader();
+      if (!headers) { msg.textContent = 'Not signed in — reload and sign in.'; return; }
+      const { data, error } = await _sb.functions.invoke('whoop-auth', { method: 'POST', headers });
+      if (error) {
+        let detail = error.message || 'request failed';
+        try { const b = await error.context.json(); if (b && b.error) detail = b.error; } catch (_) {}
+        msg.textContent = 'Connect failed: ' + detail; return;
+      }
+      if (data && data.url) { window.location.href = data.url; }
+      else { msg.textContent = 'Connect failed: no URL returned.'; }
+    } catch (e) { msg.textContent = 'Connect failed: ' + e; }
+  }
+
+  async function syncWhoop() {
+    const btn = document.getElementById('whoop-sync-btn');
+    const msg = document.getElementById('whoop-msg');
+    if (btn) btn.disabled = true;
+    msg.textContent = 'Syncing…';
+    try {
+      const headers = await whoopAuthHeader();
+      if (!headers) { msg.textContent = 'Not signed in — reload and sign in.'; return; }
+      const { data, error } = await _sb.functions.invoke('whoop-sync', { method: 'POST', headers });
+      if (error) {
+        let detail = error.message || 'request failed';
+        try { const b = await error.context.json(); if (b && b.error) detail = b.error; } catch (_) {}
+        msg.textContent = 'Sync failed: ' + detail;
+      } else {
+        msg.textContent = 'Synced.';
+        await loadWhoop();
+      }
+    } catch (e) { msg.textContent = 'Sync failed: ' + e; }
+    finally { if (btn) btn.disabled = false; setTimeout(() => { msg.textContent = ''; }, 6000); }
+  }
+
+  async function loadWhoop() {
+    if (!_sbReady) return;
+    try {
+      const { data, error } = await _sb.from('whoop_data').select('*').order('date', { ascending: false }).limit(1);
+      if (error) { console.warn('Whoop load failed', error); return; }
+      const row = data && data[0];
+      if (row) {
+        const syncBtn = document.getElementById('whoop-sync-btn');
+        const connectBtn = document.getElementById('whoop-connect-btn');
+        if (syncBtn) syncBtn.style.display = '';
+        if (connectBtn) connectBtn.textContent = 'Reconnect Whoop';
+        renderWhoop(row);
+      }
+    } catch (e) { console.warn('Whoop load error', e); }
+  }
+
+  function renderWhoop(row) {
+    const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+    set('whoop-recovery', row.recovery_score == null ? '—' : Math.round(row.recovery_score) + '%');
+    set('whoop-sleep', row.sleep_performance == null ? '—' : Math.round(row.sleep_performance) + '%');
+    set('whoop-strain', row.strain == null ? '—' : Number(row.strain).toFixed(1));
+    set('whoop-hrv', row.hrv == null ? '—' : Math.round(row.hrv) + ' ms');
+    set('whoop-rhr', row.resting_hr == null ? '' : 'RHR ' + Math.round(row.resting_hr) + ' bpm');
+    set('whoop-date', row.date ? new Date(row.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '');
+  }
+
+  // After the Whoop OAuth redirect lands back on the app.
+  function handleWhoopRedirect() {
+    if (new URLSearchParams(location.search).get('whoop') === 'connected') {
+      history.replaceState({}, '', location.pathname);
+      switchTab('recovery');
+      const msg = document.getElementById('whoop-msg');
+      if (msg) msg.textContent = 'Connected. Pulling your data…';
+      setTimeout(syncWhoop, 200);
     }
   }
 
