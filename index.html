@@ -2044,6 +2044,7 @@
 <div class="footer">
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
+  <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <p class="version-tag">Version 1.24 — $70K confirmed, draw pending</p>
   <p class="version-tag" style="margin-top:3px;font-size:9px;">1.24: Added Hydrogen Fitness gym membership to budget calculator</p>
 </div>
@@ -2060,19 +2061,19 @@
   let _sbReady = false;
   // Supabase stores its own auth session under sb-* keys. Those must NEVER be
   // synced to kv_store — doing so re-injects a dead session on every load.
-  const isAuthKey = (k) => typeof k === 'string' && k.startsWith('sb-');
+  const isSystemKey = (k) => typeof k === 'string' && (k.startsWith('sb-') || k.startsWith('__backup'));
   const localStorage = new Proxy(window.localStorage, {
     get(target, prop) {
       if (prop === 'setItem') return (key, value) => {
         target.setItem(key, value);
-        if (_sbReady && !isAuthKey(key)) (async () => {
+        if (_sbReady && !isSystemKey(key)) (async () => {
           try { await _sb.from('kv_store').upsert({ key, value: String(value) }, { onConflict: 'key' }); }
           catch (e) { /* offline / transient — local write already succeeded */ }
         })();
       };
       if (prop === 'removeItem') return (key) => {
         target.removeItem(key);
-        if (_sbReady && !isAuthKey(key)) (async () => {
+        if (_sbReady && !isSystemKey(key)) (async () => {
           try { await _sb.from('kv_store').delete().eq('key', key); }
           catch (e) { /* offline / transient — local write already succeeded */ }
         })();
@@ -2181,24 +2182,30 @@
     try {
       const { data, error } = await _sb.from('kv_store').select('key, value');
       if (!error && data) {
+        let liveData;
         if (data.length === 0) {
           // First login — migrate existing localStorage data up to Supabase
-          // (never push Supabase's own auth keys).
+          // (never push system keys).
           const upserts = Object.keys(window.localStorage)
-            .filter(k => !isAuthKey(k))
+            .filter(k => !isSystemKey(k))
             .map(k => ({ key: k, value: window.localStorage.getItem(k) }))
             .filter(r => r.value !== null);
           if (upserts.length) await _sb.from('kv_store').upsert(upserts, { onConflict: 'key' });
+          liveData = upserts;
         } else {
-          // Load cloud data into real localStorage (skip any auth keys that may
-          // have been captured by an older migration — they corrupt the session).
-          data.forEach(({ key, value }) => { if (value !== null && !isAuthKey(key)) window.localStorage.setItem(key, value); });
-          // One-time cleanup: purge stale auth keys that a previous version uploaded.
-          const badKeys = data.filter(r => isAuthKey(r.key)).map(r => r.key);
+          // Load cloud data into real localStorage (skip system keys: auth tokens
+          // and backup snapshots should never land in localStorage).
+          data.forEach(({ key, value }) => { if (value !== null && !isSystemKey(key)) window.localStorage.setItem(key, value); });
+          liveData = data.filter(r => !isSystemKey(r.key));
+          // One-time cleanup: purge stale auth keys a previous version uploaded
+          // (only sb-* — never touch __backup snapshots).
+          const badKeys = data.filter(r => r.key.startsWith('sb-')).map(r => r.key);
           if (badKeys.length) {
             try { await _sb.from('kv_store').delete().in('key', badKeys); } catch (e) {}
           }
         }
+        // Safety net: keep a daily cloud snapshot of all real data.
+        try { await maybeSnapshot(liveData, data); } catch (e) { console.warn('[Life OS] snapshot failed', e); }
       }
     } catch (e) { console.warn('[Life OS] Supabase load failed, continuing with localStorage:', e); }
 
@@ -2231,6 +2238,42 @@
     // Audio greeting registered after auth so overlay clicks don't trigger it
     document.addEventListener('click', playGreetingOnce);
     document.addEventListener('touchstart', playGreetingOnce);
+  }
+
+  // Daily cloud snapshot of all real data. Recoverable point-in-time copies,
+  // kept under __backup_<date> keys (excluded from localStorage + normal sync).
+  async function maybeSnapshot(liveData, existingRows) {
+    const today = new Date().toISOString().slice(0, 10);
+    const key = '__backup_' + today;
+    // Build snapshot from the authoritative non-system pairs.
+    const obj = {};
+    (liveData || []).forEach(r => { if (!isSystemKey(r.key) && r.value != null) obj[r.key] = r.value; });
+    // Never snapshot a suspiciously empty state over a good day's data.
+    if (Object.keys(obj).length < 5) return;
+    if ((existingRows || []).some(r => r.key === key)) return; // already snapshotted today
+    await _sb.from('kv_store').upsert(
+      { key, value: JSON.stringify({ at: new Date().toISOString(), data: obj }) },
+      { onConflict: 'key' }
+    );
+    // Prune snapshots older than 14 days.
+    const cutoff = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+    const old = (existingRows || [])
+      .map(r => r.key)
+      .filter(k => k.startsWith('__backup_') && k.slice(9) < cutoff);
+    if (old.length) { try { await _sb.from('kv_store').delete().in('key', old); } catch (e) {} }
+  }
+
+  // Manual off-site backup: download everything as a JSON file.
+  function downloadBackup() {
+    const obj = {};
+    Object.keys(window.localStorage).forEach(k => { if (!isSystemKey(k)) obj[k] = window.localStorage.getItem(k); });
+    const payload = { exportedAt: new Date().toISOString(), version: 'life-os-backup-1', data: obj };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'life-os-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
   // Dropdown toggle
