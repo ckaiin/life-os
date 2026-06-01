@@ -1445,17 +1445,18 @@
       <div class="golf-stat-card">
         <p class="golf-stat-label">Recovery</p>
         <p class="golf-stat-value" id="whoop-recovery">—</p>
+        <p class="golf-stat-sub">Target ≥ 67%</p>
         <p class="golf-stat-sub" id="whoop-date"></p>
       </div>
       <div class="golf-stat-card">
         <p class="golf-stat-label">Sleep performance</p>
         <p class="golf-stat-value" id="whoop-sleep">—</p>
-        <p class="golf-stat-sub">% of need met</p>
+        <p class="golf-stat-sub">Target ≥ 85%</p>
       </div>
       <div class="golf-stat-card">
         <p class="golf-stat-label">Day strain</p>
         <p class="golf-stat-value" id="whoop-strain">—</p>
-        <p class="golf-stat-sub">0–21 scale</p>
+        <p class="golf-stat-sub" id="whoop-strain-target">Target —</p>
       </div>
       <div class="golf-stat-card goal">
         <p class="golf-stat-label">HRV / Resting HR</p>
@@ -2787,6 +2788,15 @@
     if (strainEl) {
       strainEl.textContent = row.strain == null ? '—' : Number(row.strain).toFixed(1);
       strainEl.style.color = 'var(--accent2)';
+    }
+    // Optimal strain scales with recovery (Strain Coach style): higher recovery
+    // supports a higher target load.
+    const strainTgt = document.getElementById('whoop-strain-target');
+    if (strainTgt) {
+      const rec = row.recovery_score;
+      let range = '—';
+      if (rec != null) range = rec >= 67 ? '12–16' : rec >= 34 ? '8–12' : '6–9';
+      strainTgt.textContent = 'Target ' + range;
     }
     set('whoop-hrv', row.hrv == null ? '—' : Math.round(row.hrv) + ' ms');
     set('whoop-rhr', row.resting_hr == null ? '' : 'RHR ' + Math.round(row.resting_hr) + ' bpm');
