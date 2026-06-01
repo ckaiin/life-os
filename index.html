@@ -1769,18 +1769,21 @@
   // All existing localStorage.getItem/setItem/removeItem calls work unchanged
   // but writes transparently sync to Supabase once _sbReady is true.
   let _sbReady = false;
+  // Supabase stores its own auth session under sb-* keys. Those must NEVER be
+  // synced to kv_store — doing so re-injects a dead session on every load.
+  const isAuthKey = (k) => typeof k === 'string' && k.startsWith('sb-');
   const localStorage = new Proxy(window.localStorage, {
     get(target, prop) {
       if (prop === 'setItem') return (key, value) => {
         target.setItem(key, value);
-        if (_sbReady) (async () => {
+        if (_sbReady && !isAuthKey(key)) (async () => {
           try { await _sb.from('kv_store').upsert({ key, value: String(value) }, { onConflict: 'key' }); }
           catch (e) { /* offline / transient — local write already succeeded */ }
         })();
       };
       if (prop === 'removeItem') return (key) => {
         target.removeItem(key);
-        if (_sbReady) (async () => {
+        if (_sbReady && !isAuthKey(key)) (async () => {
           try { await _sb.from('kv_store').delete().eq('key', key); }
           catch (e) { /* offline / transient — local write already succeeded */ }
         })();
@@ -1888,13 +1891,21 @@
       if (!error && data) {
         if (data.length === 0) {
           // First login — migrate existing localStorage data up to Supabase
+          // (never push Supabase's own auth keys).
           const upserts = Object.keys(window.localStorage)
+            .filter(k => !isAuthKey(k))
             .map(k => ({ key: k, value: window.localStorage.getItem(k) }))
             .filter(r => r.value !== null);
           if (upserts.length) await _sb.from('kv_store').upsert(upserts, { onConflict: 'key' });
         } else {
-          // Load cloud data into real localStorage (overwrites local with synced values)
-          data.forEach(({ key, value }) => { if (value !== null) window.localStorage.setItem(key, value); });
+          // Load cloud data into real localStorage (skip any auth keys that may
+          // have been captured by an older migration — they corrupt the session).
+          data.forEach(({ key, value }) => { if (value !== null && !isAuthKey(key)) window.localStorage.setItem(key, value); });
+          // One-time cleanup: purge stale auth keys that a previous version uploaded.
+          const badKeys = data.filter(r => isAuthKey(r.key)).map(r => r.key);
+          if (badKeys.length) {
+            try { await _sb.from('kv_store').delete().in('key', badKeys); } catch (e) {}
+          }
         }
       }
     } catch (e) { console.warn('[Life OS] Supabase load failed, continuing with localStorage:', e); }
