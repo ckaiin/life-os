@@ -529,7 +529,54 @@
   .todo-due.overdue { color: var(--red); font-weight: 500; }
   .todo-delete { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 11px; padding: 2px 6px; border-radius: 2px; font-family: 'DM Sans', sans-serif; }
   .todo-delete:hover { background: var(--bg3); color: var(--red); }
-  .todo-empty { font-size: 11px; color: var(--text3); padding: 8px 0; }</style>
+  .todo-empty { font-size: 11px; color: var(--text3); padding: 8px 0; }
+
+  /* ============ MOBILE ============ */
+  @media (max-width: 640px) {
+    .main-title { font-size: 44px; letter-spacing: 2px; }
+    .header { padding: 1.25rem 1.25rem 0; }
+    .header-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .header-right { text-align: left; }
+    .start-badge { padding: 8px 12px; margin-bottom: 4px; }
+    .start-date { font-size: 22px; }
+
+    /* nav tabs stay horizontally scrollable, just tighter */
+    .tab-btn { padding: 0.8rem 0.9rem; font-size: 10px; letter-spacing: 1px; }
+    .tab-letter { font-size: 14px; margin-right: 4px; }
+    .dropdown-menu { right: 8px !important; }
+
+    /* counters 4 -> 2 */
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    .stat { padding: 1rem 1.1rem; }
+    .stat:nth-child(2n) { border-right: none; }
+    .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--border); }
+
+    /* morning brief stacks */
+    .morning-brief { grid-template-columns: 1fr; }
+    .brief-left, .brief-center { border-right: none; border-bottom: 1px solid var(--border); }
+
+    /* today strip stacks */
+    .today-strip { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+
+    /* pillar cards 3 -> 1 */
+    .dash-grid { grid-template-columns: 1fr; }
+    .dash-card, .dash-card:nth-child(3n) { border-right: none; padding: 1.25rem 1.25rem 1.25rem 1.5rem; }
+
+    /* timeline 4 -> 1 */
+    .timeline-section { padding: 1.25rem 1.1rem; }
+    .timeline-track { grid-template-columns: 1fr; }
+
+    /* callouts 2 -> 1 */
+    .callouts-wrap { padding: 1.25rem; }
+    .callouts-grid { grid-template-columns: 1fr; }
+
+    /* others tabs: tighter padding, collapse multi-column grids */
+    .others-wrap { padding: 1.25rem; }
+    .maint-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .golf-top-grid { grid-template-columns: 1fr 1fr; }
+    .golf-form-grid { grid-template-columns: 1fr; }
+    .supp-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+  }</style>
 </head>
 <body>
 
