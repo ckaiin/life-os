@@ -2422,6 +2422,37 @@
     return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
   }
 
+  // Find PRs by walking workouts oldest->newest and tracking the best estimated
+  // 1-rep-max per exercise. A lift is a PR the first time it beats all prior
+  // sessions of that exercise. Returns { workoutId: Set(exerciseIndex) }.
+  function computePRs() {
+    const e1rm = (w, r) => w * (1 + (r || 1) / 30);
+    const chron = _hevyWorkouts
+      .filter(w => w.start_time)
+      .slice()
+      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+    const best = {};       // exercise key -> best e1RM so far
+    const prMap = {};      // workout id -> Set of PR exercise indices
+    chron.forEach(w => {
+      const exs = (w.raw && w.raw.exercises) || [];
+      exs.forEach((e, idx) => {
+        const key = e.exercise_template_id || e.title || ('ex' + idx);
+        let bestSet = 0;
+        (e.sets || []).forEach(s => {
+          if (s.weight_kg != null && s.reps != null && s.reps > 0) {
+            const v = e1rm(s.weight_kg, s.reps);
+            if (v > bestSet) bestSet = v;
+          }
+        });
+        if (bestSet > 0 && bestSet > (best[key] ?? 0) + 0.001) {
+          best[key] = bestSet;
+          (prMap[w.id] = prMap[w.id] || new Set()).add(idx);
+        }
+      });
+    });
+    return prMap;
+  }
+
   async function loadLifting() {
     if (!_sbReady) return;
     try {
@@ -2463,14 +2494,16 @@
       wrap.innerHTML = '<p class="lift-empty">No workouts synced yet. Tap “Sync from Hevy” to pull your history.</p>';
       return;
     }
+    const prMap = computePRs();
     wrap.innerHTML = _hevyWorkouts.slice(0, 50).map((w, i) => {
       const raw = w.raw || {};
       const exs = raw.exercises || [];
+      const prs = prMap[w.id];
       const dur = (w.start_time && w.end_time) ? fmtDuration((new Date(w.end_time) - new Date(w.start_time)) / 1000) : '—';
       const dateStr = w.start_time
         ? new Date(w.start_time).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : '';
       const setCount = exs.reduce((n, e) => n + (e.sets ? e.sets.length : 0), 0);
-      const exLines = exs.map(e => {
+      const exLines = exs.map((e, idx) => {
         const best = (e.sets || []).reduce((b, s) => {
           if (s.weight_kg != null && (b == null || s.weight_kg > b.weight_kg)) return s;
           return b;
@@ -2478,12 +2511,15 @@
         const detail = best && best.weight_kg != null
           ? ' — ' + Math.round(best.weight_kg * 2.20462) + ' lb × ' + (best.reps ?? '?')
           : (e.sets && e.sets.length ? ' — ' + e.sets.length + ' sets' : '');
-        return '<p class="lift-ex"><b>' + escapeHtml(e.title || 'Exercise') + '</b>' + detail + '</p>';
+        const prTag = (prs && prs.has(idx)) ? ' <span style="color:var(--green);font-weight:600;">· PR</span>' : '';
+        return '<p class="lift-ex"><b>' + escapeHtml(e.title || 'Exercise') + '</b>' + detail + prTag + '</p>';
       }).join('');
+      const prCount = prs ? prs.size : 0;
+      const prBadge = prCount ? ' · <span style="color:var(--green);font-weight:600;">' + prCount + ' PR' + (prCount > 1 ? 's' : '') + '</span>' : '';
       return '<div class="lift-row" onclick="this.classList.toggle(\'open\')">' +
         '<div class="lift-row-head"><span class="lift-row-title">' + escapeHtml(w.title || 'Workout') + '</span>' +
         '<span class="lift-row-meta">' + dateStr + ' · ' + dur + '</span></div>' +
-        '<p class="lift-row-sub">' + exs.length + ' exercises · ' + setCount + ' sets</p>' +
+        '<p class="lift-row-sub">' + exs.length + ' exercises · ' + setCount + ' sets' + prBadge + '</p>' +
         '<div class="lift-row-detail">' + (exLines || '<p class="lift-ex">No exercise detail.</p>') + '</div>' +
       '</div>';
     }).join('');
