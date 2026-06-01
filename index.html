@@ -271,6 +271,7 @@
   .today-chip-label { color: var(--text3); }
   .today-chip-val { color: var(--text); font-weight: 600; }
   .today-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); }
+  .today-summary { flex: 1 1 260px; min-width: 220px; font-size: 12px; color: var(--text2); line-height: 1.45; }
 
   .callouts-wrap { padding: 2rem; }
   .callouts-intro { font-size: 12px; color: var(--text2); max-width: 600px; margin-bottom: 2rem; line-height: 1.6; }
@@ -629,6 +630,7 @@
       <button class="today-chip" onclick="switchTab('recovery')"><span class="today-chip-label">Strain</span> <span class="today-chip-val" id="chip-strain">—</span></button>
       <button class="today-chip" onclick="switchTab('lifting')"><span class="today-chip-label">Lifts</span> <span class="today-chip-val" id="chip-lifts">—</span></button>
     </div>
+    <p class="today-summary" id="today-summary"></p>
   </div>
 
   <div class="dash-grid">
@@ -2513,14 +2515,35 @@
       const stVal = document.getElementById('chip-strain');
       if (stVal) stVal.textContent = st == null ? '—' : Number(st).toFixed(1);
     }
+    let liftsThisWeek = null;
     if (_hevyWorkouts && _hevyWorkouts.length) {
       any = true;
       const weekStart = startOfWeek();
-      const n = _hevyWorkouts.filter(w => w.start_time && new Date(w.start_time) >= weekStart).length;
+      liftsThisWeek = _hevyWorkouts.filter(w => w.start_time && new Date(w.start_time) >= weekStart).length;
       const lv = document.getElementById('chip-lifts');
-      if (lv) lv.textContent = n + '/wk';
+      if (lv) lv.textContent = liftsThisWeek + '/wk';
     }
+    const sum = document.getElementById('today-summary');
+    if (sum) sum.textContent = todaySummary(liftsThisWeek);
     if (any) strip.style.display = '';
+  }
+
+  // One-line readiness synthesis from today's metrics.
+  function todaySummary(liftsThisWeek) {
+    const parts = [];
+    if (_whoopLatest) {
+      const r = _whoopLatest.recovery_score;
+      const s = _whoopLatest.sleep_performance;
+      if (r != null) {
+        if (r >= 67) parts.push('Recovered at ' + Math.round(r) + '%. Green light to push — strain target 12–16.');
+        else if (r >= 34) parts.push('Moderate recovery at ' + Math.round(r) + '%. Train controlled — strain target 8–12.');
+        else parts.push('Low recovery at ' + Math.round(r) + '%. Prioritize easy movement and sleep — cap strain near 6–9.');
+      }
+      if (s != null && s < 70) parts.push('Sleep ran short (' + Math.round(s) + '%).');
+    }
+    if (liftsThisWeek === 0) parts.push('No lifts logged yet this week.');
+    else if (liftsThisWeek != null) parts.push(liftsThisWeek + ' lift' + (liftsThisWeek > 1 ? 's' : '') + ' in this week.');
+    return parts.join(' ');
   }
 
   function startOfWeek() {
