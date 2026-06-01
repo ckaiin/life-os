@@ -244,6 +244,19 @@
     transform: rotate(45deg) translate(-1px,-1px);
   }
 
+  .lift-history { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .lift-empty { padding: 1.5rem; color: var(--text3); font-size: 0.85rem; background: var(--bg2); }
+  .lift-row { background: var(--bg2); padding: 1rem 1.25rem; cursor: pointer; transition: background 0.15s; }
+  .lift-row:hover { background: var(--bg3); }
+  .lift-row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .lift-row-title { font-size: 0.95rem; color: var(--text); font-weight: 500; }
+  .lift-row-meta { font-size: 0.75rem; color: var(--text3); white-space: nowrap; }
+  .lift-row-sub { font-size: 0.78rem; color: var(--text2); margin-top: 0.35rem; }
+  .lift-row-detail { display: none; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .lift-row.open .lift-row-detail { display: block; }
+  .lift-ex { font-size: 0.78rem; color: var(--text2); padding: 0.15rem 0; }
+  .lift-ex b { color: var(--text); font-weight: 500; }
+
   .callouts-wrap { padding: 2rem; }
   .callouts-intro { font-size: 12px; color: var(--text2); max-width: 600px; margin-bottom: 2rem; line-height: 1.6; }
   .callouts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
@@ -489,11 +502,25 @@
     <p style="font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:4px;line-height:0.9;background:linear-gradient(135deg,#1a1e26 0%,#2c5080 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:2rem;">Life OS</p>
     <div id="auth-loading" style="color:var(--text3);font-size:11px;letter-spacing:2px;text-transform:uppercase;">Loading...</div>
     <div id="auth-form" style="display:none;">
-      <p style="font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.5;">Enter your email to sign in.</p>
-      <input type="email" id="auth-email" placeholder="your@email.com" style="width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:3px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg2);color:var(--text);outline:none;margin-bottom:8px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')sendMagicLink()">
-      <button onclick="sendMagicLink()" style="width:100%;padding:11px;background:var(--accent);color:white;border:none;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:2px;cursor:pointer;">Send Magic Link</button>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.5;">Sign in to Life OS.</p>
+      <input type="email" id="auth-email" placeholder="your@email.com" autocomplete="username" style="width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:3px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg2);color:var(--text);outline:none;margin-bottom:8px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')signInPassword()">
+      <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" style="width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:3px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg2);color:var(--text);outline:none;margin-bottom:8px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')signInPassword()">
+      <button onclick="signInPassword()" style="width:100%;padding:11px;background:var(--accent);color:white;border:none;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:2px;cursor:pointer;">Sign In</button>
+      <button onclick="sendMagicLink()" style="width:100%;padding:10px;margin-top:8px;background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:2px;cursor:pointer;">Email me a magic link</button>
       <p id="auth-msg" style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5;"></p>
+      <p style="font-size:10px;color:var(--text3);margin-top:14px;line-height:1.5;">First time, or no password yet? Use the magic link to sign in, then set a password when prompted.</p>
     </div>
+  </div>
+</div>
+<div id="setpw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10001;align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:2rem 1.5rem;max-width:340px;width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:6px;">
+    <p style="font-size:10px;text-transform:uppercase;letter-spacing:3px;color:var(--accent2);margin-bottom:6px;">One-time setup</p>
+    <p style="font-family:'DM Sans',sans-serif;font-size:18px;color:var(--text);margin-bottom:6px;font-weight:600;">Set a password</p>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.5;">So you can sign in instantly next time without waiting on an email.</p>
+    <input type="password" id="setpw-input" placeholder="New password (min 6 chars)" autocomplete="new-password" style="width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:3px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg2);color:var(--text);outline:none;margin-bottom:8px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')savePassword()">
+    <button onclick="savePassword()" style="width:100%;padding:11px;background:var(--accent);color:white;border:none;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:2px;cursor:pointer;">Save Password</button>
+    <button onclick="skipPassword()" style="width:100%;padding:10px;margin-top:8px;background:transparent;color:var(--text3);border:none;font-family:'DM Sans',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:2px;cursor:pointer;">Skip for now</button>
+    <p id="setpw-msg" style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5;"></p>
   </div>
 </div>
 
@@ -546,6 +573,7 @@
       <button class="dropdown-item" id="tab-notes" onclick="event.stopPropagation(); switchTab('notes')">Notes</button>
       <button class="dropdown-item" id="tab-offerletter" onclick="event.stopPropagation(); switchTab('offerletter')">Offer Letter Checklist</button>
       <button class="dropdown-item" id="tab-maintenance" onclick="event.stopPropagation(); switchTab('maintenance')">Home Maintenance</button>
+      <button class="dropdown-item" id="tab-lifting" onclick="event.stopPropagation(); switchTab('lifting')">Lifting</button>
       <button class="dropdown-item" id="tab-golf" onclick="event.stopPropagation(); switchTab('golf')">Golf</button>
       <button class="dropdown-item" id="tab-supplements" onclick="event.stopPropagation(); switchTab('supplements')">Supplements</button>
     </div>
@@ -1348,6 +1376,55 @@
     </div>
   </div>
 </div>
+<div id="panel-lifting" class="panel">
+  <div class="others-wrap" style="max-width:960px;">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Lifting</p>
+      <p class="others-title">Lifting</p>
+      <p class="others-lead">Synced from Hevy. Completing a workout on Hevy auto-checks that day in Daily Structure.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="golf-top-grid">
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Total workouts</p>
+        <p class="golf-stat-value" id="lift-total">—</p>
+        <p class="golf-stat-sub">all time, from Hevy</p>
+      </div>
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">This week</p>
+        <p class="golf-stat-value" id="lift-week">—</p>
+        <p class="golf-stat-sub">sessions logged</p>
+      </div>
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Last workout</p>
+        <p class="golf-stat-value" id="lift-last" style="font-size:1.1rem;">—</p>
+        <p class="golf-stat-sub" id="lift-last-date"></p>
+      </div>
+      <div class="golf-stat-card goal">
+        <p class="golf-stat-label">Avg duration</p>
+        <p class="golf-stat-value" id="lift-avg" style="color:var(--green)">—</p>
+        <p class="golf-stat-sub">per session</p>
+      </div>
+    </div>
+
+    <!-- SYNC -->
+    <div class="others-section">
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <button class="golf-btn" id="lift-sync-btn" onclick="syncHevy()">Sync from Hevy</button>
+        <span id="lift-sync-msg" style="color:var(--text3);font-size:0.85rem;"></span>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="others-section">
+      <p class="others-section-title">Workout history</p>
+      <div id="lift-history" class="lift-history">
+        <p class="lift-empty">No workouts synced yet. Tap “Sync from Hevy” to pull your history.</p>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="panel-golf" class="panel">
   <div class="others-wrap" style="max-width:960px;">
     <div class="others-header">
@@ -1696,11 +1773,17 @@
     get(target, prop) {
       if (prop === 'setItem') return (key, value) => {
         target.setItem(key, value);
-        if (_sbReady) _sb.from('kv_store').upsert({ key, value: String(value) }, { onConflict: 'key' }).catch(() => {});
+        if (_sbReady) (async () => {
+          try { await _sb.from('kv_store').upsert({ key, value: String(value) }, { onConflict: 'key' }); }
+          catch (e) { /* offline / transient — local write already succeeded */ }
+        })();
       };
       if (prop === 'removeItem') return (key) => {
         target.removeItem(key);
-        if (_sbReady) _sb.from('kv_store').delete().eq('key', key).catch(() => {});
+        if (_sbReady) (async () => {
+          try { await _sb.from('kv_store').delete().eq('key', key); }
+          catch (e) { /* offline / transient — local write already succeeded */ }
+        })();
       };
       const v = target[prop];
       return typeof v === 'function' ? v.bind(target) : v;
@@ -1720,19 +1803,80 @@
     else { msg.textContent = 'Check your email — click the link to sign in.'; document.getElementById('auth-email').disabled = true; }
   }
 
-  async function initApp() {
-    const { data: { session } } = await _sb.auth.getSession();
-    const overlay = document.getElementById('auth-overlay');
-    if (!session) {
-      document.getElementById('auth-loading').style.display = 'none';
-      document.getElementById('auth-form').style.display = 'block';
-      _sb.auth.onAuthStateChange((event, s) => {
-        if (event === 'SIGNED_IN' && s) { overlay.style.display = 'none'; loadAndRun(); }
-      });
-      return;
+  async function signInPassword() {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const msg = document.getElementById('auth-msg');
+    if (!email || !password) { msg.textContent = 'Enter your email and password.'; return; }
+    msg.textContent = 'Signing in...';
+    const { error } = await _sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      msg.textContent = 'Sign-in failed. First time, or no password set? Use the magic link below, then set a password.';
     }
-    await loadAndRun();
-    overlay.style.display = 'none';
+    // Success is handled by the onAuthStateChange SIGNED_IN listener.
+  }
+
+  // One-time password setup, shown after login until a password exists on the account.
+  function maybePromptSetPassword(session) {
+    const user = session && session.user;
+    if (user && user.user_metadata && user.user_metadata.has_password) return;
+    const modal = document.getElementById('setpw-modal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  async function savePassword() {
+    const pw = document.getElementById('setpw-input').value;
+    const msg = document.getElementById('setpw-msg');
+    if (!pw || pw.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; return; }
+    msg.textContent = 'Saving...';
+    const { error } = await _sb.auth.updateUser({ password: pw, data: { has_password: true } });
+    if (error) { msg.textContent = 'Could not save: ' + error.message; return; }
+    document.getElementById('setpw-modal').style.display = 'none';
+  }
+
+  function skipPassword() {
+    document.getElementById('setpw-modal').style.display = 'none';
+  }
+
+  function showAuthForm() {
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('auth-form').style.display = 'block';
+  }
+
+  async function initApp() {
+    const overlay = document.getElementById('auth-overlay');
+    let session = null;
+    try {
+      const { data, error } = await _sb.auth.getSession();
+      if (error) throw error;
+      session = data.session;
+    } catch (e) {
+      // Bad/expired token (e.g. a reused magic link) — clear it and ask to sign in again
+      console.warn('[Life OS] Session check failed, clearing:', e);
+      try { await _sb.auth.signOut(); } catch (_) {}
+      session = null;
+    }
+
+    // Sign-in events (magic link click, or fresh OTP) always lead here
+    _sb.auth.onAuthStateChange((event, s) => {
+      if (event === 'SIGNED_IN' && s) {
+        overlay.style.display = 'none';
+        loadAndRun();
+        maybePromptSetPassword(s);
+      }
+    });
+
+    if (!session) { showAuthForm(); return; }
+
+    try {
+      await loadAndRun();
+      overlay.style.display = 'none';
+      maybePromptSetPassword(session);
+    } catch (e) {
+      // Never leave the user staring at a frozen loading screen
+      console.error('[Life OS] Load failed:', e);
+      showAuthForm();
+    }
   }
 
   async function loadAndRun() {
@@ -1774,6 +1918,7 @@
     initGolf();
     initSupplements();
     initSundayFill();
+    loadLifting();
 
     // Audio greeting registered after auth so overlay clicks don't trigger it
     document.addEventListener('click', playGreetingOnce);
@@ -1807,7 +1952,7 @@
   });
 
   // Tab switching
-  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'golf', 'supplements'];
+  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'lifting', 'golf', 'supplements'];
   function switchTab(id) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -2243,6 +2388,141 @@
     const isDone = el.classList.contains('done');
     el.classList.toggle('done', !isDone);
     localStorage.setItem('workout-' + day, !isDone);
+  }
+
+  // LIFTING (Hevy)
+  let _hevyWorkouts = [];
+
+  function startOfWeek() {
+    // Sunday 00:00 local, matching the Daily Structure weekly reset
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - d.getDay());
+    return d;
+  }
+
+  function fmtDuration(secs) {
+    if (!secs || secs < 0) return '—';
+    const m = Math.round(secs / 60);
+    if (m < 60) return m + 'm';
+    return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+  }
+
+  async function loadLifting() {
+    if (!_sbReady) return;
+    try {
+      const { data, error } = await _sb.from('hevy_workouts')
+        .select('id, title, start_time, end_time, raw')
+        .order('start_time', { ascending: false });
+      if (error) { console.warn('Hevy load failed', error); return; }
+      _hevyWorkouts = data || [];
+    } catch (e) { console.warn('Hevy load error', e); return; }
+    renderLifting();
+    autoCheckWorkoutDays();
+  }
+
+  function renderLifting() {
+    const total = _hevyWorkouts.length;
+    document.getElementById('lift-total').textContent = total;
+
+    const weekStart = startOfWeek();
+    const thisWeek = _hevyWorkouts.filter(w => w.start_time && new Date(w.start_time) >= weekStart);
+    document.getElementById('lift-week').textContent = thisWeek.length;
+
+    if (total) {
+      const last = _hevyWorkouts[0];
+      document.getElementById('lift-last').textContent = last.title || 'Workout';
+      document.getElementById('lift-last-date').textContent = last.start_time
+        ? new Date(last.start_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+    }
+
+    // Average duration across last 10 sessions with valid times
+    const durs = _hevyWorkouts.slice(0, 10)
+      .map(w => (w.start_time && w.end_time) ? (new Date(w.end_time) - new Date(w.start_time)) / 1000 : 0)
+      .filter(s => s > 0);
+    document.getElementById('lift-avg').textContent = durs.length
+      ? fmtDuration(durs.reduce((a, b) => a + b, 0) / durs.length) : '—';
+
+    // History list
+    const wrap = document.getElementById('lift-history');
+    if (!total) {
+      wrap.innerHTML = '<p class="lift-empty">No workouts synced yet. Tap “Sync from Hevy” to pull your history.</p>';
+      return;
+    }
+    wrap.innerHTML = _hevyWorkouts.slice(0, 50).map((w, i) => {
+      const raw = w.raw || {};
+      const exs = raw.exercises || [];
+      const dur = (w.start_time && w.end_time) ? fmtDuration((new Date(w.end_time) - new Date(w.start_time)) / 1000) : '—';
+      const dateStr = w.start_time
+        ? new Date(w.start_time).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+      const setCount = exs.reduce((n, e) => n + (e.sets ? e.sets.length : 0), 0);
+      const exLines = exs.map(e => {
+        const best = (e.sets || []).reduce((b, s) => {
+          if (s.weight_kg != null && (b == null || s.weight_kg > b.weight_kg)) return s;
+          return b;
+        }, null);
+        const detail = best && best.weight_kg != null
+          ? ' — ' + Math.round(best.weight_kg * 2.20462) + ' lb × ' + (best.reps ?? '?')
+          : (e.sets && e.sets.length ? ' — ' + e.sets.length + ' sets' : '');
+        return '<p class="lift-ex"><b>' + escapeHtml(e.title || 'Exercise') + '</b>' + detail + '</p>';
+      }).join('');
+      return '<div class="lift-row" onclick="this.classList.toggle(\'open\')">' +
+        '<div class="lift-row-head"><span class="lift-row-title">' + escapeHtml(w.title || 'Workout') + '</span>' +
+        '<span class="lift-row-meta">' + dateStr + ' · ' + dur + '</span></div>' +
+        '<p class="lift-row-sub">' + exs.length + ' exercises · ' + setCount + ' sets</p>' +
+        '<div class="lift-row-detail">' + (exLines || '<p class="lift-ex">No exercise detail.</p>') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // Auto-check the Daily Structure workout day for any Hevy workout this week.
+  function autoCheckWorkoutDays() {
+    const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    const weekStart = startOfWeek();
+    _hevyWorkouts.forEach(w => {
+      if (!w.start_time) return;
+      const d = new Date(w.start_time);
+      if (d < weekStart) return;
+      const day = days[d.getDay()];
+      const el = document.getElementById('wd-' + day);
+      if (el && !el.classList.contains('done')) {
+        el.classList.add('done');
+        localStorage.setItem('workout-' + day, 'true');
+      }
+    });
+  }
+
+  async function syncHevy() {
+    const btn = document.getElementById('lift-sync-btn');
+    const msg = document.getElementById('lift-sync-msg');
+    btn.disabled = true;
+    msg.textContent = 'Syncing…';
+    try {
+      const { data: { session } } = await _sb.auth.getSession();
+      const res = await fetch(SUPABASE_URL + '/functions/v1/hevy-sync', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + (session ? session.access_token : ''),
+          'Content-Type': 'application/json',
+        },
+      });
+      const out = await res.json();
+      if (!res.ok) {
+        msg.textContent = 'Sync failed: ' + (out.error || res.status);
+      } else {
+        msg.textContent = 'Synced ' + out.synced + ' workouts.';
+        await loadLifting();
+      }
+    } catch (e) {
+      msg.textContent = 'Sync failed: ' + e;
+    } finally {
+      btn.disabled = false;
+      setTimeout(() => { msg.textContent = ''; }, 5000);
+    }
   }
 
   // WEIGHT TRACKER
