@@ -1879,8 +1879,11 @@
     const { error } = await _sb.auth.signInWithPassword({ email, password });
     if (error) {
       msg.textContent = 'Sign-in failed. First time, or no password set? Use the magic link below, then set a password.';
+      return;
     }
-    // Success is handled by the onAuthStateChange SIGNED_IN listener.
+    // This account clearly has a password — mark it so the setup prompt never nags.
+    try { await _sb.auth.updateUser({ data: { has_password: true } }); } catch (_) {}
+    // Success otherwise handled by the onAuthStateChange SIGNED_IN listener.
   }
 
   // One-time password setup, shown after login until a password exists on the account.
