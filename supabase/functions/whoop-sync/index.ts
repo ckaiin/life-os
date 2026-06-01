@@ -81,25 +81,44 @@ Deno.serve(async (req) => {
       return r.json();
     };
 
-    const cycle = (await getJson('/cycle?limit=1')).records?.[0];
-    const recovery = (await getJson('/recovery?limit=1')).records?.[0];
-    const sleep = (await getJson('/activity/sleep?limit=1')).records?.[0];
+    // Pull recent history (Whoop returns up to 25 records per page).
+    const cycles = (await getJson('/cycle?limit=25')).records ?? [];
+    const recoveries = (await getJson('/recovery?limit=25')).records ?? [];
+    const sleeps = (await getJson('/activity/sleep?limit=25')).records ?? [];
 
-    const date = (cycle?.start ? new Date(cycle.start) : new Date()).toISOString().slice(0, 10);
-    const row = {
-      date,
-      recovery_score: recovery?.score?.recovery_score ?? null,
-      hrv: recovery?.score?.hrv_rmssd_milli ?? null,
-      resting_hr: recovery?.score?.resting_heart_rate ?? null,
-      sleep_performance: sleep?.score?.sleep_performance_percentage ?? null,
-      strain: cycle?.score?.strain ?? null,
-      raw: { cycle, recovery, sleep },
-      updated_at: new Date().toISOString(),
-    };
-    const { error } = await db.from('whoop_data').upsert(row, { onConflict: 'date' });
-    if (error) return json({ error: 'DB upsert failed', detail: error.message }, 500);
+    const recByCycle: Record<string, any> = {};
+    recoveries.forEach((r: any) => { if (r.cycle_id != null) recByCycle[r.cycle_id] = r; });
+    const sleepById: Record<string, any> = {};
+    sleeps.forEach((s: any) => { sleepById[s.id] = s; });
+    const dayOf = (iso: string | null | undefined) => (iso ? new Date(iso) : new Date()).toISOString().slice(0, 10);
 
-    return json({ synced: true, date, recovery: row.recovery_score, sleep: row.sleep_performance, strain: row.strain });
+    // One row per cycle (= physiological day), aligned with its recovery + sleep.
+    const byDate: Record<string, any> = {};
+    cycles.forEach((c: any) => {
+      const date = dayOf(c.start);
+      if (byDate[date]) return; // collections are newest-first; keep the latest
+      const rec = recByCycle[c.id];
+      let slp = rec && rec.sleep_id != null ? sleepById[rec.sleep_id] : null;
+      if (!slp) slp = sleeps.find((s: any) => dayOf(s.end) === date) || null;
+      byDate[date] = {
+        date,
+        recovery_score: rec?.score?.recovery_score ?? null,
+        hrv: rec?.score?.hrv_rmssd_milli ?? null,
+        resting_hr: rec?.score?.resting_heart_rate ?? null,
+        sleep_performance: slp?.score?.sleep_performance_percentage ?? null,
+        strain: c?.score?.strain ?? null,
+        raw: { cycle: c, recovery: rec ?? null, sleep: slp ?? null },
+        updated_at: new Date().toISOString(),
+      };
+    });
+
+    const rows = Object.values(byDate);
+    if (rows.length) {
+      const { error } = await db.from('whoop_data').upsert(rows, { onConflict: 'date' });
+      if (error) return json({ error: 'DB upsert failed', detail: error.message }, 500);
+    }
+
+    return json({ synced: rows.length });
   } catch (e) {
     return json({ error: 'Sync failed', detail: String(e) }, 500);
   }
