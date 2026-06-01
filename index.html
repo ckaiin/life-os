@@ -281,7 +281,8 @@
   .bodymap-legend span { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 11px; color: var(--text2); }
   .bodymap-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
   .bodymap-note { font-size: 10px; color: var(--text3); margin-top: 0.75rem; line-height: 1.4; }
-  .mz { fill: #d0d3d8; stroke: #aeb2ba; stroke-width: 1; transition: fill 0.3s; }
+  .mz { fill: #d0d3d8; stroke: #aeb2ba; stroke-width: 0.8; transition: fill 0.3s; }
+  .mz-skin { fill: #e4e7ea; stroke: #cdd0d6; stroke-width: 1; }
   .bodymap-figlabel { fill: var(--text3); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
   @media (max-width: 880px) {
     .lift-layout { flex-direction: column; }
@@ -1474,43 +1475,61 @@
     <aside class="lift-bodymap">
       <p class="bodymap-title">Muscle readiness</p>
       <div id="bodymap-svg">
-        <svg viewBox="0 0 300 245" width="100%" xmlns="http://www.w3.org/2000/svg">
-          <!-- FRONT -->
-          <circle cx="80" cy="24" r="13" class="mz"/>
-          <rect x="74" y="35" width="12" height="8" rx="2" class="mz"/>
-          <rect x="68" y="74" width="24" height="36" rx="5" class="mz" data-muscle="abs"/>
-          <rect x="60" y="52" width="18" height="20" rx="5" class="mz" data-muscle="chest"/>
-          <rect x="82" y="52" width="18" height="20" rx="5" class="mz" data-muscle="chest"/>
-          <ellipse cx="54" cy="56" rx="12" ry="9" class="mz" data-muscle="shoulders"/>
-          <ellipse cx="106" cy="56" rx="12" ry="9" class="mz" data-muscle="shoulders"/>
-          <rect x="43" y="66" width="12" height="24" rx="6" class="mz" data-muscle="biceps"/>
-          <rect x="105" y="66" width="12" height="24" rx="6" class="mz" data-muscle="biceps"/>
-          <rect x="40" y="92" width="11" height="26" rx="5" class="mz" data-muscle="forearms"/>
-          <rect x="109" y="92" width="11" height="26" rx="5" class="mz" data-muscle="forearms"/>
-          <rect x="62" y="114" width="15" height="42" rx="7" class="mz" data-muscle="quads"/>
-          <rect x="83" y="114" width="15" height="42" rx="7" class="mz" data-muscle="quads"/>
-          <rect x="64" y="158" width="12" height="38" rx="6" class="mz"/>
-          <rect x="84" y="158" width="12" height="38" rx="6" class="mz"/>
-          <text x="80" y="238" text-anchor="middle" class="bodymap-figlabel">Front</text>
-          <!-- BACK -->
-          <circle cx="220" cy="24" r="13" class="mz"/>
-          <rect x="214" y="35" width="12" height="8" rx="2" class="mz"/>
-          <rect x="200" y="58" width="40" height="34" rx="7" class="mz" data-muscle="lats"/>
-          <rect x="206" y="46" width="28" height="14" rx="5" class="mz" data-muscle="traps"/>
-          <rect x="207" y="92" width="26" height="18" rx="4" class="mz" data-muscle="lower_back"/>
-          <ellipse cx="194" cy="58" rx="12" ry="9" class="mz" data-muscle="shoulders"/>
-          <ellipse cx="246" cy="58" rx="12" ry="9" class="mz" data-muscle="shoulders"/>
-          <rect x="183" y="66" width="12" height="24" rx="6" class="mz" data-muscle="triceps"/>
-          <rect x="245" y="66" width="12" height="24" rx="6" class="mz" data-muscle="triceps"/>
-          <rect x="180" y="92" width="11" height="26" rx="5" class="mz" data-muscle="forearms"/>
-          <rect x="249" y="92" width="11" height="26" rx="5" class="mz" data-muscle="forearms"/>
-          <rect x="205" y="112" width="15" height="18" rx="6" class="mz" data-muscle="glutes"/>
-          <rect x="220" y="112" width="15" height="18" rx="6" class="mz" data-muscle="glutes"/>
-          <rect x="205" y="132" width="15" height="40" rx="7" class="mz" data-muscle="hamstrings"/>
-          <rect x="220" y="132" width="15" height="40" rx="7" class="mz" data-muscle="hamstrings"/>
-          <rect x="206" y="174" width="13" height="36" rx="6" class="mz" data-muscle="calves"/>
-          <rect x="221" y="174" width="13" height="36" rx="6" class="mz" data-muscle="calves"/>
-          <text x="220" y="238" text-anchor="middle" class="bodymap-figlabel">Back</text>
+        <svg viewBox="0 0 300 340" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <!-- ===== FRONT (center x=80) ===== -->
+          <circle class="mz-skin" cx="80" cy="26" r="13"/>
+          <rect class="mz-skin" x="74" y="36" width="12" height="10" rx="4"/>
+          <path class="mz-skin" d="M58,52 Q80,44 102,52 L106,116 Q80,126 54,116 Z"/>
+          <path class="mz-skin" d="M56,114 Q80,122 104,114 L100,150 Q80,156 60,150 Z"/>
+          <path class="mz-skin" d="M57,54 Q46,58 44,84 Q43,106 48,122 Q54,106 56,86 Z"/>
+          <path class="mz-skin" d="M103,54 Q114,58 116,84 Q117,106 112,122 Q106,106 104,86 Z"/>
+          <path class="mz-skin" d="M46,118 Q42,140 44,160 Q50,160 52,140 Q52,126 49,120 Z"/>
+          <path class="mz-skin" d="M114,118 Q118,140 116,160 Q110,160 108,140 Q108,126 111,120 Z"/>
+          <path class="mz-skin" d="M60,150 Q70,154 78,150 L76,224 Q68,228 62,224 Z"/>
+          <path class="mz-skin" d="M82,150 Q90,154 100,150 L98,224 Q92,228 84,224 Z"/>
+          <path class="mz-skin" d="M63,226 Q70,230 75,226 L73,300 Q68,304 65,300 Z"/>
+          <path class="mz-skin" d="M85,226 Q90,230 97,226 L95,300 Q90,304 87,300 Z"/>
+          <ellipse class="mz" data-muscle="shoulders" cx="55" cy="58" rx="11" ry="9"/>
+          <ellipse class="mz" data-muscle="shoulders" cx="105" cy="58" rx="11" ry="9"/>
+          <path class="mz" data-muscle="chest" d="M60,58 Q78,56 79,58 L79,74 Q68,78 59,72 Z"/>
+          <path class="mz" data-muscle="chest" d="M101,58 Q83,56 81,58 L81,74 Q92,78 101,72 Z"/>
+          <path class="mz" data-muscle="abs" d="M68,78 Q80,76 92,78 L90,116 Q80,120 70,116 Z"/>
+          <ellipse class="mz" data-muscle="biceps" cx="50" cy="82" rx="7" ry="15"/>
+          <ellipse class="mz" data-muscle="biceps" cx="110" cy="82" rx="7" ry="15"/>
+          <ellipse class="mz" data-muscle="forearms" cx="47" cy="138" rx="6" ry="17"/>
+          <ellipse class="mz" data-muscle="forearms" cx="113" cy="138" rx="6" ry="17"/>
+          <ellipse class="mz" data-muscle="quads" cx="69" cy="186" rx="9" ry="31"/>
+          <ellipse class="mz" data-muscle="quads" cx="91" cy="186" rx="9" ry="31"/>
+          <text class="bodymap-figlabel" x="80" y="324" text-anchor="middle">Front</text>
+          <!-- ===== BACK (center x=220) ===== -->
+          <circle class="mz-skin" cx="220" cy="26" r="13"/>
+          <rect class="mz-skin" x="214" y="36" width="12" height="10" rx="4"/>
+          <path class="mz-skin" d="M198,52 Q220,44 242,52 L246,116 Q220,126 194,116 Z"/>
+          <path class="mz-skin" d="M196,114 Q220,122 244,114 L240,150 Q220,156 200,150 Z"/>
+          <path class="mz-skin" d="M197,54 Q186,58 184,84 Q183,106 188,122 Q194,106 196,86 Z"/>
+          <path class="mz-skin" d="M243,54 Q254,58 256,84 Q257,106 252,122 Q246,106 244,86 Z"/>
+          <path class="mz-skin" d="M186,118 Q182,140 184,160 Q190,160 192,140 Q192,126 189,120 Z"/>
+          <path class="mz-skin" d="M254,118 Q258,140 256,160 Q250,160 248,140 Q248,126 251,120 Z"/>
+          <path class="mz-skin" d="M200,150 Q210,154 218,150 L216,224 Q208,228 202,224 Z"/>
+          <path class="mz-skin" d="M222,150 Q230,154 240,150 L238,224 Q232,228 224,224 Z"/>
+          <path class="mz-skin" d="M203,226 Q210,230 215,226 L213,300 Q208,304 205,300 Z"/>
+          <path class="mz-skin" d="M225,226 Q230,230 237,226 L235,300 Q230,304 227,300 Z"/>
+          <ellipse class="mz" data-muscle="shoulders" cx="195" cy="58" rx="11" ry="9"/>
+          <ellipse class="mz" data-muscle="shoulders" cx="245" cy="58" rx="11" ry="9"/>
+          <path class="mz" data-muscle="traps" d="M206,50 Q220,46 234,50 L230,64 Q220,68 210,64 Z"/>
+          <path class="mz" data-muscle="lats" d="M200,64 Q220,68 240,64 L231,99 Q220,105 209,99 Z"/>
+          <path class="mz" data-muscle="lower_back" d="M210,101 Q220,104 230,101 L228,117 Q220,121 212,117 Z"/>
+          <ellipse class="mz" data-muscle="triceps" cx="190" cy="82" rx="7" ry="15"/>
+          <ellipse class="mz" data-muscle="triceps" cx="250" cy="82" rx="7" ry="15"/>
+          <ellipse class="mz" data-muscle="forearms" cx="187" cy="138" rx="6" ry="17"/>
+          <ellipse class="mz" data-muscle="forearms" cx="253" cy="138" rx="6" ry="17"/>
+          <path class="mz" data-muscle="glutes" d="M201,120 Q210,124 219,120 L218,140 Q210,144 202,140 Z"/>
+          <path class="mz" data-muscle="glutes" d="M221,120 Q230,124 239,120 L238,140 Q230,144 222,140 Z"/>
+          <ellipse class="mz" data-muscle="hamstrings" cx="209" cy="186" rx="9" ry="30"/>
+          <ellipse class="mz" data-muscle="hamstrings" cx="231" cy="186" rx="9" ry="30"/>
+          <ellipse class="mz" data-muscle="calves" cx="209" cy="262" rx="7" ry="19"/>
+          <ellipse class="mz" data-muscle="calves" cx="231" cy="262" rx="7" ry="19"/>
+          <text class="bodymap-figlabel" x="220" y="324" text-anchor="middle">Back</text>
         </svg>
       </div>
       <div class="bodymap-legend">
