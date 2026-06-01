@@ -2505,9 +2505,14 @@
     btn.disabled = true;
     msg.textContent = 'Syncing…';
     try {
-      // Use the Supabase client so the apikey + current-session bearer token
-      // are attached the way the Edge Function gateway expects.
-      const { data, error } = await _sb.functions.invoke('hevy-sync', { method: 'POST' });
+      // Force the real user JWT into Authorization. Without this, functions.invoke
+      // can fall back to sending the publishable key, which the auth server rejects.
+      const { data: { session } } = await _sb.auth.getSession();
+      if (!session) { msg.textContent = 'Not signed in — reload and sign in again.'; return; }
+      const { data, error } = await _sb.functions.invoke('hevy-sync', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + session.access_token },
+      });
       if (error) {
         let detail = error.message || 'request failed';
         try { const body = await error.context.json(); if (body && body.error) detail = body.error; } catch (_) {}

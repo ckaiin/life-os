@@ -40,11 +40,11 @@ Deno.serve(async (req) => {
 
   // Require an authenticated Life OS user (verify the JWT the browser sends).
   const authHeader = req.headers.get('Authorization') ?? '';
-  const userClient = createClient(SUPABASE_URL, ANON_KEY, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data: { user }, error: authErr } = await userClient.auth.getUser();
-  if (authErr || !user) return json({ error: 'Not authenticated' }, 401);
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return json({ error: 'Not authenticated' }, 401);
+  const userClient = createClient(SUPABASE_URL, ANON_KEY);
+  const { data: { user }, error: authErr } = await userClient.auth.getUser(token);
+  if (authErr || !user) return json({ error: 'Not authenticated', detail: authErr?.message }, 401);
 
   // Service-role client for writing (bypasses RLS, server-side only).
   const db = createClient(SUPABASE_URL, SERVICE_KEY);
