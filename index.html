@@ -2281,10 +2281,26 @@
     loadLifting();
     loadWhoop();
     handleWhoopRedirect();
+    autoSync();
 
     // Audio greeting registered after auth so overlay clicks don't trigger it
     document.addEventListener('click', playGreetingOnce);
     document.addEventListener('touchstart', playGreetingOnce);
+  }
+
+  // Background auto-sync on load, throttled so rapid refreshes don't hammer
+  // the Hevy/Whoop APIs. Manual buttons still force an immediate sync.
+  const AUTOSYNC_MS = 20 * 60 * 1000; // 20 minutes
+  function autoSync() {
+    try {
+      // Device-local throttle (bypass the cloud-syncing proxy on purpose).
+      const last = parseInt(window.localStorage.getItem('last-autosync') || '0');
+      if (Date.now() - last < AUTOSYNC_MS) return;
+      window.localStorage.setItem('last-autosync', String(Date.now()));
+      // Fire and forget; each updates its tab when done.
+      if (typeof syncHevy === 'function') syncHevy();
+      if (typeof syncWhoop === 'function') syncWhoop();
+    } catch (e) { console.warn('[Life OS] auto-sync skipped', e); }
   }
 
   // Daily cloud snapshot of all real data. Recoverable point-in-time copies,
