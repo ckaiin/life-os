@@ -118,7 +118,27 @@ Deno.serve(async (req) => {
       if (error) return json({ error: 'DB upsert failed', detail: error.message }, 500);
     }
 
-    return json({ synced: rows.length });
+    // Whoop-detected activities (runs, lifts, etc.).
+    const workouts = (await getJson('/activity/workout?limit=25')).records ?? [];
+    const wrows = workouts.map((w: any) => ({
+      id: w.id,
+      sport: w.sport_name ?? null,
+      start_time: w.start ?? null,
+      end_time: w.end ?? null,
+      strain: w.score?.strain ?? null,
+      avg_hr: w.score?.average_heart_rate ?? null,
+      max_hr: w.score?.max_heart_rate ?? null,
+      kilojoule: w.score?.kilojoule ?? null,
+      distance_m: w.score?.distance_meter ?? null,
+      raw: w,
+      synced_at: new Date().toISOString(),
+    }));
+    if (wrows.length) {
+      const { error: we } = await db.from('whoop_workouts').upsert(wrows, { onConflict: 'id' });
+      if (we) return json({ error: 'Workouts upsert failed', detail: we.message }, 500);
+    }
+
+    return json({ synced: rows.length, activities: wrows.length });
   } catch (e) {
     return json({ error: 'Sync failed', detail: String(e) }, 500);
   }

@@ -1759,6 +1759,12 @@
         <p class="lift-empty">No history yet. Tap “Sync from Whoop” to pull your recent days.</p>
       </div>
     </div>
+
+    <!-- ACTIVITIES -->
+    <div class="others-section" id="whoop-activities-section" style="display:none;">
+      <p class="others-section-title">Activities (detected by Whoop)</p>
+      <div id="whoop-activities" class="lift-history"></div>
+    </div>
   </div>
 </div>
 <div id="panel-golf" class="panel">
@@ -3158,6 +3164,37 @@
         renderBodyMap();
       }
     } catch (e) { console.warn('Whoop load error', e); }
+    // Detected activities (separate table).
+    try {
+      const { data: acts, error: ae } = await _sb.from('whoop_workouts').select('*').order('start_time', { ascending: false }).limit(30);
+      if (!ae && acts && acts.length) renderWhoopActivities(acts);
+    } catch (e) { console.warn('Whoop activities load error', e); }
+  }
+
+  function renderWhoopActivities(rows) {
+    const section = document.getElementById('whoop-activities-section');
+    const wrap = document.getElementById('whoop-activities');
+    if (!wrap) return;
+    if (!rows.length) { if (section) section.style.display = 'none'; return; }
+    if (section) section.style.display = '';
+    const titleCase = s => (s || 'Activity').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    wrap.innerHTML = rows.map(a => {
+      const dateStr = a.start_time ? new Date(a.start_time).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+      const dur = (a.start_time && a.end_time) ? fmtDuration((new Date(a.end_time) - new Date(a.start_time)) / 1000) : '—';
+      const strain = a.strain == null ? '—' : Number(a.strain).toFixed(1);
+      const kcal = a.kilojoule == null ? null : Math.round(a.kilojoule / 4.184);
+      const avgHr = a.avg_hr == null ? null : Math.round(a.avg_hr);
+      const km = (a.distance_m && a.distance_m > 0) ? (a.distance_m / 1000).toFixed(2) + ' km' : null;
+      const bits = [dur, 'Strain ' + strain];
+      if (avgHr) bits.push(avgHr + ' bpm avg');
+      if (kcal) bits.push(kcal + ' cal');
+      if (km) bits.push(km);
+      return '<div class="lift-row" style="cursor:default;">' +
+        '<div class="lift-row-head"><span class="lift-row-title">' + titleCase(a.sport) + '</span>' +
+        '<span class="lift-row-meta">' + dateStr + '</span></div>' +
+        '<p class="lift-row-sub">' + bits.join(' · ') + '</p>' +
+      '</div>';
+    }).join('');
   }
 
   function renderWhoopChart(rows) {
