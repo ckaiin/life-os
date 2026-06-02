@@ -272,6 +272,8 @@
   .today-chip-val { color: var(--text); font-weight: 600; }
   .today-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); }
   .today-summary { flex: 1 1 260px; min-width: 220px; font-size: 12px; color: var(--text2); line-height: 1.45; }
+  .today-activities { flex-basis: 100%; font-size: 12px; color: var(--text2); margin: 0; }
+  .today-activities .today-label { margin-right: 6px; }
 
   .lift-layout { display: flex; gap: 2rem; align-items: flex-start; }
   .lift-main { flex: 1; min-width: 0; }
@@ -699,6 +701,7 @@
       <button class="today-chip" onclick="switchTab('lifting')"><span class="today-chip-label">Lifts</span> <span class="today-chip-val" id="chip-lifts">—</span></button>
     </div>
     <p class="today-summary" id="today-summary"></p>
+    <p class="today-activities" id="today-activities" style="display:none;"></p>
   </div>
 
   <div class="dash-grid">
@@ -2092,8 +2095,8 @@
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
-  <p class="version-tag">Version 2.9</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.9: Auto-sync only throttles on success (failed syncs retry)</p>
+  <p class="version-tag">Version 2.10</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.10: Today's detected Whoop activities on the dashboard</p>
 </div>
 
 <script>
@@ -2840,6 +2843,27 @@
     }
     const sum = document.getElementById('today-summary');
     if (sum) sum.textContent = todaySummary(liftsThisWeek);
+
+    // Today's Whoop-detected activities.
+    const actEl = document.getElementById('today-activities');
+    if (actEl) {
+      const ld = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const todayLd = ld(new Date());
+      const acts = (_whoopActivities || []).filter(a => a.start_time && ld(new Date(a.start_time)) === todayLd);
+      if (acts.length) {
+        const tc = s => (s || 'Activity').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const txt = acts.map(a => {
+          const dur = (a.start_time && a.end_time) ? ' ' + fmtDuration((new Date(a.end_time) - new Date(a.start_time)) / 1000) : '';
+          return tc(a.sport) + dur;
+        }).join(' · ');
+        actEl.innerHTML = '<span class="today-label">Detected today</span>' + txt;
+        actEl.style.display = '';
+        any = true;
+      } else {
+        actEl.style.display = 'none';
+      }
+    }
+
     if (any) strip.style.display = '';
   }
 
