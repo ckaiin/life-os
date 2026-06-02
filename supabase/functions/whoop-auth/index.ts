@@ -17,7 +17,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const AUTH_URL = 'https://api.prod.whoop.com/oauth/oauth2/auth';
 const TOKEN_URL = 'https://api.prod.whoop.com/oauth/oauth2/token';
-const SCOPES = 'read:recovery read:cycles read:sleep read:profile offline';
+const SCOPES = 'read:recovery read:cycles read:sleep read:workout read:profile offline';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
