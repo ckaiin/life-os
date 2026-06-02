@@ -2095,8 +2095,8 @@
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
-  <p class="version-tag">Version 2.10</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.10: Today's detected Whoop activities on the dashboard</p>
+  <p class="version-tag">Version 2.11</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.11: Today's Exercise — ordered chronologically, relabeled</p>
 </div>
 
 <script>
@@ -2849,14 +2849,16 @@
     if (actEl) {
       const ld = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       const todayLd = ld(new Date());
-      const acts = (_whoopActivities || []).filter(a => a.start_time && ld(new Date(a.start_time)) === todayLd);
+      const acts = (_whoopActivities || [])
+        .filter(a => a.start_time && ld(new Date(a.start_time)) === todayLd)
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time)); // earliest first
       if (acts.length) {
         const tc = s => (s || 'Activity').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         const txt = acts.map(a => {
           const dur = (a.start_time && a.end_time) ? ' ' + fmtDuration((new Date(a.end_time) - new Date(a.start_time)) / 1000) : '';
           return tc(a.sport) + dur;
         }).join(' · ');
-        actEl.innerHTML = '<span class="today-label">Detected today</span>' + txt;
+        actEl.innerHTML = '<span class="today-label">Today\'s Exercise</span>' + txt;
         actEl.style.display = '';
         any = true;
       } else {
