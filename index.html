@@ -2092,8 +2092,8 @@
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
-  <p class="version-tag">Version 2.8</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.8: Background auto-sync for Hevy &amp; Whoop</p>
+  <p class="version-tag">Version 2.9</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.9: Auto-sync only throttles on success (failed syncs retry)</p>
 </div>
 
 <script>
@@ -2291,16 +2291,21 @@
   // Background auto-sync on load, throttled so rapid refreshes don't hammer
   // the Hevy/Whoop APIs. Manual buttons still force an immediate sync.
   const AUTOSYNC_MS = 20 * 60 * 1000; // 20 minutes
-  function autoSync() {
+  let _autoSyncing = false;
+  async function autoSync() {
+    if (_autoSyncing) return;
+    // Device-local throttle (bypass the cloud-syncing proxy on purpose).
+    const last = parseInt(window.localStorage.getItem('last-autosync') || '0');
+    if (Date.now() - last < AUTOSYNC_MS) return;
+    _autoSyncing = true;
     try {
-      // Device-local throttle (bypass the cloud-syncing proxy on purpose).
-      const last = parseInt(window.localStorage.getItem('last-autosync') || '0');
-      if (Date.now() - last < AUTOSYNC_MS) return;
-      window.localStorage.setItem('last-autosync', String(Date.now()));
-      // Fire and forget; each updates its tab when done.
-      if (typeof syncHevy === 'function') syncHevy();
-      if (typeof syncWhoop === 'function') syncWhoop();
-    } catch (e) { console.warn('[Life OS] auto-sync skipped', e); }
+      let any = false;
+      if (typeof syncHevy === 'function') { try { if (await syncHevy()) any = true; } catch (e) {} }
+      if (typeof syncWhoop === 'function') { try { if (await syncWhoop()) any = true; } catch (e) {} }
+      // Only start the throttle clock once a sync actually succeeds, so a failed
+      // background attempt retries on the next load instead of locking out 20 min.
+      if (any) window.localStorage.setItem('last-autosync', String(Date.now()));
+    } finally { _autoSyncing = false; }
   }
 
   // Daily cloud snapshot of all real data. Recoverable point-in-time copies,
@@ -3087,11 +3092,12 @@
     const msg = document.getElementById('lift-sync-msg');
     btn.disabled = true;
     msg.textContent = 'Syncing…';
+    let ok = false;
     try {
       // Force the real user JWT into Authorization. Without this, functions.invoke
       // can fall back to sending the publishable key, which the auth server rejects.
       const { data: { session } } = await _sb.auth.getSession();
-      if (!session) { msg.textContent = 'Not signed in — reload and sign in again.'; return; }
+      if (!session) { msg.textContent = 'Not signed in — reload and sign in again.'; return false; }
       const { data, error } = await _sb.functions.invoke('hevy-sync', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + session.access_token },
@@ -3103,6 +3109,7 @@
       } else {
         msg.textContent = 'Synced ' + data.synced + ' workouts.';
         await loadLifting();
+        ok = true;
       }
     } catch (e) {
       msg.textContent = 'Sync failed: ' + e;
@@ -3110,6 +3117,7 @@
       btn.disabled = false;
       setTimeout(() => { msg.textContent = ''; }, 6000);
     }
+    return ok;
   }
 
   // RECOVERY (Whoop)
@@ -3140,9 +3148,10 @@
     const msg = document.getElementById('whoop-msg');
     if (btn) btn.disabled = true;
     msg.textContent = 'Syncing…';
+    let ok = false;
     try {
       const headers = await whoopAuthHeader();
-      if (!headers) { msg.textContent = 'Not signed in — reload and sign in.'; return; }
+      if (!headers) { msg.textContent = 'Not signed in — reload and sign in.'; return false; }
       const { data, error } = await _sb.functions.invoke('whoop-sync', { method: 'POST', headers });
       if (error) {
         let detail = error.message || 'request failed';
@@ -3151,9 +3160,11 @@
       } else {
         msg.textContent = 'Synced.';
         await loadWhoop();
+        ok = true;
       }
     } catch (e) { msg.textContent = 'Sync failed: ' + e; }
     finally { if (btn) btn.disabled = false; setTimeout(() => { msg.textContent = ''; }, 6000); }
+    return ok;
   }
 
   let _whoopActivities = [];
