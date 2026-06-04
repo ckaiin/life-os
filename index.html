@@ -2095,8 +2095,9 @@
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
-  <p class="version-tag">Version 2.15</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.15: Weather shows today's rain outlook</p>
+  <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
+  <p class="version-tag">Version 2.16</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.16: Morning brief emailed daily (Resend) + test button</p>
 </div>
 
 <script>
@@ -2345,6 +2346,23 @@
     a.download = 'life-os-backup-' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  async function testBrief(btn) {
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const { data: { session } } = await _sb.auth.getSession();
+      if (!session) { btn.textContent = 'Sign in first'; return; }
+      const { data, error } = await _sb.functions.invoke('morning-brief', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token },
+      });
+      if (error) {
+        let detail = error.message; try { const b = await error.context.json(); if (b && b.error) detail = b.error; } catch (_) {}
+        btn.textContent = 'Failed: ' + detail;
+      } else { btn.textContent = 'Sent ✓'; }
+    } catch (e) { btn.textContent = 'Failed'; }
+    finally { setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 4000); }
   }
 
   // Dropdown toggle

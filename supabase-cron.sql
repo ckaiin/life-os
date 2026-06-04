@@ -31,6 +31,17 @@ select cron.schedule('life-os-whoop-sync', '5 */3 * * *', $$
   );
 $$);
 
+-- Morning brief: daily at 10:00 UTC (6:00 AM Eastern during EDT)
+select cron.schedule('life-os-morning-brief', '0 10 * * *', $$
+  select net.http_post(
+    url := 'https://bvecxrwdmddaduwxynfe.supabase.co/functions/v1/morning-brief',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', '<YOUR_CRON_SECRET>'
+    )
+  );
+$$);
+
 -- Useful management queries:
 --   select * from cron.job;                        -- list jobs
 --   select * from cron.job_run_details order by start_time desc limit 10;  -- recent runs
