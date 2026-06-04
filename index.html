@@ -2095,8 +2095,8 @@
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
-  <p class="version-tag">Version 2.13</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.13: Wake-up shift card becomes weather once the shift is complete</p>
+  <p class="version-tag">Version 2.14</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.14: Weather falls back to wttr.in when Open-Meteo is down</p>
 </div>
 
 <script>
@@ -2771,8 +2771,8 @@
     }
   }
 
-  // WMO weather code -> emoji + short label.
-  function weatherDesc(code) {
+  // WMO weather code -> emoji + short label (Open-Meteo).
+  function wmoDesc(code) {
     const m = {
       0: ['☀️', 'Clear'], 1: ['🌤️', 'Mostly clear'], 2: ['⛅', 'Partly cloudy'], 3: ['☁️', 'Overcast'],
       45: ['🌫️', 'Fog'], 48: ['🌫️', 'Rime fog'],
@@ -2788,27 +2788,54 @@
     return m[code] || ['🌡️', 'Weather'];
   }
 
-  // Weather widget (Open-Meteo, no API key). Default location: Greenwich, CT.
-  async function renderWeather(el) {
-    const label = '<p style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:6px;">Weather · Greenwich</p>';
-    el.innerHTML = label + '<p style="font-size:10px;color:var(--text3);">Loading…</p>';
+  // Pick an emoji from a free-text condition (wttr.in fallback).
+  function emojiFor(text) {
+    const t = (text || '').toLowerCase();
+    if (/thunder|storm/.test(t)) return '⛈️';
+    if (/snow|sleet|blizzard|ice/.test(t)) return '🌨️';
+    if (/rain|drizzle|shower/.test(t)) return '🌧️';
+    if (/fog|mist|haze/.test(t)) return '🌫️';
+    if (/overcast/.test(t)) return '☁️';
+    if (/cloud|partly/.test(t)) return '⛅';
+    if (/sun|clear/.test(t)) return '☀️';
+    return '🌡️';
+  }
+
+  // Fetch weather: try Open-Meteo, fall back to wttr.in. Both no-key, CORS-ok.
+  async function getWeather() {
+    const lat = 41.0262, lon = -73.6282; // Greenwich, CT
     try {
-      const lat = 41.0262, lon = -73.6282;
       const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
         '&current=temperature_2m,apparent_temperature,weather_code&daily=temperature_2m_max,temperature_2m_min' +
         '&temperature_unit=fahrenheit&timezone=auto&forecast_days=1';
       const r = await fetch(url);
+      if (!r.ok) throw new Error('open-meteo ' + r.status);
       const d = await r.json();
-      const c = d.current || {}, day = d.daily || {};
-      const [emoji, text] = weatherDesc(c.weather_code);
-      const temp = c.temperature_2m != null ? Math.round(c.temperature_2m) : '—';
-      const feels = c.apparent_temperature != null ? Math.round(c.apparent_temperature) : null;
-      const hi = day.temperature_2m_max ? Math.round(day.temperature_2m_max[0]) : null;
-      const lo = day.temperature_2m_min ? Math.round(day.temperature_2m_min[0]) : null;
+      const c = d.current, day = d.daily;
+      const [emoji, text] = wmoDesc(c.weather_code);
+      return { emoji, text, temp: Math.round(c.temperature_2m), feels: Math.round(c.apparent_temperature),
+               hi: Math.round(day.temperature_2m_max[0]), lo: Math.round(day.temperature_2m_min[0]) };
+    } catch (e) {
+      const r = await fetch('https://wttr.in/' + lat + ',' + lon + '?format=j1');
+      if (!r.ok) throw new Error('wttr ' + r.status);
+      const d = await r.json();
+      const cc = d.current_condition[0], today = d.weather[0];
+      const text = (cc.weatherDesc && cc.weatherDesc[0] && cc.weatherDesc[0].value) || 'Weather';
+      return { emoji: emojiFor(text), text, temp: Math.round(+cc.temp_F), feels: Math.round(+cc.FeelsLikeF),
+               hi: Math.round(+today.maxtempF), lo: Math.round(+today.mintempF) };
+    }
+  }
+
+  // Weather widget. Default location: Greenwich, CT.
+  async function renderWeather(el) {
+    const label = '<p style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:6px;">Weather · Greenwich</p>';
+    el.innerHTML = label + '<p style="font-size:10px;color:var(--text3);">Loading…</p>';
+    try {
+      const w = await getWeather();
       el.innerHTML = label +
-        '<p style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;letter-spacing:1px;color:var(--accent);line-height:1;margin-bottom:3px;">' + emoji + ' ' + temp + '°</p>' +
-        '<p style="font-size:11px;color:var(--text2);margin-bottom:6px;">' + text + '</p>' +
-        '<p style="font-size:9px;color:var(--text3);">' + (feels != null ? 'Feels ' + feels + '° · ' : '') + (hi != null && lo != null ? 'H ' + hi + '° L ' + lo + '°' : '') + '</p>';
+        '<p style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;letter-spacing:1px;color:var(--accent);line-height:1;margin-bottom:3px;">' + w.emoji + ' ' + w.temp + '°</p>' +
+        '<p style="font-size:11px;color:var(--text2);margin-bottom:6px;">' + w.text + '</p>' +
+        '<p style="font-size:9px;color:var(--text3);">Feels ' + w.feels + '° · H ' + w.hi + '° L ' + w.lo + '°</p>';
     } catch (e) {
       el.innerHTML = label + '<p style="font-size:10px;color:var(--text3);">Weather unavailable right now.</p>';
     }
