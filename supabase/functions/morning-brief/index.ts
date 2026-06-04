@@ -121,6 +121,8 @@ Deno.serve(async (req) => {
   const whoop = wd && wd[0];
   const { data: acts } = await db.from('whoop_workouts').select('sport,start_time,end_time').order('start_time', { ascending: false }).limit(20);
   const { data: lifts } = await db.from('hevy_workouts').select('start_time');
+  // Reminders due today or overdue and not done.
+  const { data: rems } = await db.from('reminders').select('date,text,done').eq('done', false).lte('date', todayLd).order('date', { ascending: true });
 
   // lifts this week (Sunday start)
   const weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
@@ -148,6 +150,10 @@ Deno.serve(async (req) => {
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Readiness</p>
         <p style="font-size:14px;line-height:1.5;margin:0;">${summary}</p>
       </div>
+      ${(rems && rems.length) ? `<div style="background:#fff7ed;border:1px solid #f0d9b8;border-radius:8px;padding:16px;margin-bottom:14px;">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Reminders</p>
+        ${rems.map((r: any) => `<p style="font-size:14px;margin:0 0 4px;">${r.date < todayLd ? '⚠️ ' : '• '}${(r.text || '').replace(/[<>]/g, '')}${r.date < todayLd ? ' <span style=\"color:#b45309;font-size:11px;\">(overdue)</span>' : ''}</p>`).join('')}
+      </div>` : ''}
       <div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Today's plan</p>
         <p style="font-size:14px;margin:0;"><b>${plan}</b></p>

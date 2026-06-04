@@ -275,6 +275,20 @@
   .today-activities { flex-basis: 100%; font-size: 12px; color: var(--text2); margin: 0; }
   .today-activities .today-label { margin-right: 6px; }
 
+  .capture-bar { padding: 0 1.5rem 1.25rem; }
+  .capture-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .capture-input { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid var(--border2); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg2); color: var(--text); outline: none; }
+  .capture-btn { padding: 10px 16px; background: var(--accent); color: #fff; border: none; border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer; }
+  .capture-msg { font-size: 12px; color: var(--text3); }
+  .capture-reminders { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .capture-reminder { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); }
+  .capture-reminder.overdue-rem { color: var(--accent2); }
+  .capture-reminder .rem-check { width: 15px; height: 15px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: pointer; flex-shrink: 0; }
+  .capture-reminder.done-rem { color: var(--text3); text-decoration: line-through; }
+  .capture-reminder .rem-date { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+  .capture-notes { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+  .capture-note { font-size: 12px; color: var(--text2); padding-left: 12px; border-left: 2px solid var(--border2); }
+
   .lift-layout { display: flex; gap: 2rem; align-items: flex-start; }
   .lift-main { flex: 1; min-width: 0; }
   .lift-bodymap { width: 280px; flex-shrink: 0; position: sticky; top: 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
@@ -702,6 +716,16 @@
     </div>
     <p class="today-summary" id="today-summary"></p>
     <p class="today-activities" id="today-activities" style="display:none;"></p>
+  </div>
+
+  <div class="capture-bar">
+    <div class="capture-row">
+      <input type="text" id="capture-input" class="capture-input" placeholder="Brain dump — speak (keyboard mic) or type a note or reminder…" onkeydown="if(event.key==='Enter')captureSubmit(this)">
+      <button class="capture-btn" onclick="captureSubmit(document.getElementById('capture-input'))">Add</button>
+      <span id="capture-msg" class="capture-msg"></span>
+    </div>
+    <div id="capture-reminders" class="capture-reminders"></div>
+    <div id="capture-notes" class="capture-notes"></div>
   </div>
 
   <div class="dash-grid">
@@ -2096,8 +2120,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.16</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.16: Morning brief emailed daily (Resend) + test button</p>
+  <p class="version-tag">Version 2.17</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.17: Quick capture — speak/type notes &amp; reminders, parsed by AI</p>
 </div>
 
 <script>
@@ -2284,6 +2308,7 @@
     initSundayFill();
     loadLifting();
     loadWhoop();
+    loadCapture();
     handleWhoopRedirect();
     autoSync();
 
@@ -2363,6 +2388,63 @@
       } else { btn.textContent = 'Sent ✓'; }
     } catch (e) { btn.textContent = 'Failed'; }
     finally { setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 4000); }
+  }
+
+  // QUICK CAPTURE (voice/text -> notes + reminders, parsed by Claude)
+  function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+  async function captureSubmit(input) {
+    const text = (input.value || '').trim();
+    const msg = document.getElementById('capture-msg');
+    if (!text) return;
+    msg.textContent = 'Saving…';
+    try {
+      const { data: { session } } = await _sb.auth.getSession();
+      if (!session) { msg.textContent = 'Sign in first'; return; }
+      const { data, error } = await _sb.functions.invoke('capture', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token }, body: { text },
+      });
+      if (error) {
+        let d = error.message; try { const b = await error.context.json(); if (b && b.error) d = b.error; } catch (_) {}
+        msg.textContent = 'Failed: ' + d; return;
+      }
+      input.value = '';
+      const n = data.notes || 0, r = data.reminders || 0;
+      msg.textContent = 'Added ' + n + ' note' + (n !== 1 ? 's' : '') + ', ' + r + ' reminder' + (r !== 1 ? 's' : '');
+      await loadCapture();
+    } catch (e) { msg.textContent = 'Failed'; }
+    finally { setTimeout(() => { msg.textContent = ''; }, 5000); }
+  }
+
+  async function loadCapture() {
+    if (!_sbReady) return;
+    const today = _localDate(new Date());
+    try {
+      const { data: rems } = await _sb.from('reminders').select('*').lte('date', today).order('date', { ascending: true });
+      const { data: notes } = await _sb.from('daily_notes').select('*').eq('date', today).order('created_at', { ascending: false });
+      renderCapture(rems || [], notes || [], today);
+    } catch (e) { console.warn('capture load', e); }
+  }
+
+  function renderCapture(rems, notes, today) {
+    const rwrap = document.getElementById('capture-reminders');
+    const nwrap = document.getElementById('capture-notes');
+    if (rwrap) {
+      const show = rems.filter(r => !r.done || r.date === today);
+      rwrap.innerHTML = show.map(r => {
+        const overdue = !r.done && r.date < today;
+        const dlabel = r.date === today ? 'Today' : new Date(r.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const box = r.done ? 'background:var(--teal);border-color:var(--teal);' : '';
+        return '<div class="capture-reminder ' + (r.done ? 'done-rem' : '') + ' ' + (overdue ? 'overdue-rem' : '') + '">' +
+          '<div class="rem-check" style="' + box + '" onclick="toggleReminder(' + r.id + ',' + (!r.done) + ')"></div>' +
+          '<span class="rem-date">' + dlabel + '</span><span>' + escapeHtml(r.text) + '</span></div>';
+      }).join('');
+    }
+    if (nwrap) nwrap.innerHTML = notes.map(n => '<div class="capture-note">' + escapeHtml(n.text) + '</div>').join('');
+  }
+
+  async function toggleReminder(id, done) {
+    try { await _sb.from('reminders').update({ done }).eq('id', id); await loadCapture(); } catch (e) {}
   }
 
   // Dropdown toggle
