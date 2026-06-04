@@ -2095,8 +2095,8 @@
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
-  <p class="version-tag">Version 2.14</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.14: Weather falls back to wttr.in when Open-Meteo is down</p>
+  <p class="version-tag">Version 2.15</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.15: Weather shows today's rain outlook</p>
 </div>
 
 <script>
@@ -2806,24 +2806,35 @@
     const lat = 41.0262, lon = -73.6282; // Greenwich, CT
     try {
       const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
-        '&current=temperature_2m,apparent_temperature,weather_code&daily=temperature_2m_max,temperature_2m_min' +
+        '&current=temperature_2m,apparent_temperature,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
         '&temperature_unit=fahrenheit&timezone=auto&forecast_days=1';
       const r = await fetch(url);
       if (!r.ok) throw new Error('open-meteo ' + r.status);
       const d = await r.json();
       const c = d.current, day = d.daily;
       const [emoji, text] = wmoDesc(c.weather_code);
+      const chance = day.precipitation_probability_max ? day.precipitation_probability_max[0] : null;
       return { emoji, text, temp: Math.round(c.temperature_2m), feels: Math.round(c.apparent_temperature),
-               hi: Math.round(day.temperature_2m_max[0]), lo: Math.round(day.temperature_2m_min[0]) };
+               hi: Math.round(day.temperature_2m_max[0]), lo: Math.round(day.temperature_2m_min[0]), chance };
     } catch (e) {
       const r = await fetch('https://wttr.in/' + lat + ',' + lon + '?format=j1');
       if (!r.ok) throw new Error('wttr ' + r.status);
       const d = await r.json();
       const cc = d.current_condition[0], today = d.weather[0];
       const text = (cc.weatherDesc && cc.weatherDesc[0] && cc.weatherDesc[0].value) || 'Weather';
+      const hourly = today.hourly || [];
+      const chance = hourly.length ? Math.max(...hourly.map(h => +h.chanceofrain || 0)) : null;
       return { emoji: emojiFor(text), text, temp: Math.round(+cc.temp_F), feels: Math.round(+cc.FeelsLikeF),
-               hi: Math.round(+today.maxtempF), lo: Math.round(+today.mintempF) };
+               hi: Math.round(+today.maxtempF), lo: Math.round(+today.mintempF), chance };
     }
+  }
+
+  // Rain outlook blurb from a max precip chance (0-100).
+  function rainBlurb(chance) {
+    if (chance == null) return ['', 'var(--text3)'];
+    if (chance >= 60) return ['🌧️ Rain likely today (' + chance + '%)', 'var(--accent2)'];
+    if (chance >= 30) return ['Some chance of rain (' + chance + '%)', 'var(--accent2)'];
+    return ['No rain expected today', 'var(--green)'];
   }
 
   // Weather widget. Default location: Greenwich, CT.
@@ -2835,7 +2846,8 @@
       el.innerHTML = label +
         '<p style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;letter-spacing:1px;color:var(--accent);line-height:1;margin-bottom:3px;">' + w.emoji + ' ' + w.temp + '°</p>' +
         '<p style="font-size:11px;color:var(--text2);margin-bottom:6px;">' + w.text + '</p>' +
-        '<p style="font-size:9px;color:var(--text3);">Feels ' + w.feels + '° · H ' + w.hi + '° L ' + w.lo + '°</p>';
+        '<p style="font-size:9px;color:var(--text3);">Feels ' + w.feels + '° · H ' + w.hi + '° L ' + w.lo + '°</p>' +
+        (function () { const [rt, rc] = rainBlurb(w.chance); return rt ? '<p style="font-size:9px;color:' + rc + ';margin-top:2px;">' + rt + '</p>' : ''; })();
     } catch (e) {
       el.innerHTML = label + '<p style="font-size:10px;color:var(--text3);">Weather unavailable right now.</p>';
     }
