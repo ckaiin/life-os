@@ -2095,8 +2095,8 @@
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
-  <p class="version-tag">Version 2.11</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.11: Today's Exercise — ordered chronologically, relabeled</p>
+  <p class="version-tag">Version 2.12</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.12: Richer daily readiness summary (recovery, sleep, HRV, strain, lifts)</p>
 </div>
 
 <script>
@@ -2869,20 +2869,38 @@
     if (any) strip.style.display = '';
   }
 
-  // One-line readiness synthesis from today's metrics.
+  // Multi-sentence readiness readout synthesized from today's Whoop + Hevy data.
   function todaySummary(liftsThisWeek) {
     const parts = [];
     if (_whoopLatest) {
       const r = _whoopLatest.recovery_score;
       const s = _whoopLatest.sleep_performance;
+      const hrv = _whoopLatest.hrv;
+      const rhr = _whoopLatest.resting_hr;
+      const st = _whoopLatest.strain;
       if (r != null) {
-        if (r >= 67) parts.push('Recovered at ' + Math.round(r) + '%. Green light to push — strain target 12–16.');
-        else if (r >= 34) parts.push('Moderate recovery at ' + Math.round(r) + '%. Train controlled — strain target 8–12.');
-        else parts.push('Low recovery at ' + Math.round(r) + '%. Prioritize easy movement and sleep — cap strain near 6–9.');
+        const zone = r >= 67 ? 'green' : r >= 34 ? 'yellow' : 'red';
+        const lead = r >= 67 ? 'Primed' : r >= 34 ? 'Moderately recovered' : 'Under-recovered';
+        let line = lead + ' at ' + Math.round(r) + '% (' + zone + ')';
+        if (s != null) line += ' on ' + Math.round(s) + '% sleep performance';
+        line += '.';
+        parts.push(line);
+
+        const bio = [];
+        if (hrv != null) bio.push('HRV ' + Math.round(hrv) + 'ms');
+        if (rhr != null) bio.push('resting HR ' + Math.round(rhr) + 'bpm');
+        if (bio.length) parts.push(bio.join(', ').replace(/^./, c => c.toUpperCase()) + '.');
+
+        const target = r >= 67 ? '12–16' : r >= 34 ? '8–12' : '6–9';
+        let guide = r >= 67 ? 'Green light to push' : r >= 34 ? 'Train, but keep it controlled' : 'Prioritize easy movement and sleep';
+        guide += ' — strain target ' + target;
+        if (st != null) guide += ' (' + Number(st).toFixed(1) + ' so far)';
+        guide += '.';
+        parts.push(guide);
       }
-      if (s != null && s < 70) parts.push('Sleep ran short (' + Math.round(s) + '%).');
+      if (s != null && s < 70) parts.push('Sleep ran short; bank more tonight.');
     }
-    if (liftsThisWeek === 0) parts.push('No lifts logged yet this week.');
+    if (liftsThisWeek === 0) parts.push('No lifts logged this week yet.');
     else if (liftsThisWeek != null) parts.push(liftsThisWeek + ' lift' + (liftsThisWeek > 1 ? 's' : '') + ' in this week.');
     return parts.join(' ');
   }
