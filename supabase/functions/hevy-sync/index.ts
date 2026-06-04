@@ -38,13 +38,17 @@ Deno.serve(async (req) => {
 
   if (!HEVY_API_KEY) return json({ error: 'HEVY_API_KEY secret not set' }, 500);
 
-  // Require an authenticated Life OS user (verify the JWT the browser sends).
-  const authHeader = req.headers.get('Authorization') ?? '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-  if (!token) return json({ error: 'Not authenticated' }, 401);
-  const userClient = createClient(SUPABASE_URL, ANON_KEY);
-  const { data: { user }, error: authErr } = await userClient.auth.getUser(token);
-  if (authErr || !user) return json({ error: 'Not authenticated', detail: authErr?.message }, 401);
+  // Auth: either the trusted scheduler (cron secret) or a logged-in user JWT.
+  const CRON_SECRET = Deno.env.get('CRON_SECRET');
+  const isCron = !!CRON_SECRET && req.headers.get('x-cron-secret') === CRON_SECRET;
+  if (!isCron) {
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (!token) return json({ error: 'Not authenticated' }, 401);
+    const userClient = createClient(SUPABASE_URL, ANON_KEY);
+    const { data: { user }, error: authErr } = await userClient.auth.getUser(token);
+    if (authErr || !user) return json({ error: 'Not authenticated', detail: authErr?.message }, 401);
+  }
 
   // Service-role client for writing (bypasses RLS, server-side only).
   const db = createClient(SUPABASE_URL, SERVICE_KEY);
