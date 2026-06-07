@@ -2128,8 +2128,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.19</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.19: Fix Sunday-fill checkboxes + scrollable Others dropdown on mobile</p>
+  <p class="version-tag">Version 2.20</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.20: Timed reminders — email ~15 min before a voice-noted time</p>
 </div>
 
 <script>
@@ -2441,7 +2441,8 @@
       const show = rems.filter(r => !r.done || r.date === today);
       rwrap.innerHTML = show.map(r => {
         const overdue = !r.done && r.date < today;
-        const dlabel = r.date === today ? 'Today' : new Date(r.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        let dlabel = r.date === today ? 'Today' : new Date(r.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        if (r.due_at) dlabel += ' ' + new Date(r.due_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
         const box = r.done ? 'background:var(--teal);border-color:var(--teal);' : '';
         return '<div class="capture-reminder ' + (r.done ? 'done-rem' : '') + ' ' + (overdue ? 'overdue-rem' : '') + '">' +
           '<div class="rem-check" style="' + box + '" onclick="toggleReminder(' + r.id + ',' + (!r.done) + ')"></div>' +

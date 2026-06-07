@@ -42,6 +42,17 @@ select cron.schedule('life-os-morning-brief', '0 10 * * *', $$
   );
 $$);
 
+-- Timed reminder check every 5 minutes (emails ~15 min before a due reminder)
+select cron.schedule('life-os-reminder-check', '*/5 * * * *', $$
+  select net.http_post(
+    url := 'https://bvecxrwdmddaduwxynfe.supabase.co/functions/v1/reminder-check',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', '<YOUR_CRON_SECRET>'
+    )
+  );
+$$);
+
 -- Useful management queries:
 --   select * from cron.job;                        -- list jobs
 --   select * from cron.job_run_details order by start_time desc limit 10;  -- recent runs

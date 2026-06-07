@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
         `Today is ${weekday}, ${today} (timezone America/New_York). ` +
         `NOTES are observations, things that happened, or thoughts about today. ` +
         `REMINDERS are things to do or remember on a specific day; resolve relative dates ("tomorrow", "Friday", "next week") to an absolute YYYY-MM-DD based on today. ` +
-        `If a reminder has no clear day, use today's date. Keep each item concise and first-person. Split distinct items apart.`,
+        `If a reminder has no clear day, use today's date. If a reminder mentions a clock time ("at 2pm", "by 9:30am", "noon"), include it as 24-hour HH:MM in "time"; otherwise leave "time" as an empty string. Keep each item concise and first-person. Split distinct items apart.`,
       tools: [{
         name: 'save_capture',
         description: 'Save the parsed notes and reminders.',
@@ -69,7 +69,11 @@ Deno.serve(async (req) => {
               type: 'array',
               items: {
                 type: 'object',
-                properties: { date: { type: 'string', description: 'YYYY-MM-DD' }, text: { type: 'string' } },
+                properties: {
+                  date: { type: 'string', description: 'YYYY-MM-DD' },
+                  time: { type: 'string', description: '24-hour HH:MM if a clock time was mentioned, else empty string' },
+                  text: { type: 'string' },
+                },
                 required: ['date', 'text'],
               },
             },
@@ -90,13 +94,32 @@ Deno.serve(async (req) => {
 
   const db = createClient(SUPABASE_URL, SERVICE_KEY);
   const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const isTime = (s: string) => /^\d{2}:\d{2}$/.test(s);
+  // America/New_York UTC offset for a given date ("-04:00" EDT / "-05:00" EST).
+  const etOffset = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr + 'T12:00:00Z');
+      const tzn = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'longOffset' })
+        .formatToParts(d).find((p) => p.type === 'timeZoneName')?.value || 'GMT-05:00';
+      const off = tzn.replace('GMT', '');
+      return /^[+-]\d{2}:\d{2}$/.test(off) ? off : '-05:00';
+    } catch (_) { return '-05:00'; }
+  };
 
   if (notes.length) {
     await db.from('daily_notes').insert(notes.map((t) => ({ date: today, text: String(t) })));
   }
   const remRows = reminders
     .filter((r) => r && r.text)
-    .map((r) => ({ date: isDate(r.date) ? r.date : today, text: String(r.text) }));
+    .map((r) => {
+      const date = isDate(r.date) ? r.date : today;
+      let due_at: string | null = null;
+      if (isTime(r.time)) {
+        const dt = new Date(`${date}T${r.time}:00${etOffset(date)}`);
+        if (!isNaN(dt.getTime())) due_at = dt.toISOString();
+      }
+      return { date, text: String(r.text), due_at };
+    });
   if (remRows.length) {
     await db.from('reminders').insert(remRows);
   }
