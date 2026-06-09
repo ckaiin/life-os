@@ -49,17 +49,32 @@ Deno.serve(async (req) => {
     new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
   const esc = (s: string) => String(s).replace(/[<>]/g, '');
 
-  // Rest of today's schedule: upcoming timed reminders for today (ET), not done.
-  const todayEt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(now);
+  // Rest of today's schedule: upcoming reminders + recurring blocks (ET).
+  const tz = 'America/New_York';
+  const todayEt = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(now);
+  const nowHHMM = new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(now);
+  const dowName = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'long' }).format(now);
+  const dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(dowName);
+  const etHHMM = (iso: string) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
+  const fmt12 = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h >= 12 ? 'PM' : 'AM'); };
+
   const { data: rest } = await db.from('reminders')
     .select('id,text,due_at')
     .eq('date', todayEt).eq('done', false)
     .gt('due_at', now.toISOString())
     .order('due_at', { ascending: true });
+  const { data: sched } = await db.from('daily_schedule').select('label,time,dows').eq('active', true);
+  const blocks = (sched || [])
+    .filter((b: any) => { const d = b.dows || []; return (d.length === 0 || d.includes(dow)) && b.time > nowHHMM; })
+    .map((b: any) => ({ time: b.time, label: b.label, kind: 'block', id: -1 }));
+
   const restHtml = (excludeId: number) => {
-    const items = (rest || []).filter((x: any) => x.id !== excludeId);
+    const items = [
+      ...blocks,
+      ...(rest || []).filter((x: any) => x.id !== excludeId).map((x: any) => ({ time: etHHMM(x.due_at), label: x.text, kind: 'rem', id: x.id })),
+    ].sort((a, b) => a.time.localeCompare(b.time));
     const inner = items.length
-      ? items.map((x: any) => `<p style="font-size:13px;margin:0 0 3px;color:#2a2e36;">${fmtTime(x.due_at)} — ${esc(x.text)}</p>`).join('')
+      ? items.map((x) => `<p style="font-size:13px;margin:0 0 3px;color:#2a2e36;"><span style="display:inline-block;min-width:74px;color:#6a6e76;">${fmt12(x.time)}</span>${esc(x.label)}${x.kind === 'rem' ? ' <span style="color:#2c5080;font-size:11px;">(reminder)</span>' : ''}</p>`).join('')
       : '<p style="font-size:12px;color:#8a8f98;margin:0;">Nothing else scheduled today.</p>';
     return `<div style="margin-top:16px;padding-top:12px;border-top:1px solid #e1e3e8;">
       <p style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8a8f98;margin:0 0 6px;">Rest of today</p>${inner}</div>`;

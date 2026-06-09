@@ -296,6 +296,27 @@
   .capture-notes { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
   .capture-note { font-size: 12px; color: var(--text2); padding-left: 12px; border-left: 2px solid var(--border2); }
 
+  .agenda-bar { padding: 0 1.5rem 1.25rem; }
+  .agenda-title { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); margin-bottom: 8px; }
+  .agenda-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .agenda-item { display: flex; align-items: center; gap: 12px; background: var(--bg2); padding: 8px 12px; font-size: 13px; }
+  .agenda-item.past { opacity: 0.45; }
+  .agenda-item.next { background: var(--bg3); box-shadow: inset 3px 0 0 var(--accent2); }
+  .agenda-time { font-variant-numeric: tabular-nums; color: var(--text2); min-width: 64px; font-size: 12px; }
+  .agenda-label { color: var(--text); }
+  .agenda-kind { margin-left: auto; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); }
+  .agenda-item.rem .agenda-kind { color: var(--accent2); }
+
+  .sched-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .sched-input { padding: 8px 10px; border: 1px solid var(--border2); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg2); color: var(--text); outline: none; }
+  .sched-list { display: flex; flex-direction: column; gap: 4px; }
+  .sched-empty { font-size: 12px; color: var(--text3); }
+  .sched-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .sched-row .s-time { font-variant-numeric: tabular-nums; color: var(--text2); min-width: 64px; }
+  .sched-row .s-days { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-left: auto; }
+  .sched-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 0 4px; }
+  .sched-del:hover { color: var(--red); }
+
   .lift-layout { display: flex; gap: 2rem; align-items: flex-start; }
   .lift-main { flex: 1; min-width: 0; }
   .lift-bodymap { width: 280px; flex-shrink: 0; position: sticky; top: 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
@@ -736,6 +757,11 @@
     <div id="capture-notes" class="capture-notes"></div>
   </div>
 
+  <div class="agenda-bar" id="agenda-bar" style="display:none;">
+    <p class="agenda-title">Today's agenda</p>
+    <div id="agenda-list" class="agenda-list"></div>
+  </div>
+
   <div class="dash-grid">
     <div class="dash-card card-work" onclick="switchTab('work')">
       <span class="card-tag tag-a">A — Work</span>
@@ -1011,6 +1037,28 @@
       <div class="action-item" id="item-structure-2"><div class="action-check"><input type="checkbox" id="chk-structure-2"><label for="chk-structure-2"></label></div><p class="action-num">02</p><div><p class="action-title">Lock in the 7–8 PM workout slot as non-negotiable</p><p class="action-detail">Practice treating it like a meeting you cannot cancel before June 29 so it's a habit, not something new you're adding mid-transition.</p></div></div>
       <div class="action-item" id="item-structure-3"><div class="action-check"><input type="checkbox" id="chk-structure-3"><label for="chk-structure-3"></label></div><p class="action-num">03</p><div><p class="action-title">Test the commute to the Bronx on a weekday morning</p><p class="action-detail">Drive or take the route at least once before June 29. Know exactly what you're dealing with before day one.</p></div></div>
       <div class="action-item" id="item-structure-4"><div class="action-check"><input type="checkbox" id="chk-structure-4"><label for="chk-structure-4"></label></div><p class="action-num">04</p><div><p class="action-title">Establish Sunday as prep day — not a recovery day</p><p class="action-detail">Groceries, meal prep, clothes ready, mental reset. If Saturday night bleeds into Sunday, your Monday is already compromised before the week begins.</p></div></div>
+    </div>
+
+    <div class="action-section">
+      <p class="action-section-title">Daily schedule <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">recurring blocks that build your daily agenda</span></p>
+      <div class="sched-form">
+        <input type="time" id="sched-time" class="sched-input" style="max-width:120px;">
+        <input type="text" id="sched-label" class="sched-input" placeholder="e.g. Workout, Commute, Wake up" onkeydown="if(event.key==='Enter')addSchedule()">
+        <select id="sched-days" class="sched-input" style="max-width:140px;">
+          <option value="all">Every day</option>
+          <option value="weekdays">Weekdays</option>
+          <option value="weekends">Weekends</option>
+          <option value="1">Mondays</option>
+          <option value="2">Tuesdays</option>
+          <option value="3">Wednesdays</option>
+          <option value="4">Thursdays</option>
+          <option value="5">Fridays</option>
+          <option value="6">Saturdays</option>
+          <option value="0">Sundays</option>
+        </select>
+        <button class="golf-btn" onclick="addSchedule()">Add block</button>
+      </div>
+      <div id="sched-list" class="sched-list"><p class="sched-empty">No blocks yet. Add your recurring daily times above.</p></div>
     </div>
 
     <div class="action-section">
@@ -2128,8 +2176,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.21</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.21: Reminder emails now include the rest of today's schedule</p>
+  <p class="version-tag">Version 2.22</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.22: Full-day agenda — recurring schedule blocks + reminders</p>
 </div>
 
 <script>
@@ -2317,6 +2365,7 @@
     loadLifting();
     loadWhoop();
     loadCapture();
+    loadSchedule();
     handleWhoopRedirect();
     autoSync();
 
@@ -2424,14 +2473,108 @@
     finally { setTimeout(() => { msg.textContent = ''; }, 5000); }
   }
 
+  let _captureReminders = [];
   async function loadCapture() {
     if (!_sbReady) return;
     const today = _localDate(new Date());
     try {
       const { data: rems } = await _sb.from('reminders').select('*').lte('date', today).order('date', { ascending: true });
       const { data: notes } = await _sb.from('daily_notes').select('*').eq('date', today).order('created_at', { ascending: false });
-      renderCapture(rems || [], notes || [], today);
+      _captureReminders = rems || [];
+      renderCapture(_captureReminders, notes || [], today);
+      renderAgenda();
     } catch (e) { console.warn('capture load', e); }
+  }
+
+  // ===== DAILY SCHEDULE + AGENDA =====
+  let _scheduleBlocks = [];
+  const _etFmt = (now, opts) => new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', ...opts }).format(now);
+  function fmt12(hhmm) {
+    const [h, m] = hhmm.split(':').map(Number);
+    return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+  }
+  function etHHMM(iso) {
+    return new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
+  }
+  function daysLabel(dows) {
+    if (!dows || !dows.length) return 'Every day';
+    const s = [...dows].sort((a, b) => a - b).join(',');
+    if (s === '1,2,3,4,5') return 'Weekdays';
+    if (s === '0,6') return 'Weekends';
+    const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return [...dows].sort((a, b) => a - b).map(d => names[d]).join(' ');
+  }
+
+  async function loadSchedule() {
+    if (!_sbReady) return;
+    try {
+      const { data } = await _sb.from('daily_schedule').select('*').eq('active', true).order('time', { ascending: true });
+      _scheduleBlocks = data || [];
+    } catch (e) { _scheduleBlocks = []; }
+    renderScheduleList();
+    renderAgenda();
+  }
+
+  function renderScheduleList() {
+    const wrap = document.getElementById('sched-list');
+    if (!wrap) return;
+    if (!_scheduleBlocks.length) { wrap.innerHTML = '<p class="sched-empty">No blocks yet. Add your recurring daily times above.</p>'; return; }
+    wrap.innerHTML = _scheduleBlocks.map(b =>
+      '<div class="sched-row"><span class="s-time">' + fmt12(b.time) + '</span><span>' + escapeHtml(b.label) + '</span>' +
+      '<span class="s-days">' + daysLabel(b.dows) + '</span>' +
+      '<button class="sched-del" onclick="deleteSchedule(' + b.id + ')">✕</button></div>'
+    ).join('');
+  }
+
+  async function addSchedule() {
+    const time = document.getElementById('sched-time').value;
+    const label = document.getElementById('sched-label').value.trim();
+    const sel = document.getElementById('sched-days').value;
+    if (!time || !label) return;
+    let dows = [];
+    if (sel === 'weekdays') dows = [1, 2, 3, 4, 5];
+    else if (sel === 'weekends') dows = [0, 6];
+    else if (sel !== 'all') dows = [parseInt(sel)];
+    try {
+      await _sb.from('daily_schedule').insert({ time, label, dows });
+      document.getElementById('sched-label').value = '';
+      await loadSchedule();
+    } catch (e) {}
+  }
+
+  async function deleteSchedule(id) {
+    try { await _sb.from('daily_schedule').delete().eq('id', id); await loadSchedule(); } catch (e) {}
+  }
+
+  function renderAgenda() {
+    const bar = document.getElementById('agenda-bar');
+    const list = document.getElementById('agenda-list');
+    if (!list) return;
+    const now = new Date();
+    const dowName = _etFmt(now, { weekday: 'long' });
+    const dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(dowName);
+    const todayLd = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(now);
+    const items = [];
+    _scheduleBlocks.forEach(b => {
+      const d = b.dows || [];
+      if (d.length === 0 || d.includes(dow)) items.push({ time: b.time, label: b.label, kind: 'block' });
+    });
+    (_captureReminders || []).forEach(r => {
+      if (r.due_at && !r.done && r.date === todayLd) items.push({ time: etHHMM(r.due_at), label: r.text, kind: 'rem' });
+    });
+    items.sort((a, b) => a.time.localeCompare(b.time));
+    if (!items.length) { if (bar) bar.style.display = 'none'; return; }
+    if (bar) bar.style.display = '';
+    const nowHHMM = etHHMM(now.toISOString());
+    let nextMarked = false;
+    list.innerHTML = items.map(it => {
+      const past = it.time < nowHHMM;
+      let cls = 'agenda-item ' + it.kind + (past ? ' past' : '');
+      if (!past && !nextMarked) { cls += ' next'; nextMarked = true; }
+      return '<div class="' + cls + '"><span class="agenda-time">' + fmt12(it.time) + '</span>' +
+        '<span class="agenda-label">' + escapeHtml(it.label) + '</span>' +
+        '<span class="agenda-kind">' + (it.kind === 'rem' ? 'reminder' : '') + '</span></div>';
+    }).join('');
   }
 
   function renderCapture(rems, notes, today) {

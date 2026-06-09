@@ -122,7 +122,16 @@ Deno.serve(async (req) => {
   const { data: acts } = await db.from('whoop_workouts').select('sport,start_time,end_time').order('start_time', { ascending: false }).limit(20);
   const { data: lifts } = await db.from('hevy_workouts').select('start_time');
   // Reminders due today or overdue and not done.
-  const { data: rems } = await db.from('reminders').select('date,text,done').eq('done', false).lte('date', todayLd).order('date', { ascending: true });
+  const { data: rems } = await db.from('reminders').select('date,text,done,due_at').eq('done', false).lte('date', todayLd).order('date', { ascending: true });
+  // Recurring schedule blocks → today's agenda.
+  const { data: sched } = await db.from('daily_schedule').select('label,time,dows').eq('active', true);
+  const dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(weekday);
+  const etHHMM = (iso: string) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
+  const fmt12 = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h >= 12 ? 'PM' : 'AM'); };
+  const agenda: { time: string; label: string; kind: string }[] = [];
+  (sched || []).forEach((b: any) => { const d = b.dows || []; if (d.length === 0 || d.includes(dow)) agenda.push({ time: b.time, label: b.label, kind: 'block' }); });
+  (rems || []).forEach((r: any) => { if (r.due_at && r.date === todayLd) agenda.push({ time: etHHMM(r.due_at), label: r.text, kind: 'rem' }); });
+  agenda.sort((a, b) => a.time.localeCompare(b.time));
 
   // lifts this week (Sunday start)
   const weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
@@ -158,6 +167,10 @@ Deno.serve(async (req) => {
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Today's plan</p>
         <p style="font-size:14px;margin:0;"><b>${plan}</b></p>
       </div>
+      ${agenda.length ? `<div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 8px;">Today's agenda</p>
+        ${agenda.map((a) => `<p style="font-size:14px;margin:0 0 4px;"><span style="display:inline-block;min-width:78px;color:#6a6e76;font-variant-numeric:tabular-nums;">${fmt12(a.time)}</span>${(a.label || '').replace(/[<>]/g, '')}${a.kind === 'rem' ? ' <span style=\"color:#2c5080;font-size:11px;\">(reminder)</span>' : ''}</p>`).join('')}
+      </div>` : ''}
       <div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Weather · Greenwich</p>
         <p style="font-size:14px;margin:0;">${wx}</p>
