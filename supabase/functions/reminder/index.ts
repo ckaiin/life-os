@@ -47,6 +47,23 @@ Deno.serve(async (req) => {
 
   const fmtTime = (iso: string) =>
     new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
+  const esc = (s: string) => String(s).replace(/[<>]/g, '');
+
+  // Rest of today's schedule: upcoming timed reminders for today (ET), not done.
+  const todayEt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(now);
+  const { data: rest } = await db.from('reminders')
+    .select('id,text,due_at')
+    .eq('date', todayEt).eq('done', false)
+    .gt('due_at', now.toISOString())
+    .order('due_at', { ascending: true });
+  const restHtml = (excludeId: number) => {
+    const items = (rest || []).filter((x: any) => x.id !== excludeId);
+    const inner = items.length
+      ? items.map((x: any) => `<p style="font-size:13px;margin:0 0 3px;color:#2a2e36;">${fmtTime(x.due_at)} — ${esc(x.text)}</p>`).join('')
+      : '<p style="font-size:12px;color:#8a8f98;margin:0;">Nothing else scheduled today.</p>';
+    return `<div style="margin-top:16px;padding-top:12px;border-top:1px solid #e1e3e8;">
+      <p style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8a8f98;margin:0 0 6px;">Rest of today</p>${inner}</div>`;
+  };
 
   let sent = 0;
   for (const r of due) {
@@ -55,8 +72,9 @@ Deno.serve(async (req) => {
     const html = `
       <div style="font-family:-apple-system,Segoe UI,sans-serif;max-width:480px;margin:0 auto;color:#1a1e26;">
         <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8a8f98;margin:0 0 4px;">Life OS · Reminder</p>
-        <h1 style="font-size:20px;margin:0 0 8px;">${String(r.text).replace(/[<>]/g, '')}</h1>
+        <h1 style="font-size:20px;margin:0 0 8px;">${esc(r.text)}</h1>
         <p style="font-size:14px;color:#2a2e36;margin:0;">In ${mins} minute${mins === 1 ? '' : 's'} — ${when}.</p>
+        ${restHtml(r.id)}
       </div>`;
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',

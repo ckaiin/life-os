@@ -45,7 +45,7 @@ $$);
 -- Timed reminder check every 5 minutes (emails ~15 min before a due reminder)
 select cron.schedule('life-os-reminder-check', '*/5 * * * *', $$
   select net.http_post(
-    url := 'https://bvecxrwdmddaduwxynfe.supabase.co/functions/v1/reminder-check',
+    url := 'https://bvecxrwdmddaduwxynfe.supabase.co/functions/v1/reminder',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'x-cron-secret', '<YOUR_CRON_SECRET>'
