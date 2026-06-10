@@ -317,6 +317,16 @@
   .sched-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 0 4px; }
   .sched-del:hover { color: var(--red); }
 
+  .hold-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .hold-list { display: flex; flex-direction: column; gap: 4px; }
+  .hold-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .hold-sym { font-weight: 600; min-width: 70px; }
+  .hold-name { color: var(--text3); font-size: 11px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hold-val { font-variant-numeric: tabular-nums; color: var(--text); }
+  .hold-px { color: var(--text3); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .hold-total { font-size: 14px; font-weight: 600; margin-top: 12px; color: var(--text); }
+  .hold-total span { color: var(--text3); font-weight: 400; font-size: 11px; }
+
   .lift-layout { display: flex; gap: 2rem; align-items: flex-start; }
   .lift-main { flex: 1; min-width: 0; }
   .lift-bodymap { width: 280px; flex-shrink: 0; position: sticky; top: 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
@@ -730,8 +740,8 @@
     </div>
     <div class="stat">
       <p class="stat-label">Portfolio value</p>
-      <p class="stat-value">$45K</p>
-      <p class="stat-sub">JLPSX + JTEK via JPM</p>
+      <p class="stat-value" id="portfolio-value">$45K</p>
+      <p class="stat-sub" id="portfolio-sub">JLPSX + JTEK via JPM</p>
     </div>
   </div>
 
@@ -904,7 +914,19 @@
       <div class="action-item" id="item-finance-3"><div class="action-check"><input type="checkbox" id="chk-finance-3"><label for="chk-finance-3"></label></div><p class="action-num">03</p><div><p class="action-title">Build your budget before your first paycheck lands</p><p class="action-detail">Two scenarios: $70K and $110K. Come back here with the number and we'll build the actual plan. The framework won't change — only the amounts.</p></div></div>
     </div>
     <div class="action-section">
-      <p class="action-section-title">Portfolio — existing $45K</p>
+      <p class="action-section-title">Live holdings <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">enter your share counts; value updates from market prices</span></p>
+      <div class="hold-form">
+        <input type="text" id="hold-symbol" class="sched-input" placeholder="Symbol (e.g. JTEK)" style="max-width:160px;text-transform:uppercase;">
+        <input type="number" id="hold-shares" class="sched-input" placeholder="Shares" step="0.0001" style="max-width:120px;" onkeydown="if(event.key==='Enter')addHolding()">
+        <button class="golf-btn" onclick="addHolding()">Add</button>
+        <button class="golf-btn" onclick="refreshPortfolio(true)" style="background:var(--bg3);color:var(--text2);">Refresh prices</button>
+      </div>
+      <div id="hold-list" class="hold-list"><p class="sched-empty">No holdings yet. Add a symbol and your share count.</p></div>
+      <p id="hold-total" class="hold-total"></p>
+    </div>
+
+    <div class="action-section">
+      <p class="action-section-title">Portfolio notes</p>
       <div class="action-item" id="item-finance-4"><div class="action-check"><input type="checkbox" id="chk-finance-4"><label for="chk-finance-4"></label></div><p class="action-num">04</p><div><p class="action-title">JLPSX — 1.39% expense ratio, grade F vs. category</p><p class="action-detail">You're paying ~$350/year in fees on $25K for a fund trying to beat the S&P 500. A Vanguard index fund like VOO charges 0.03% for the same exposure. Money stays put for now — revisit when it's moveable.</p></div></div>
       <div class="action-item" id="item-finance-5"><div class="action-check"><input type="checkbox" id="chk-finance-5"><label for="chk-finance-5"></label></div><p class="action-num">05</p><div><p class="action-title">JTEK — 0.65% expense ratio, concentrated tech</p><p class="action-detail">Better than JLPSX but still above average for its category. A concentrated tech bet at 22 isn't catastrophic, but it's a sector call. If tech has a bad year, this feels it harder than a broad index would.</p></div></div>
     </div>
@@ -2172,8 +2194,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.23</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.23: Remove injury protocol note</p>
+  <p class="version-tag">Version 2.24</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.24: Live portfolio value from market prices (Yahoo) + holdings editor</p>
 </div>
 
 <script>
@@ -2362,6 +2384,7 @@
     loadWhoop();
     loadCapture();
     loadSchedule();
+    loadHoldings();
     handleWhoopRedirect();
     autoSync();
 
@@ -2593,6 +2616,93 @@
 
   async function toggleReminder(id, done) {
     try { await _sb.from('reminders').update({ done }).eq('id', id); await loadCapture(); } catch (e) {}
+  }
+
+  // ===== LIVE PORTFOLIO =====
+  let _holdings = [];
+  function getHoldings() { try { return JSON.parse(localStorage.getItem('portfolio-holdings') || '[]'); } catch (e) { return []; } }
+  function saveHoldings(h) { localStorage.setItem('portfolio-holdings', JSON.stringify(h)); }
+  function fmtMoney(n) { return '$' + Math.round(n).toLocaleString(); }
+  function fmtMoneyShort(n) { return n >= 1000 ? '$' + (n / 1000).toFixed(n >= 100000 ? 0 : 1) + 'K' : '$' + Math.round(n); }
+
+  function loadHoldings() {
+    _holdings = getHoldings();
+    renderHoldings();
+    refreshPortfolio();
+  }
+
+  function renderHoldings(quotes) {
+    const wrap = document.getElementById('hold-list');
+    if (!wrap) return;
+    if (!_holdings.length) {
+      wrap.innerHTML = '<p class="sched-empty">No holdings yet. Add a symbol and your share count.</p>';
+      const t = document.getElementById('hold-total'); if (t) t.textContent = '';
+      return;
+    }
+    wrap.innerHTML = _holdings.map(h => {
+      const q = quotes && quotes[h.symbol];
+      const px = q && q.price != null ? q.price : null;
+      const val = px != null ? px * h.shares : null;
+      return '<div class="hold-row"><span class="hold-sym">' + escapeHtml(h.symbol) + '</span>' +
+        '<span class="hold-name">' + (q && q.name ? escapeHtml(q.name) : '') + '</span>' +
+        '<span class="hold-px">' + (px != null ? '$' + px.toFixed(2) + ' × ' + h.shares : '—') + '</span>' +
+        '<span class="hold-val">' + (val != null ? fmtMoney(val) : '—') + '</span>' +
+        '<button class="sched-del" onclick="deleteHolding(\'' + h.symbol + '\')">✕</button></div>';
+    }).join('');
+  }
+
+  async function addHolding() {
+    const sym = (document.getElementById('hold-symbol').value || '').toUpperCase().trim();
+    const shares = parseFloat(document.getElementById('hold-shares').value);
+    if (!sym || !(shares > 0)) return;
+    _holdings = getHoldings().filter(h => h.symbol !== sym);
+    _holdings.push({ symbol: sym, shares });
+    saveHoldings(_holdings);
+    document.getElementById('hold-symbol').value = '';
+    document.getElementById('hold-shares').value = '';
+    renderHoldings();
+    refreshPortfolio();
+  }
+
+  function deleteHolding(sym) {
+    _holdings = getHoldings().filter(h => h.symbol !== sym);
+    saveHoldings(_holdings);
+    renderHoldings();
+    refreshPortfolio();
+  }
+
+  async function refreshPortfolio() {
+    if (!_sbReady) return;
+    _holdings = getHoldings();
+    if (!_holdings.length) return;
+    try {
+      const { data: { session } } = await _sb.auth.getSession();
+      if (!session) return;
+      const { data, error } = await _sb.functions.invoke('quote', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token }, body: { symbols: _holdings.map(h => h.symbol) },
+      });
+      if (error || !data || !data.prices) { useLastPortfolio(); return; }
+      const quotes = data.prices;
+      let total = 0, complete = true;
+      _holdings.forEach(h => { const q = quotes[h.symbol]; if (q && q.price != null) total += q.price * h.shares; else complete = false; });
+      renderHoldings(quotes);
+      const t = document.getElementById('hold-total');
+      if (t) t.innerHTML = 'Total: ' + fmtMoney(total) + ' <span>· ' + new Date(data.at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) + (complete ? '' : ' · some prices unavailable') + '</span>';
+      localStorage.setItem('portfolio-last', JSON.stringify({ total, at: data.at }));
+      updatePortfolioCard(total, false);
+    } catch (e) { useLastPortfolio(); }
+  }
+
+  function useLastPortfolio() {
+    try { const l = JSON.parse(localStorage.getItem('portfolio-last') || 'null'); if (l) updatePortfolioCard(l.total, true); } catch (e) {}
+  }
+
+  function updatePortfolioCard(total, stale) {
+    if (total == null) return;
+    const v = document.getElementById('portfolio-value');
+    const s = document.getElementById('portfolio-sub');
+    if (v) v.textContent = fmtMoneyShort(total);
+    if (s) s.textContent = (getHoldings().map(h => h.symbol).join(' + ') || 'Portfolio') + ' · ' + (stale ? 'last close' : 'live');
   }
 
   // Dropdown toggle
