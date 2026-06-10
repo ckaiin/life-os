@@ -80,13 +80,15 @@
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     gap: 0;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    border-bottom: none;
+    background: transparent;
     min-height: 90px;
+    position: relative;
+    z-index: 1;
   }
   .brief-left {
     padding: 1.25rem 1.5rem;
-    border-right: 1px solid var(--border);
+    border-right: 1px solid rgba(255,255,255,0.22);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -107,7 +109,7 @@
   }
   .brief-center {
     padding: 1.25rem 1.5rem;
-    border-right: 1px solid var(--border);
+    border-right: 1px solid rgba(255,255,255,0.22);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -2218,8 +2220,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.29</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.29: Extend dynamic sky over the morning brief, down to the tabs</p>
+  <p class="version-tag">Version 2.30</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.30: Fix morning-brief transparency so the sky shows through</p>
 </div>
 
 <script>
