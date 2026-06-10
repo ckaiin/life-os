@@ -753,6 +753,7 @@
       <button class="dropdown-item" id="tab-recovery" onclick="event.stopPropagation(); switchTab('recovery')">Recovery</button>
       <button class="dropdown-item" id="tab-golf" onclick="event.stopPropagation(); switchTab('golf')">Golf</button>
       <button class="dropdown-item" id="tab-supplements" onclick="event.stopPropagation(); switchTab('supplements')">Supplements</button>
+      <button class="dropdown-item" id="tab-facial" onclick="event.stopPropagation(); switchTab('facial')">Facial Care</button>
     </div>
   </div>
 </nav>
@@ -898,15 +899,6 @@
     </div>
   </div>
 
-  <div class="timeline-section">
-    <p class="section-title">Next 8 weeks — before you start</p>
-    <div class="timeline-track">
-      <div class="tl-item"><p class="tl-when">This week</p><p class="tl-what">Start the shift</p><p class="tl-detail">Move wake up 20–30 min earlier. Text your manager one specific prep question.</p></div>
-      <div class="tl-item"><p class="tl-when">Weeks 2–3</p><p class="tl-what">Lock infrastructure</p><p class="tl-detail">Join Hydrogen Fitness. Build full budget draft when offer letter arrives.</p></div>
-      <div class="tl-item"><p class="tl-when">Weeks 4–6</p><p class="tl-what">Product knowledge</p><p class="tl-detail">Learn all division breakdowns cold. Know the catalog before day one.</p></div>
-      <div class="tl-item"><p class="tl-when">Week of June 29</p><p class="tl-what">Show up ready</p><p class="tl-detail">Wake up adjusted. Gym locked. Budget set. Commute tested. Go.</p></div>
-    </div>
-  </div>
 </div>
 
 <!-- WORK -->
@@ -2215,13 +2207,38 @@
   </div>
 </div>
 
+<div id="panel-facial" class="panel">
+  <div class="others-wrap" style="max-width:900px;">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Facial Care</p>
+      <p class="others-title">Facial Care</p>
+      <p class="others-lead">Your skincare routine and products. Acne-prone — consistency over intensity.</p>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Morning routine</p>
+      <div id="facial-am" class="facial-list"></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Night routine</p>
+      <div id="facial-pm" class="facial-list"></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Notes</p>
+      <p class="others-lead" style="font-size:12px;">Tell me your products and steps and I'll fill these in. For now this is a placeholder.</p>
+    </div>
+  </div>
+</div>
+
 <div class="footer">
   <p class="footer-text">Conor's Life OS — built May 2026</p>
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.31</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.31: Remove morning-brief vertical dividers</p>
+  <p class="version-tag">Version 2.32</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.32: Remove 8-week timeline; add Facial Care tab (scaffold)</p>
 </div>
 
 <script>
@@ -2760,7 +2777,7 @@
   });
 
   // Tab switching
-  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'lifting', 'recovery', 'golf', 'supplements'];
+  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'lifting', 'recovery', 'golf', 'supplements', 'facial'];
   function switchTab(id) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
