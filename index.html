@@ -19,15 +19,33 @@
   html { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; }
   body { min-height: 100vh; }
 
-  .header { border-bottom: 1px solid var(--border); padding: 2.5rem 2.5rem 2rem; position: relative; overflow: hidden; }
+  .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .header { padding: 2.5rem 2.5rem 1.5rem; position: relative; z-index: 1; background: transparent; }
   .header-sky { position: absolute; inset: 0; z-index: 0; transition: background 1.5s ease; }
   .hsky-stars { position: absolute; inset: 0; transition: opacity 1.5s ease; }
   .hsky-star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; }
   .hsky-body { position: absolute; border-radius: 50%; pointer-events: none; }
-  .hsky-mts { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 46%; }
+  .hsky-mts { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 38px; }
   .header-inner { position: relative; z-index: 1; }
   .start-badge { backdrop-filter: blur(4px); }
-  .header::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(74,96,128,0.06) 0%, transparent 70%); pointer-events: none; }
+  /* Morning brief floating over the sky */
+  .morning-brief { background: transparent; border-bottom: none; position: relative; z-index: 1; }
+  .brief-left, .brief-center { border-right-color: rgba(255,255,255,0.22); }
+  .hero .brief-date { color: #5a6072; }
+  .hero .brief-greeting { color: #16203a; }
+  .hero .brief-item { color: #2a2e36; }
+  #brief-sleep { background: rgba(255,255,255,0.74); border: 1px solid rgba(255,255,255,0.5); border-radius: 6px; padding: 10px 14px; backdrop-filter: blur(6px); width: 100%; box-sizing: border-box; }
+  .hero.is-night .eyebrow { color: #aab4d6; }
+  .hero.is-night .main-title { background-image: linear-gradient(135deg,#dfe6ff,#9fb8e8); }
+  .hero.is-night .brief-date { color: #b9c2e0; }
+  .hero.is-night .brief-greeting { color: #e9edff; }
+  .hero.is-night .brief-item { color: #dfe6ff; }
+  .hero.is-night .badge-rest { background: rgba(160,170,190,0.22); color: #cdd5ea; }
+  .hero.is-night .badge-workout { background: rgba(30,110,168,0.3); color: #cfe3f5; }
+  .hero.is-night .badge-run { background: rgba(22,122,96,0.3); color: #bdeede; }
+  .hero.is-night .badge-overdue { background: rgba(184,48,48,0.3); color: #f3c9c9; }
+  .hero.is-night .badge-clear { background: rgba(30,140,78,0.3); color: #bdeec9; }
+  .header::before { display: none; }
   .header-inner { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
   .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--accent2); margin-bottom: 6px; }
   .main-title { font-family: 'Bebas Neue', sans-serif; font-size: 72px; letter-spacing: 4px; line-height: 0.9; background: linear-gradient(135deg, #1a1e26 0%, #2c5080 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -670,15 +688,16 @@
   </div>
 </div>
 
-<div class="header">
+<div class="hero" id="hero">
   <div class="header-sky" id="header-sky">
     <div class="hsky-stars" id="hsky-stars"></div>
     <div class="hsky-body" id="hsky-body"></div>
-    <svg class="hsky-mts" viewBox="0 0 1000 90" preserveAspectRatio="none">
-      <path id="hsky-mt1" d="M0,90 L0,52 L120,30 L240,55 L360,28 L500,58 L640,34 L780,60 L900,40 L1000,55 L1000,90 Z"/>
-      <path id="hsky-mt2" d="M0,90 L0,68 L160,50 L300,70 L460,48 L620,72 L760,52 L900,72 L1000,60 L1000,90 Z"/>
+    <svg class="hsky-mts" viewBox="0 0 1000 30" preserveAspectRatio="none">
+      <path id="hsky-mt1" d="M0,30 L0,16 L160,8 L340,20 L520,6 L700,20 L860,10 L1000,18 L1000,30 Z"/>
+      <path id="hsky-mt2" d="M0,30 L0,24 L200,16 L420,26 L640,16 L820,26 L1000,20 L1000,30 Z"/>
     </svg>
   </div>
+  <div class="header">
   <div class="header-inner">
     <div class="header-left">
       <p class="eyebrow">Personal operating system</p>
@@ -708,6 +727,7 @@
       <div id="brief-sleep"></div>
     </div>
   </div>
+</div>
 
 <nav class="nav-tabs">
   <button class="tab-btn active" id="tab-dashboard" onclick="switchTab('dashboard')"><span class="tab-letter">⌂</span> Dashboard</button>
@@ -2198,8 +2218,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.28</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.28: Time-of-day dynamic sky in the header</p>
+  <p class="version-tag">Version 2.29</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.29: Extend dynamic sky over the morning brief, down to the tabs</p>
 </div>
 
 <script>
@@ -3095,7 +3115,7 @@
       else { const nh = h < 6.5 ? h + 24 : h; frac = (nh - 19.5) / 11; sun = false; }
       frac = Math.max(0, Math.min(1, frac));
       const x = frac * 88 + 6;
-      const y = 56 - Math.sin(frac * Math.PI) * 46;
+      const y = 42 - Math.sin(frac * Math.PI) * 34;
       const size = sun ? 56 : 40;
       body.style.width = size + 'px'; body.style.height = size + 'px';
       body.style.left = 'calc(' + x + '% - ' + (size / 2) + 'px)';
@@ -3109,10 +3129,8 @@
     const m1 = document.getElementById('hsky-mt1'), m2 = document.getElementById('hsky-mt2');
     if (m1) { m1.setAttribute('fill', isNight ? '#10131f' : '#2b3a52'); m1.setAttribute('opacity', '0.85'); }
     if (m2) m2.setAttribute('fill', isNight ? '#080a12' : '#1c2738');
-    const eye = document.querySelector('.header .eyebrow');
-    const title = document.querySelector('.header .main-title');
-    if (eye) eye.style.color = isNight ? '#aab4d6' : '';
-    if (title) title.style.backgroundImage = isNight ? 'linear-gradient(135deg,#dfe6ff,#9fb8e8)' : '';
+    const hero = document.getElementById('hero');
+    if (hero) hero.classList.toggle('is-night', isNight);
   }
 
   function initMorningBrief() {
