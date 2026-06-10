@@ -20,6 +20,13 @@
   body { min-height: 100vh; }
 
   .header { border-bottom: 1px solid var(--border); padding: 2.5rem 2.5rem 2rem; position: relative; overflow: hidden; }
+  .header-sky { position: absolute; inset: 0; z-index: 0; transition: background 1.5s ease; }
+  .hsky-stars { position: absolute; inset: 0; transition: opacity 1.5s ease; }
+  .hsky-star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; }
+  .hsky-body { position: absolute; border-radius: 50%; pointer-events: none; }
+  .hsky-mts { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 46%; }
+  .header-inner { position: relative; z-index: 1; }
+  .start-badge { backdrop-filter: blur(4px); }
   .header::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(74,96,128,0.06) 0%, transparent 70%); pointer-events: none; }
   .header-inner { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
   .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--accent2); margin-bottom: 6px; }
@@ -664,6 +671,14 @@
 </div>
 
 <div class="header">
+  <div class="header-sky" id="header-sky">
+    <div class="hsky-stars" id="hsky-stars"></div>
+    <div class="hsky-body" id="hsky-body"></div>
+    <svg class="hsky-mts" viewBox="0 0 1000 90" preserveAspectRatio="none">
+      <path id="hsky-mt1" d="M0,90 L0,52 L120,30 L240,55 L360,28 L500,58 L640,34 L780,60 L900,40 L1000,55 L1000,90 Z"/>
+      <path id="hsky-mt2" d="M0,90 L0,68 L160,50 L300,70 L460,48 L620,72 L760,52 L900,72 L1000,60 L1000,90 Z"/>
+    </svg>
+  </div>
   <div class="header-inner">
     <div class="header-left">
       <p class="eyebrow">Personal operating system</p>
@@ -2183,8 +2198,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.27</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.27: More realistic muscle recovery curve (floor 3 days)</p>
+  <p class="version-tag">Version 2.28</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.28: Time-of-day dynamic sky in the header</p>
 </div>
 
 <script>
@@ -2363,6 +2378,8 @@
     renderWeightTracker();
     renderTodos();
     initMorningBrief();
+    paintHeaderSky();
+    setInterval(paintHeaderSky, 10 * 60 * 1000);
     startTodoCycle();
     initMaintenance();
     initCheckboxes();
@@ -3026,6 +3043,76 @@
     } else {
       overdueEl.innerHTML = `<span class="brief-badge badge-clear">All clear</span>Maintenance up to date.`;
     }
+  }
+
+  // ===== TIME-OF-DAY HEADER SKY =====
+  const _SKYKEY = [
+    [0, [10, 14, 26], [26, 34, 53]], [5, [31, 37, 64], [120, 80, 90]], [7, [70, 90, 150], [235, 150, 110]],
+    [10, [74, 144, 217], [200, 230, 247]], [13, [60, 130, 210], [191, 224, 245]], [17, [70, 110, 180], [240, 170, 110]],
+    [19, [50, 55, 95], [232, 122, 74]], [21, [20, 26, 48], [30, 40, 64]], [24, [10, 14, 26], [26, 34, 53]],
+  ];
+  function _skyAt(h) {
+    const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+    for (let i = 0; i < _SKYKEY.length - 1; i++) {
+      if (h >= _SKYKEY[i][0] && h <= _SKYKEY[i + 1][0]) {
+        const t = (h - _SKYKEY[i][0]) / (_SKYKEY[i + 1][0] - _SKYKEY[i][0]);
+        return {
+          top: [0, 1, 2].map(k => lerp(_SKYKEY[i][1][k], _SKYKEY[i + 1][1][k], t)),
+          bot: [0, 1, 2].map(k => lerp(_SKYKEY[i][2][k], _SKYKEY[i + 1][2][k], t)),
+        };
+      }
+    }
+    return { top: _SKYKEY[0][1], bot: _SKYKEY[0][2] };
+  }
+  function _nightness(h) {
+    if (h >= 21 || h < 5) return 1;
+    if (h >= 8 && h <= 18) return 0;
+    if (h >= 5 && h < 8) return 1 - (h - 5) / 3;
+    return (h - 18) / 3;
+  }
+  function paintHeaderSky() {
+    const sky = document.getElementById('header-sky');
+    if (!sky) return;
+    const d = new Date();
+    const h = d.getHours() + d.getMinutes() / 60;
+    const isNight = (h < 6.6 || h > 19.4);
+    const { top, bot } = _skyAt(h);
+    const rgb = a => 'rgb(' + a[0] + ',' + a[1] + ',' + a[2] + ')';
+    sky.style.background = 'linear-gradient(to bottom, ' + rgb(top) + ' 0%, ' + rgb(bot) + ' 100%)';
+    // stars
+    const stars = document.getElementById('hsky-stars');
+    if (stars && !stars.children.length) {
+      let html = '';
+      for (let i = 0; i < 28; i++) html += '<div class="hsky-star" style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 55).toFixed(1) + '%;opacity:' + (0.4 + Math.random() * 0.6).toFixed(2) + '"></div>';
+      stars.innerHTML = html;
+    }
+    if (stars) stars.style.opacity = _nightness(h);
+    // sun / moon along an arc
+    const body = document.getElementById('hsky-body');
+    if (body) {
+      let frac, sun;
+      if (!isNight) { frac = (h - 6.5) / 13; sun = true; }
+      else { const nh = h < 6.5 ? h + 24 : h; frac = (nh - 19.5) / 11; sun = false; }
+      frac = Math.max(0, Math.min(1, frac));
+      const x = frac * 88 + 6;
+      const y = 56 - Math.sin(frac * Math.PI) * 46;
+      const size = sun ? 56 : 40;
+      body.style.width = size + 'px'; body.style.height = size + 'px';
+      body.style.left = 'calc(' + x + '% - ' + (size / 2) + 'px)';
+      body.style.top = y + '%';
+      body.style.background = sun
+        ? 'radial-gradient(circle at 40% 40%, #fff6d8, #ffd86b 55%, #ffb43a)'
+        : 'radial-gradient(circle at 38% 38%, #f4f6ff, #d2d8ec 60%, #aeb6d0)';
+      body.style.boxShadow = sun ? '0 0 44px 14px rgba(255,200,90,0.5)' : '0 0 28px 8px rgba(200,210,240,0.32)';
+    }
+    // mountains + text adapt to day/night
+    const m1 = document.getElementById('hsky-mt1'), m2 = document.getElementById('hsky-mt2');
+    if (m1) { m1.setAttribute('fill', isNight ? '#10131f' : '#2b3a52'); m1.setAttribute('opacity', '0.85'); }
+    if (m2) m2.setAttribute('fill', isNight ? '#080a12' : '#1c2738');
+    const eye = document.querySelector('.header .eyebrow');
+    const title = document.querySelector('.header .main-title');
+    if (eye) eye.style.color = isNight ? '#aab4d6' : '';
+    if (title) title.style.backgroundImage = isNight ? 'linear-gradient(135deg,#dfe6ff,#9fb8e8)' : '';
   }
 
   function initMorningBrief() {
