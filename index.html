@@ -354,6 +354,12 @@
   .hold-total { font-size: 14px; font-weight: 600; margin-top: 12px; color: var(--text); }
   .hold-total span { color: var(--text3); font-weight: 400; font-size: 11px; }
 
+  .facial-step { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .facial-step:last-child { border-bottom: none; }
+  .fstep-num { width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; background: var(--bg3); color: var(--text2); font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 600; margin-top: 1px; }
+  .fstep-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .fstep-note { font-size: 11px; color: var(--text3); margin-top: 3px; line-height: 1.45; }
+
   .lift-layout { display: flex; gap: 2rem; align-items: flex-start; }
   .lift-main { flex: 1; min-width: 0; }
   .lift-bodymap { width: 280px; flex-shrink: 0; position: sticky; top: 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
@@ -2212,22 +2218,37 @@
     <div class="others-header">
       <p class="others-eyebrow">Others — Facial Care</p>
       <p class="others-title">Facial Care</p>
-      <p class="others-lead">Your skincare routine and products. Acne-prone — consistency over intensity.</p>
+      <p class="others-lead">Acne routine. Consistency over intensity — give the actives weeks, not days, before judging results.</p>
+    </div>
+
+    <div class="golf-top-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="golf-stat-card">
+        <p class="golf-stat-label">Routine started</p>
+        <p class="golf-stat-value" style="font-size:1.2rem;">Jun 9, 2026</p>
+      </div>
+      <div class="golf-stat-card goal">
+        <p class="golf-stat-label">Day</p>
+        <p class="golf-stat-value" id="facial-day" style="color:var(--green)">—</p>
+        <p class="golf-stat-sub">on this routine</p>
+      </div>
     </div>
 
     <div class="others-section">
-      <p class="others-section-title">Morning routine</p>
-      <div id="facial-am" class="facial-list"></div>
+      <p class="others-section-title">Morning <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">in the shower</span></p>
+      <div class="facial-step"><span class="fstep-num">1</span><div><p class="fstep-name">PanOxyl 10% Benzoyl Peroxide</p><p class="fstep-note">In the shower — lather on face, leave briefly, rinse. Can bleach towels/fabric, so blot dry carefully.</p></div></div>
+      <div class="facial-step"><span class="fstep-num">2</span><div><p class="fstep-name">La Roche-Posay moisturizer · SPF 30</p><p class="fstep-note">Every morning after the shower. Don't skip the SPF — tretinoin makes skin more sun-sensitive.</p></div></div>
     </div>
 
     <div class="others-section">
-      <p class="others-section-title">Night routine</p>
-      <div id="facial-pm" class="facial-list"></div>
+      <p class="others-section-title">With dinner</p>
+      <div class="facial-step"><span class="fstep-num">℞</span><div><p class="fstep-name">Doxycycline</p><p class="fstep-note">Take with food at dinner. Stay upright for ~30 min after.</p></div></div>
     </div>
 
     <div class="others-section">
-      <p class="others-section-title">Notes</p>
-      <p class="others-lead" style="font-size:12px;">Tell me your products and steps and I'll fill these in. For now this is a placeholder.</p>
+      <p class="others-section-title">Night</p>
+      <div class="facial-step"><span class="fstep-num">1</span><div><p class="fstep-name">Wash face — water or shower</p></div></div>
+      <div class="facial-step"><span class="fstep-num">2</span><div><p class="fstep-name">Tretinoin 0.05% cream</p><p class="fstep-note">Pea-sized, only where needed. Let skin fully dry first to limit irritation.</p></div></div>
+      <div class="facial-step"><span class="fstep-num">3</span><div><p class="fstep-name">La Roche-Posay moisturizer · SPF 30</p></div></div>
     </div>
   </div>
 </div>
@@ -2237,8 +2258,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.32</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.32: Remove 8-week timeline; add Facial Care tab (scaffold)</p>
+  <p class="version-tag">Version 2.33</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.33: Facial Care routine (PanOxyl/tretinoin/doxy) + day counter from Jun 9</p>
 </div>
 
 <script>
@@ -2411,6 +2432,10 @@
     const nicStart = new Date('2025-06-16T12:00:00');
     const nicDays = Math.floor((today - nicStart) / (1000 * 60 * 60 * 24));
     document.getElementById('nic-days').textContent = nicDays;
+    const facialStart = new Date('2026-06-09T00:00:00');
+    const facialDay = Math.floor((today - facialStart) / (1000 * 60 * 60 * 24)) + 1;
+    const fd = document.getElementById('facial-day');
+    if (fd) fd.textContent = facialDay > 0 ? facialDay : 1;
 
     // Init sequence (order matters — do not reorder)
     initWorkoutDays();
