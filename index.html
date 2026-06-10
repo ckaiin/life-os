@@ -2247,7 +2247,7 @@
     <div class="others-section">
       <p class="others-section-title">Night</p>
       <div class="facial-step"><span class="fstep-num">1</span><div><p class="fstep-name">Wash face — water or shower</p></div></div>
-      <div class="facial-step"><span class="fstep-num">2</span><div><p class="fstep-name">Tretinoin 0.05% cream</p><p class="fstep-note">Pea-sized, only where needed. Let skin fully dry first to limit irritation.</p></div></div>
+      <div class="facial-step"><span class="fstep-num">2</span><div><p class="fstep-name">Tretinoin 0.05% cream</p><p class="fstep-note">Pea-sized, only where needed. Let skin fully dry first to limit irritation.</p><p class="fstep-note" id="tret-ramp" style="margin-top:5px;"></p></div></div>
       <div class="facial-step"><span class="fstep-num">3</span><div><p class="fstep-name">La Roche-Posay moisturizer · SPF 30</p></div></div>
     </div>
   </div>
@@ -2258,8 +2258,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.33</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.33: Facial Care routine (PanOxyl/tretinoin/doxy) + day counter from Jun 9</p>
+  <p class="version-tag">Version 2.34</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.34: Tretinoin ramp note (frequency + tonight apply/rest by day)</p>
 </div>
 
 <script>
@@ -2436,6 +2436,18 @@
     const facialDay = Math.floor((today - facialStart) / (1000 * 60 * 60 * 24)) + 1;
     const fd = document.getElementById('facial-day');
     if (fd) fd.textContent = facialDay > 0 ? facialDay : 1;
+    // Tretinoin ramp: every 3rd night (wk 1-2) -> every other (wk 3-4) -> nightly.
+    const tr = document.getElementById('tret-ramp');
+    if (tr) {
+      const fday = Math.max(1, facialDay);
+      let label, anchor, cadence;
+      if (fday >= 29) { label = 'Nightly (as tolerated)'; anchor = 29; cadence = 1; }
+      else if (fday >= 15) { label = 'Every other night'; anchor = 15; cadence = 2; }
+      else { label = 'Every 3rd night'; anchor = 1; cadence = 3; }
+      const onTonight = ((fday - anchor) % cadence) === 0;
+      tr.innerHTML = '<b>Ramp:</b> ' + label + ' — tonight: ' +
+        (onTonight ? '<b style="color:var(--green)">apply tretinoin</b>' : '<span style="color:var(--text3)">rest night, skip</span>');
+    }
 
     // Init sequence (order matters — do not reorder)
     initWorkoutDays();
