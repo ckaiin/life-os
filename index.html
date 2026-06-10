@@ -2183,8 +2183,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.26</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.26: Ease maintenance frequencies (towels 5d, dish/counters 7d)</p>
+  <p class="version-tag">Version 2.27</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.27: More realistic muscle recovery curve (floor 3 days)</p>
 </div>
 
 <script>
@@ -3534,8 +3534,8 @@
       if (!r) {
         baseFresh = 1;
       } else {
-        // Recovery time scales with tonnage: light day ~2d, heavy/high-volume day ~5d.
-        const recoveryDays = Math.min(5, Math.max(2, 1.5 + r.load / 2000));
+        // Recovery time scales with tonnage: floor ~3 days, heavy/high-volume up to ~6.
+        const recoveryDays = Math.min(6, Math.max(3, 2 + r.load / 1500));
         baseFresh = Math.min(1, r.daysAgo / recoveryDays);
       }
       const fresh = baseFresh * recFactor;
