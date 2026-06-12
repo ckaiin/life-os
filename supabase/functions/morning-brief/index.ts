@@ -133,8 +133,9 @@ Deno.serve(async (req) => {
   (rems || []).forEach((r: any) => { if (r.due_at && r.date === todayLd) agenda.push({ time: etHHMM(r.due_at), label: r.text, kind: 'rem' }); });
   agenda.sort((a, b) => a.time.localeCompare(b.time));
 
-  // Home maintenance due/overdue (cycles mirror the app; weigh-in excluded).
-  const MAINT: [string, string, number][] = [
+  // Home maintenance due/overdue. Config comes from the app (kv 'maint-config',
+  // single source of truth); falls back to a built-in list if absent.
+  const FALLBACK_MAINT: [string, string, number][] = [
     ['m-pillowcase', 'Pillowcases', 3], ['m-sheets', 'Bed sheets', 7], ['m-duvet', 'Duvet cover', 30],
     ['m-pillow', 'Pillow', 90], ['m-bodytowel', 'Body towel', 5], ['m-handtowel', 'Hand towel', 5],
     ['m-toilet', 'Toilet', 7], ['m-sink', 'Sink & countertop', 7], ['m-shower', 'Shower / tub', 7],
@@ -145,6 +146,11 @@ Deno.serve(async (req) => {
   const { data: kv } = await db.from('kv_store').select('key,value').like('key', 'maint-%');
   const kvMap: Record<string, string> = {};
   (kv || []).forEach((r: any) => { kvMap[r.key] = r.value; });
+  let MAINT: [string, string, number][] = FALLBACK_MAINT;
+  try {
+    const cfg = JSON.parse(kvMap['maint-config'] || '[]');
+    if (Array.isArray(cfg) && cfg.length) MAINT = cfg.map((c: any) => [c.key, c.name, c.days]);
+  } catch (_) { /* keep fallback */ }
   const dueMaint = MAINT
     .map(([key, name, days]) => {
       const last = parseInt(kvMap['maint-' + key] || '0');

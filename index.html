@@ -2258,8 +2258,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.34</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.34: Tretinoin ramp note (frequency + tonight apply/rest by day)</p>
+  <p class="version-tag">Version 2.35</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.35: Sync maintenance cycles app→email via shared config</p>
 </div>
 
 <script>
@@ -2882,6 +2882,21 @@
   function initMaintenance() {
     const items = document.querySelectorAll('.maint-item');
     const now = Date.now();
+
+    // Mirror the maintenance config (key/name/cycle) to the DB so the morning
+    // brief uses the same cycles as the app — single source of truth.
+    const cfg = [];
+    items.forEach(item => {
+      if (item.hasAttribute('data-no-overdue')) return;
+      const k = item.dataset.key, d = parseInt(item.dataset.days);
+      const nm = (item.querySelector('.maint-name') || {}).textContent;
+      if (k && d) cfg.push({ key: k, name: (nm || k).trim(), days: d });
+    });
+    try {
+      if (localStorage.getItem('maint-config') !== JSON.stringify(cfg)) {
+        localStorage.setItem('maint-config', JSON.stringify(cfg));
+      }
+    } catch (e) {}
 
     items.forEach(item => {
       const key = item.dataset.key;
