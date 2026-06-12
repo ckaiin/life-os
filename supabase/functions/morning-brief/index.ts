@@ -133,6 +133,27 @@ Deno.serve(async (req) => {
   (rems || []).forEach((r: any) => { if (r.due_at && r.date === todayLd) agenda.push({ time: etHHMM(r.due_at), label: r.text, kind: 'rem' }); });
   agenda.sort((a, b) => a.time.localeCompare(b.time));
 
+  // Home maintenance due/overdue (cycles mirror the app; weigh-in excluded).
+  const MAINT: [string, string, number][] = [
+    ['m-pillowcase', 'Pillowcases', 3], ['m-sheets', 'Bed sheets', 7], ['m-duvet', 'Duvet cover', 30],
+    ['m-pillow', 'Pillow', 90], ['m-bodytowel', 'Body towel', 5], ['m-handtowel', 'Hand towel', 5],
+    ['m-toilet', 'Toilet', 7], ['m-sink', 'Sink & countertop', 7], ['m-shower', 'Shower / tub', 7],
+    ['m-bathmat', 'Bath mat', 7], ['m-razor', 'Razor blade', 10], ['m-toothbrush', 'Toothbrush head', 60],
+    ['m-dishcloth', 'Dish cloth / sponge', 7], ['m-counters', 'Kitchen counters', 7], ['m-floors', 'Floors', 7],
+    ['m-fridge', 'Fridge wipe-down', 30], ['m-phone', 'Phone screen wipe', 1], ['m-laundry', 'Laundry', 7],
+  ];
+  const { data: kv } = await db.from('kv_store').select('key,value').like('key', 'maint-%');
+  const kvMap: Record<string, string> = {};
+  (kv || []).forEach((r: any) => { kvMap[r.key] = r.value; });
+  const dueMaint = MAINT
+    .map(([key, name, days]) => {
+      const last = parseInt(kvMap['maint-' + key] || '0');
+      const elapsed = last ? (now.getTime() - last) / 86400000 : 9999;
+      return { name, over: Math.floor(elapsed - days) };
+    })
+    .filter((m) => m.over >= 0)
+    .sort((a, b) => b.over - a.over);
+
   // lifts this week (Sunday start)
   const weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   const liftsThisWeek = (lifts || []).filter((l: any) => l.start_time && new Date(l.start_time) >= weekStart).length;
@@ -170,6 +191,10 @@ Deno.serve(async (req) => {
       ${agenda.length ? `<div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 8px;">Today's agenda</p>
         ${agenda.map((a) => `<p style="font-size:14px;margin:0 0 4px;"><span style="display:inline-block;min-width:78px;color:#6a6e76;font-variant-numeric:tabular-nums;">${fmt12(a.time)}</span>${(a.label || '').replace(/[<>]/g, '')}${a.kind === 'rem' ? ' <span style=\"color:#2c5080;font-size:11px;\">(reminder)</span>' : ''}</p>`).join('')}
+      </div>` : ''}
+      ${dueMaint.length ? `<div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Home maintenance due</p>
+        ${dueMaint.map((m) => `<p style="font-size:14px;margin:0 0 4px;">${m.over > 0 ? '⚠️ ' : '• '}${m.name}${m.over > 0 ? ` <span style=\"color:#b45309;font-size:11px;\">(${m.over}d overdue)</span>` : ' <span style="color:#6a6e76;font-size:11px;">(due today)</span>'}</p>`).join('')}
       </div>` : ''}
       <div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Weather · Greenwich</p>
