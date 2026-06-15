@@ -974,16 +974,16 @@
 
     <!-- BUDGET CALCULATOR -->
     <div class="action-section">
-      <p class="action-section-title">Budget calculator</p>
+      <p class="action-section-title">Paycheck planner</p>
       <div class="calc-wrap">
-        <div class="calc-intro">Enter your salary when the offer letter arrives. The calculator estimates take-home using CT state rates (with NY work credit applied) and federal brackets for 2026. Actual numbers may vary slightly.</div>
+        <div class="calc-intro">Models your real paycheck: $70K base, paid weekly on Thursdays. Pre-tax 401(k) and health premium lower your taxable income; state tax is figured on NY-sourced wages (your CT resident credit nets the two out at filing). Federal and FICA use 2026 figures. Estimates for planning, not exact withholding.</div>
 
         <div class="calc-input-row">
           <div class="calc-input-group">
             <label class="calc-label">Annual salary</label>
             <div class="calc-input-prefix">
               <span>$</span>
-              <input type="number" id="calc-salary" placeholder="70000" min="0" max="500000" oninput="runCalc()">
+              <input type="number" id="calc-salary" value="70000" placeholder="70000" min="0" max="500000" oninput="runCalc()">
             </div>
           </div>
           <div class="calc-input-group">
@@ -998,6 +998,20 @@
             <div class="calc-input-prefix">
               <span>$</span>
               <input type="number" id="calc-roth" placeholder="7000" min="0" max="7000" oninput="runCalc()">
+            </div>
+          </div>
+          <div class="calc-input-group">
+            <label class="calc-label">401(k) contribution</label>
+            <div class="calc-input-suffix">
+              <input type="number" id="calc-401k" value="6" placeholder="6" min="0" max="100" oninput="runCalc()">
+              <span>%</span>
+            </div>
+          </div>
+          <div class="calc-input-group">
+            <label class="calc-label">Health premium / mo</label>
+            <div class="calc-input-prefix">
+              <span>$</span>
+              <input type="number" id="calc-health" placeholder="120" min="0" max="2000" oninput="runCalc()">
             </div>
           </div>
           <div class="calc-input-group">
@@ -1021,12 +1035,20 @@
               <p class="calc-result-value red" id="res-federal">—</p>
             </div>
             <div class="calc-result-item">
-              <p class="calc-result-label">CT state tax (est.)</p>
+              <p class="calc-result-label">State tax (NY, est.)</p>
               <p class="calc-result-value red" id="res-state">—</p>
             </div>
             <div class="calc-result-item">
               <p class="calc-result-label">FICA (SS + Medicare)</p>
               <p class="calc-result-value red" id="res-fica">—</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">401(k) — you</p>
+              <p class="calc-result-value" id="res-401k">—</p>
+            </div>
+            <div class="calc-result-item">
+              <p class="calc-result-label">Employer match (free)</p>
+              <p class="calc-result-value green" id="res-match">—</p>
             </div>
             <div class="calc-result-item highlight">
               <p class="calc-result-label">Net take-home / yr</p>
@@ -1036,6 +1058,17 @@
               <p class="calc-result-label">Net take-home / mo</p>
               <p class="calc-result-value green" id="res-takehome-mo">—</p>
             </div>
+          </div>
+
+          <div class="calc-divider"></div>
+
+          <p class="calc-sub-title">Per paycheck — weekly, paid Thursday</p>
+          <div class="calc-result-grid">
+            <div class="calc-result-item"><p class="calc-result-label">Gross / check</p><p class="calc-result-value" id="res-wk-gross">—</p></div>
+            <div class="calc-result-item"><p class="calc-result-label">401(k) / check</p><p class="calc-result-value" id="res-wk-401k">—</p></div>
+            <div class="calc-result-item"><p class="calc-result-label">Health / check</p><p class="calc-result-value" id="res-wk-health">—</p></div>
+            <div class="calc-result-item"><p class="calc-result-label">Taxes / check</p><p class="calc-result-value red" id="res-wk-tax">—</p></div>
+            <div class="calc-result-item highlight"><p class="calc-result-label">Net / check (Thu)</p><p class="calc-result-value green" id="res-wk-net">—</p></div>
           </div>
 
           <div class="calc-divider"></div>
@@ -2258,8 +2291,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.35</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.35: Sync maintenance cycles app→email via shared config</p>
+  <p class="version-tag">Version 2.36</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.36: Paycheck planner — weekly Thursday net, pre-tax 401(k) + match, NY tax, health premium</p>
 </div>
 
 <script>
@@ -2467,6 +2500,7 @@
     loadCapture();
     loadSchedule();
     loadHoldings();
+    runCalc();
     handleWhoopRedirect();
     autoSync();
 
@@ -4613,6 +4647,31 @@
     return tax;
   }
 
+  function calcNYTax(income) {
+    // NY 2026 brackets (single filer, estimated). NY standard deduction ~$8,000.
+    // He works in Westchester NY, so wages are NY-sourced; as a CT resident he
+    // files NY nonresident + CT resident with a credit, netting to ~the NY figure.
+    const brackets = [
+      { limit: 8500,     rate: 0.04 },
+      { limit: 11700,    rate: 0.045 },
+      { limit: 13900,    rate: 0.0525 },
+      { limit: 80650,    rate: 0.055 },
+      { limit: 215400,   rate: 0.06 },
+      { limit: 1077550,  rate: 0.0685 },
+      { limit: Infinity, rate: 0.0965 }
+    ];
+    const standardDeduction = 8000;
+    const taxable = Math.max(0, income - standardDeduction);
+    let tax = 0; let prev = 0;
+    for (const b of brackets) {
+      if (taxable <= prev) break;
+      const chunk = Math.min(taxable, b.limit) - prev;
+      tax += chunk * b.rate;
+      prev = b.limit;
+    }
+    return tax;
+  }
+
   function fmt(n) {
     return '$' + Math.round(n).toLocaleString();
   }
@@ -4622,13 +4681,22 @@
     const savingsRate = parseFloat(document.getElementById('calc-savings').value) / 100 || 0.20;
     const rothAnnual = parseFloat(document.getElementById('calc-roth').value) || 7000;
     const gymMo = parseFloat(document.getElementById('calc-gym').value) || 0;
+    const k401Pct = parseFloat(document.getElementById('calc-401k').value) || 0;
+    const healthMo = parseFloat(document.getElementById('calc-health').value) || 0;
     if (salary === 0) { document.getElementById('calc-results').style.display = 'none'; return; }
 
-    const federal = calcFederalTax(salary);
-    const ct = calcCTTax(salary);
-    const fica = salary * 0.0765;
-    const totalTax = federal + ct + fica;
-    const takeHome = salary - totalTax;
+    const k401 = salary * k401Pct / 100;                         // your pre-tax 401(k)
+    const health = healthMo * 12;                                // pre-tax premium (Section 125)
+    const match = salary * (Math.min(k401Pct, 6) / 100) * 0.5;   // TCW: 50% of first 6%
+
+    // 401(k) + health are pre-tax for federal & state; health is also pre-FICA, 401(k) is not.
+    const taxBase = Math.max(0, salary - k401 - health);
+    const federal = calcFederalTax(taxBase);
+    const state = calcNYTax(taxBase);
+    const fica = Math.max(0, salary - health) * 0.0765;
+    const totalTax = federal + state + fica;
+
+    const takeHome = salary - k401 - health - totalTax;          // spendable cash / yr
     const takeHomeMo = takeHome / 12;
 
     const savingsMo = takeHomeMo * savingsRate;
@@ -4638,10 +4706,20 @@
 
     document.getElementById('res-gross').textContent = fmt(salary);
     document.getElementById('res-federal').textContent = '-' + fmt(federal);
-    document.getElementById('res-state').textContent = '-' + fmt(ct);
+    document.getElementById('res-state').textContent = '-' + fmt(state);
     document.getElementById('res-fica').textContent = '-' + fmt(fica);
+    document.getElementById('res-401k').textContent = k401 > 0 ? '-' + fmt(k401) : '—';
+    document.getElementById('res-match').textContent = match > 0 ? '+' + fmt(match) : '—';
     document.getElementById('res-takehome').textContent = fmt(takeHome);
     document.getElementById('res-takehome-mo').textContent = fmt(takeHomeMo);
+
+    // Weekly paycheck — 52 Thursdays
+    document.getElementById('res-wk-gross').textContent = fmt(salary / 52);
+    document.getElementById('res-wk-401k').textContent = k401 > 0 ? '-' + fmt(k401 / 52) : '—';
+    document.getElementById('res-wk-health').textContent = health > 0 ? '-' + fmt(health / 52) : '—';
+    document.getElementById('res-wk-tax').textContent = '-' + fmt(totalTax / 52);
+    document.getElementById('res-wk-net').textContent = fmt(takeHome / 52);
+
     document.getElementById('res-savings').textContent = fmt(savingsMo);
     document.getElementById('res-roth-mo').textContent = fmt(rothMo);
     document.getElementById('res-spend').textContent = fmt(spendMo);
@@ -4650,8 +4728,11 @@
     if (gymEl) gymEl.textContent = gymMo > 0 ? fmt(gymMo) : '—';
 
     const effRate = Math.round((totalTax / salary) * 100);
+    const matchNote = k401Pct > 0 && k401Pct < 6
+      ? ' You’re at ' + k401Pct + '% — going to 6% captures the full employer match (≈' + fmt(salary * 0.03) + '/yr).'
+      : (k401Pct >= 6 ? ' You’re capturing the full 3% employer match (≈' + fmt(salary * 0.03) + '/yr free).' : ' Contributing 6% would capture a 3% employer match (≈' + fmt(salary * 0.03) + '/yr free).');
     document.getElementById('calc-note').textContent =
-      'Effective tax rate: ~' + effRate + '%. These are estimates — actual numbers depend on final withholding, any 401k contributions, and how the NY/CT credit shakes out at filing time. Use this as a planning baseline, not a guarantee.';
+      'Effective tax rate: ~' + effRate + '% (fed + NY + FICA). State is figured on NY-sourced wages; your CT resident credit nets the two out at filing.' + matchNote + ' 401(k) and health premium are pre-tax. Planning estimate, not exact withholding.';
 
     document.getElementById('calc-results').style.display = 'block';
   }
