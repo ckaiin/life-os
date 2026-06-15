@@ -1135,6 +1135,50 @@
         </div>
       </div>
     </div>
+
+    <div class="action-section">
+      <p class="action-section-title">401(k) match tracker <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">free money — uses your salary &amp; 401(k) % above</span></p>
+      <div class="golf-top-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">You contribute</p>
+          <p class="golf-stat-value" id="mt-you" style="font-size:1.3rem;">—</p>
+          <p class="golf-stat-sub" id="mt-you-pct">—</p>
+        </div>
+        <div class="golf-stat-card goal">
+          <p class="golf-stat-label">Employer match</p>
+          <p class="golf-stat-value" id="mt-match" style="font-size:1.3rem;color:var(--green);">—</p>
+          <p class="golf-stat-sub">free, every year</p>
+        </div>
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Left on the table</p>
+          <p class="golf-stat-value" id="mt-left" style="font-size:1.3rem;">—</p>
+          <p class="golf-stat-sub" id="mt-left-sub">—</p>
+        </div>
+      </div>
+      <div style="margin:14px 0 4px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:5px;"><span>0%</span><span>full match at 6%</span></div>
+        <div style="height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;">
+          <div id="mt-bar" style="height:100%;width:0;background:var(--green);border-radius:7px;transition:width .3s;"></div>
+        </div>
+      </div>
+      <p class="insight-text" id="mt-note" style="font-size:13px;color:var(--text2);margin:8px 0 0;"></p>
+
+      <div class="calc-divider" style="margin:16px 0;"></div>
+      <p class="calc-sub-title">What the free money becomes <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">match dollars compounded at 7%/yr, flat salary</span></p>
+      <div class="golf-top-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Match alone by age 60</p>
+          <p class="golf-stat-value" id="mt-fv60" style="font-size:1.3rem;color:var(--green);">—</p>
+          <p class="golf-stat-sub">38 yrs at 7%</p>
+        </div>
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Match alone by age 65</p>
+          <p class="golf-stat-value" id="mt-fv65" style="font-size:1.3rem;color:var(--green);">—</p>
+          <p class="golf-stat-sub">43 yrs at 7%</p>
+        </div>
+      </div>
+      <p class="insight-text" id="mt-total-note" style="font-size:13px;color:var(--text2);margin:10px 0 0;"></p>
+    </div>
   </div>
 </div>
 
@@ -2317,8 +2361,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.37</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.37: Benefits timeline (health Jul 1 / 401k Aug 1 / ESPP Dec 1–15) on dashboard + morning brief; health premium now weekly ($51)</p>
+  <p class="version-tag">Version 2.38</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.38: 401(k) match tracker — capture gauge + growth projection (match compounded to age 60/65)</p>
 </div>
 
 <script>
@@ -4694,6 +4738,41 @@
     else set('bene-espp', 'Closed — next Jun 1–15', 'var(--text3)');
   }
 
+  function renderMatch() {
+    const salary = parseFloat(document.getElementById('calc-salary').value) || 0;
+    const pct = parseFloat(document.getElementById('calc-401k').value) || 0;
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    if (!salary) return;
+
+    const you = salary * pct / 100;
+    const captured = salary * (Math.min(pct, 6) / 100) * 0.5;   // TCW: 50% of first 6%
+    const maxMatch = salary * 0.03;                             // full match = 3% of pay
+    const left = Math.max(0, maxMatch - captured);
+
+    set('mt-you', fmt(you));
+    set('mt-you-pct', pct + '% of pay');
+    set('mt-match', fmt(captured));
+    set('mt-left', fmt(left));
+    set('mt-left-sub', left > 0 ? 'go to 6% to claim it' : 'fully captured ✓');
+    const leftEl = document.getElementById('mt-left');
+    if (leftEl) leftEl.style.color = left > 0 ? 'var(--red)' : 'var(--text3)';
+    const bar = document.getElementById('mt-bar');
+    if (bar) bar.style.width = (Math.min(pct / 6, 1) * 100) + '%';
+
+    set('mt-note', pct >= 6
+      ? 'You’re grabbing the full ' + fmt(maxMatch) + '/yr match. Anything above 6% is still good saving, just no extra match on it.'
+      : pct > 0
+        ? 'At ' + pct + '% you capture ' + fmt(captured) + ' and leave ' + fmt(left) + '/yr behind. Going to 6% is a guaranteed 50% return on those dollars — the best deal you’ll find anywhere.'
+        : 'Contributing nothing means $0 match. Just 6% — about ' + fmt(salary * 0.06 / 52) + '/check — unlocks ' + fmt(maxMatch) + '/yr free.');
+
+    // Future value of the match as an annual annuity at 7% (Conor is 22 in 2026)
+    const r = 0.07;
+    const fv = (pmt, n) => pmt * ((Math.pow(1 + r, n) - 1) / r);
+    set('mt-fv60', fmt(fv(captured, 38)));
+    set('mt-fv65', fmt(fv(captured, 43)));
+    set('mt-total-note', 'With your own ' + pct + '% added in, the whole 401(k) (you + match) compounds to about ' + fmt(fv(you + captured, 38)) + ' by 60 and ' + fmt(fv(you + captured, 43)) + ' by 65 — same 7% assumption.');
+  }
+
   function calcNYTax(income) {
     // NY 2026 brackets (single filer, estimated). NY standard deduction ~$8,000.
     // He works in Westchester NY, so wages are NY-sourced; as a CT resident he
@@ -4782,6 +4861,7 @@
       'Effective tax rate: ~' + effRate + '% (fed + NY + FICA). State is figured on NY-sourced wages; your CT resident credit nets the two out at filing.' + matchNote + ' 401(k) and health premium are pre-tax. Planning estimate, not exact withholding.';
 
     document.getElementById('calc-results').style.display = 'block';
+    renderMatch();
   }
 
   initApp();
