@@ -943,6 +943,18 @@
     </div>
     <div class="insight-box"><p class="insight-label">Your starting position</p><p class="insight-text">$45K in investments (JLPSX + JTEK via JPM), rent-free in Greenwich, family safety net. This is not normal for 22. The pressure this creates isn't about survival — it's about not squandering a head start most people never get.</p></div>
     <div class="action-section">
+      <p class="action-section-title">Live holdings <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">enter your share counts; value updates from market prices</span></p>
+      <div class="hold-form">
+        <input type="text" id="hold-symbol" class="sched-input" placeholder="Symbol (e.g. JTEK)" style="max-width:160px;text-transform:uppercase;">
+        <input type="number" id="hold-shares" class="sched-input" placeholder="Shares" step="0.0001" style="max-width:120px;" onkeydown="if(event.key==='Enter')addHolding()">
+        <button class="golf-btn" onclick="addHolding()">Add</button>
+        <button class="golf-btn" onclick="refreshPortfolio(true)" style="background:var(--bg3);color:var(--text2);">Refresh prices</button>
+      </div>
+      <div id="hold-list" class="hold-list"><p class="sched-empty">No holdings yet. Add a symbol and your share count.</p></div>
+      <p id="hold-total" class="hold-total"></p>
+    </div>
+
+    <div class="action-section">
       <p class="action-section-title">Benefits timeline <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">eligibility dates — don't let them slip</span></p>
       <div class="golf-top-grid" style="grid-template-columns:1fr 1fr 1fr;">
         <div class="golf-stat-card">
@@ -965,30 +977,6 @@
         <p class="insight-label">What each unlocks</p>
         <p class="insight-text"><strong>Health</strong> — coverage starts the 1st of the month after your June 29 hire; $51/wk for your tier. <strong>401(k)</strong> — eligible the 1st of the month after 30 days of service; contribute 6% to capture the full 3% match (~$2,100/yr free). <strong>ESPP</strong> — you miss the June window (you start June 29), so Dec 1–15 is your first enrollment, buying CHEF at 15% off for the Jan–Jun 2027 period.</p>
       </div>
-    </div>
-
-    <div class="action-section">
-      <p class="action-section-title">Live holdings <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">enter your share counts; value updates from market prices</span></p>
-      <div class="hold-form">
-        <input type="text" id="hold-symbol" class="sched-input" placeholder="Symbol (e.g. JTEK)" style="max-width:160px;text-transform:uppercase;">
-        <input type="number" id="hold-shares" class="sched-input" placeholder="Shares" step="0.0001" style="max-width:120px;" onkeydown="if(event.key==='Enter')addHolding()">
-        <button class="golf-btn" onclick="addHolding()">Add</button>
-        <button class="golf-btn" onclick="refreshPortfolio(true)" style="background:var(--bg3);color:var(--text2);">Refresh prices</button>
-      </div>
-      <div id="hold-list" class="hold-list"><p class="sched-empty">No holdings yet. Add a symbol and your share count.</p></div>
-      <p id="hold-total" class="hold-total"></p>
-    </div>
-
-    <div class="action-section">
-      <p class="action-section-title">Portfolio notes</p>
-      <div class="action-item" id="item-finance-4"><div class="action-check"><input type="checkbox" id="chk-finance-4"><label for="chk-finance-4"></label></div><p class="action-num">04</p><div><p class="action-title">JLPSX — 1.39% expense ratio, grade F vs. category</p><p class="action-detail">You're paying ~$350/year in fees on $25K for a fund trying to beat the S&P 500. A Vanguard index fund like VOO charges 0.03% for the same exposure. Money stays put for now — revisit when it's moveable.</p></div></div>
-      <div class="action-item" id="item-finance-5"><div class="action-check"><input type="checkbox" id="chk-finance-5"><label for="chk-finance-5"></label></div><p class="action-num">05</p><div><p class="action-title">JTEK — 0.65% expense ratio, concentrated tech</p><p class="action-detail">Better than JLPSX but still above average for its category. A concentrated tech bet at 22 isn't catastrophic, but it's a sector call. If tech has a bad year, this feels it harder than a broad index would.</p></div></div>
-    </div>
-    <div class="action-section">
-      <p class="action-section-title">Rules from paycheck one</p>
-      <div class="action-item" id="item-finance-6"><div class="action-check"><input type="checkbox" id="chk-finance-6"><label for="chk-finance-6"></label></div><p class="action-num">06</p><div><p class="action-title">Pay yourself first — automate savings before you see the money</p><p class="action-detail">Set up automatic transfers on payday. The money you don't see, you don't spend. Decide the percentage before the first check arrives, not after.</p></div></div>
-      <div class="action-item" id="item-finance-7"><div class="action-check"><input type="checkbox" id="chk-finance-7"><label for="chk-finance-7"></label></div><p class="action-num">07</p><div><p class="action-title">Hard stop on parents' money from income day one</p><p class="action-detail">Not a gradual wind-down. A hard stop. If you do it gradually you won't do it. See Callout #1.</p></div></div>
-      <div class="action-item" id="item-finance-8"><div class="action-check"><input type="checkbox" id="chk-finance-8"><label for="chk-finance-8"></label></div><p class="action-num">08</p><div><p class="action-title">Open a Roth IRA immediately</p><p class="action-detail">You're 22 with no rent. This is the optimal moment to start. Max contribution is $7,000/year. The tax-free compounding over 40 years on money you invest now is one of the highest-leverage financial moves available to you.</p></div></div>
     </div>
 
     <!-- BUDGET CALCULATOR -->
@@ -1204,6 +1192,13 @@
         </div>
       </div>
       <p class="insight-text" id="espp-note" style="font-size:13px;color:var(--text2);margin:10px 0 0;"></p>
+    </div>
+
+    <div class="action-section">
+      <p class="action-section-title">Rules from paycheck one</p>
+      <div class="action-item" id="item-finance-6"><div class="action-check"><input type="checkbox" id="chk-finance-6"><label for="chk-finance-6"></label></div><p class="action-num">06</p><div><p class="action-title">Pay yourself first — automate savings before you see the money</p><p class="action-detail">Set up automatic transfers on payday. The money you don't see, you don't spend. Decide the percentage before the first check arrives, not after.</p></div></div>
+      <div class="action-item" id="item-finance-7"><div class="action-check"><input type="checkbox" id="chk-finance-7"><label for="chk-finance-7"></label></div><p class="action-num">07</p><div><p class="action-title">Hard stop on parents' money from income day one</p><p class="action-detail">Not a gradual wind-down. A hard stop. If you do it gradually you won't do it. See Callout #1.</p></div></div>
+      <div class="action-item" id="item-finance-8"><div class="action-check"><input type="checkbox" id="chk-finance-8"><label for="chk-finance-8"></label></div><p class="action-num">08</p><div><p class="action-title">Open a Roth IRA immediately</p><p class="action-detail">You're 22 with no rent. This is the optimal moment to start. Max contribution is $7,000/year. The tax-free compounding over 40 years on money you invest now is one of the highest-leverage financial moves available to you.</p></div></div>
     </div>
   </div>
 </div>
@@ -2387,8 +2382,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.39</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.39: ESPP tracker (live CHEF price, 15% discount edge, enrollment countdown); removed stale offer-letter actions</p>
+  <p class="version-tag">Version 2.40</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.40: Finance tab reorder — holdings top, benefits→planner→match→ESPP flow together, rules to bottom; removed portfolio notes</p>
 </div>
 
 <script>
