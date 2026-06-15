@@ -948,6 +948,32 @@
       <div class="action-item" id="item-finance-2"><div class="action-check"><input type="checkbox" id="chk-finance-2"><label for="chk-finance-2"></label></div><p class="action-num">02</p><div><p class="urgent-tag">When letter arrives</p><p class="action-title">Understand the commission structure above the draw</p><p class="action-detail">That's where the real money is. The draw is a floor. Understand exactly what percentage you earn on new vs. existing accounts, and what the ceiling looks like for top performers in Westchester.</p></div></div>
       <div class="action-item" id="item-finance-3"><div class="action-check"><input type="checkbox" id="chk-finance-3"><label for="chk-finance-3"></label></div><p class="action-num">03</p><div><p class="action-title">Build your budget before your first paycheck lands</p><p class="action-detail">Two scenarios: $70K and $110K. Come back here with the number and we'll build the actual plan. The framework won't change — only the amounts.</p></div></div>
     </div>
+
+    <div class="action-section">
+      <p class="action-section-title">Benefits timeline <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">eligibility dates — don't let them slip</span></p>
+      <div class="golf-top-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Health insurance</p>
+          <p class="golf-stat-value" style="font-size:1.2rem;">Jul 1, 2026</p>
+          <p class="golf-stat-sub" id="bene-health">—</p>
+        </div>
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">401(k) — Principal</p>
+          <p class="golf-stat-value" style="font-size:1.2rem;">Aug 1, 2026</p>
+          <p class="golf-stat-sub" id="bene-401k">—</p>
+        </div>
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">ESPP enrollment</p>
+          <p class="golf-stat-value" style="font-size:1.2rem;">Dec 1–15, 2026</p>
+          <p class="golf-stat-sub" id="bene-espp">—</p>
+        </div>
+      </div>
+      <div class="insight-box" style="margin-top:12px;">
+        <p class="insight-label">What each unlocks</p>
+        <p class="insight-text"><strong>Health</strong> — coverage starts the 1st of the month after your June 29 hire; $51/wk for your tier. <strong>401(k)</strong> — eligible the 1st of the month after 30 days of service; contribute 6% to capture the full 3% match (~$2,100/yr free). <strong>ESPP</strong> — you miss the June window (you start June 29), so Dec 1–15 is your first enrollment, buying CHEF at 15% off for the Jan–Jun 2027 period.</p>
+      </div>
+    </div>
+
     <div class="action-section">
       <p class="action-section-title">Live holdings <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">enter your share counts; value updates from market prices</span></p>
       <div class="hold-form">
@@ -1008,10 +1034,10 @@
             </div>
           </div>
           <div class="calc-input-group">
-            <label class="calc-label">Health premium / mo</label>
+            <label class="calc-label">Health premium / wk</label>
             <div class="calc-input-prefix">
               <span>$</span>
-              <input type="number" id="calc-health" placeholder="120" min="0" max="2000" oninput="runCalc()">
+              <input type="number" id="calc-health" value="51" placeholder="51" min="0" max="1000" oninput="runCalc()">
             </div>
           </div>
           <div class="calc-input-group">
@@ -2291,8 +2317,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.36</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.36: Paycheck planner — weekly Thursday net, pre-tax 401(k) + match, NY tax, health premium</p>
+  <p class="version-tag">Version 2.37</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.37: Benefits timeline (health Jul 1 / 401k Aug 1 / ESPP Dec 1–15) on dashboard + morning brief; health premium now weekly ($51)</p>
 </div>
 
 <script>
@@ -2501,6 +2527,7 @@
     loadSchedule();
     loadHoldings();
     runCalc();
+    renderBenefits();
     handleWhoopRedirect();
     autoSync();
 
@@ -4647,6 +4674,26 @@
     return tax;
   }
 
+  function renderBenefits() {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const days = (iso) => Math.round((new Date(iso + 'T00:00:00') - today) / 86400000);
+    const set = (id, txt, color) => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = txt; el.style.color = color; }
+    };
+
+    let d = days('2026-07-01');                       // Health — 1st of month after June 29 hire
+    set('bene-health', d > 0 ? 'in ' + d + ' days' : 'Eligible now', d > 0 ? 'var(--text2)' : 'var(--green)');
+
+    d = days('2026-08-01');                            // 401(k) — 1st of month after 30 days
+    set('bene-401k', d > 0 ? 'in ' + d + ' days' : 'Eligible now', d > 0 ? 'var(--text2)' : 'var(--green)');
+
+    const dStart = days('2026-12-01'), dEnd = days('2026-12-15');  // ESPP enrollment window
+    if (dStart > 0) set('bene-espp', 'opens in ' + dStart + ' days', 'var(--text2)');
+    else if (dEnd >= 0) set('bene-espp', 'Window open — enroll now', 'var(--green)');
+    else set('bene-espp', 'Closed — next Jun 1–15', 'var(--text3)');
+  }
+
   function calcNYTax(income) {
     // NY 2026 brackets (single filer, estimated). NY standard deduction ~$8,000.
     // He works in Westchester NY, so wages are NY-sourced; as a CT resident he
@@ -4682,11 +4729,11 @@
     const rothAnnual = parseFloat(document.getElementById('calc-roth').value) || 7000;
     const gymMo = parseFloat(document.getElementById('calc-gym').value) || 0;
     const k401Pct = parseFloat(document.getElementById('calc-401k').value) || 0;
-    const healthMo = parseFloat(document.getElementById('calc-health').value) || 0;
+    const healthWk = parseFloat(document.getElementById('calc-health').value) || 0;
     if (salary === 0) { document.getElementById('calc-results').style.display = 'none'; return; }
 
     const k401 = salary * k401Pct / 100;                         // your pre-tax 401(k)
-    const health = healthMo * 12;                                // pre-tax premium (Section 125)
+    const health = healthWk * 52;                                // pre-tax premium (Section 125), quoted weekly
     const match = salary * (Math.min(k401Pct, 6) / 100) * 0.5;   // TCW: 50% of first 6%
 
     // 401(k) + health are pre-tax for federal & state; health is also pre-FICA, 401(k) is not.

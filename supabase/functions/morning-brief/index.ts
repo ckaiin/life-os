@@ -160,6 +160,24 @@ Deno.serve(async (req) => {
     .filter((m) => m.over >= 0)
     .sort((a, b) => b.over - a.over);
 
+  // Benefits milestones (fixed dates from the offer). Surface within 14 days, on
+  // the day, or while an enrollment window is open.
+  const BENEFITS: { name: string; date: string; end?: string; note: string }[] = [
+    { name: 'Health insurance starts', date: '2026-07-01', note: 'coverage active' },
+    { name: '401(k) eligible', date: '2026-08-01', note: 'enroll at 6% for the full match' },
+    { name: 'ESPP enrollment opens', date: '2026-12-01', end: '2026-12-15', note: 'buy CHEF at 15% off' },
+  ];
+  const midnight = new Date(now); midnight.setHours(0, 0, 0, 0);
+  const dueBenefits = BENEFITS
+    .map((b) => {
+      const start = new Date(b.date + 'T00:00:00');
+      const end = b.end ? new Date(b.end + 'T00:00:00') : null;
+      const inDays = Math.round((start.getTime() - midnight.getTime()) / 86400000);
+      const windowOpen = end ? (midnight >= start && midnight <= end) : false;
+      return { ...b, inDays, windowOpen };
+    })
+    .filter((b) => (b.inDays >= 0 && b.inDays <= 14) || b.windowOpen);
+
   // lifts this week (Sunday start)
   const weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   const liftsThisWeek = (lifts || []).filter((l: any) => l.start_time && new Date(l.start_time) >= weekStart).length;
@@ -201,6 +219,10 @@ Deno.serve(async (req) => {
       ${dueMaint.length ? `<div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Home maintenance due</p>
         ${dueMaint.map((m) => `<p style="font-size:14px;margin:0 0 4px;">${m.over > 0 ? '⚠️ ' : '• '}${m.name}${m.over > 0 ? ` <span style=\"color:#b45309;font-size:11px;\">(${m.over}d overdue)</span>` : ' <span style="color:#6a6e76;font-size:11px;">(due today)</span>'}</p>`).join('')}
+      </div>` : ''}
+      ${dueBenefits.length ? `<div style="background:#eef6f0;border:1px solid #cfe6d6;border-radius:8px;padding:16px;margin-bottom:14px;">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Benefits</p>
+        ${dueBenefits.map((b) => `<p style="font-size:14px;margin:0 0 4px;">${b.windowOpen ? '✅ ' : (b.inDays === 0 ? '🎉 ' : '• ')}${b.name}${b.windowOpen ? ` <span style=\"color:#1e7a46;font-size:11px;\">(window open — ${b.note})</span>` : (b.inDays === 0 ? ' <span style=\"color:#1e7a46;font-size:11px;\">(today)</span>' : ` <span style=\"color:#6a6e76;font-size:11px;\">(in ${b.inDays}d)</span>`)}</p>`).join('')}
       </div>` : ''}
       <div style="background:#f4f5f7;border:1px solid #e1e3e8;border-radius:8px;padding:16px;margin-bottom:14px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Weather · Greenwich</p>
