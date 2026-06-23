@@ -756,6 +756,7 @@
       <button class="dropdown-item" id="tab-offerletter" onclick="event.stopPropagation(); switchTab('offerletter')">Offer Letter Checklist</button>
       <button class="dropdown-item" id="tab-maintenance" onclick="event.stopPropagation(); switchTab('maintenance')">Home Maintenance</button>
       <button class="dropdown-item" id="tab-lifting" onclick="event.stopPropagation(); switchTab('lifting')">Lifting</button>
+      <button class="dropdown-item" id="tab-running" onclick="event.stopPropagation(); switchTab('running')">Running Program</button>
       <button class="dropdown-item" id="tab-recovery" onclick="event.stopPropagation(); switchTab('recovery')">Recovery</button>
       <button class="dropdown-item" id="tab-golf" onclick="event.stopPropagation(); switchTab('golf')">Golf</button>
       <button class="dropdown-item" id="tab-supplements" onclick="event.stopPropagation(); switchTab('supplements')">Supplements</button>
@@ -2011,6 +2012,99 @@
     </div><!-- /lift-layout -->
   </div>
 </div>
+<div id="panel-running" class="panel">
+  <div class="others-wrap" style="max-width:900px;">
+    <div class="others-header">
+      <p class="others-eyebrow">Others — Running Program</p>
+      <p class="others-title">10K Training Program</p>
+      <p class="others-lead">Every run from today through race day. Goal: finish strong and feel good. Easy runs are by time, long runs by distance — all at Zone 2 effort (HR 143–148, conversational). Runs land Tue / Thu / Sat, with the race on Monday, Sep 7. Past runs dim out and today's run is highlighted.</p>
+    </div>
+
+    <div class="golf-top-grid" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="golf-stat-card goal"><p class="golf-stat-label">Race day</p><p class="golf-stat-value" style="font-size:1.2rem;">Sep 7</p><p class="golf-stat-sub" id="run-countdown">—</p></div>
+      <div class="golf-stat-card"><p class="golf-stat-label">Distance</p><p class="golf-stat-value" style="font-size:1.2rem;">10K</p><p class="golf-stat-sub">6.2 miles</p></div>
+      <div class="golf-stat-card"><p class="golf-stat-label">Peak long run</p><p class="golf-stat-value" style="font-size:1.2rem;color:var(--green);">7.0 mi</p><p class="golf-stat-sub">Aug 29, then taper</p></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 1 · Jun 23–28 <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">settle in</span></p>
+      <div class="time-block run-row" data-date="2026-06-23"><p class="time-tag">Tue · Jun 23</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2, conversational. 5 min walk warmup, then settle into 5.0–5.1 mph.</p></div></div>
+      <div class="time-block run-row" data-date="2026-06-25"><p class="time-tag">Thu · Jun 25</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Same easy effort. HR 143–148, back off if it climbs past 150.</p></div></div>
+      <div class="time-block run-row" data-date="2026-06-27"><p class="time-tag">Sat · Jun 27</p><div><p class="time-title">Long Run · 3.0 mi</p><p class="time-note">Easy the whole way. This is your baseline long run — note how it feels.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 2 · Jun 29–Jul 5 <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">job starts — hold steady</span></p>
+      <div class="time-block run-row" data-date="2026-06-30"><p class="time-tag">Tue · Jun 30</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">First work week. Keep it light — getting the run in matters more than the pace.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-02"><p class="time-tag">Thu · Jul 2</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2. If the job has you wiped, this can be a brisk walk-jog. Just move.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-04"><p class="time-tag">Sat · Jul 4</p><div><p class="time-title">Long Run · 3.0 mi</p><p class="time-note">Hold the distance this week. New job + new mileage is enough load at once.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 3 · Jul 6–12 <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">start building</span></p>
+      <div class="time-block run-row" data-date="2026-07-07"><p class="time-tag">Tue · Jul 7</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2, conversational.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-09"><p class="time-tag">Thu · Jul 9</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2. Smooth and relaxed.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-11"><p class="time-tag">Sat · Jul 11</p><div><p class="time-title">Long Run · 3.5 mi</p><p class="time-note">First bump up. Keep the effort easy even as the distance grows.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 4 · Jul 13–19</p>
+      <div class="time-block run-row" data-date="2026-07-14"><p class="time-tag">Tue · Jul 14</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-16"><p class="time-tag">Thu · Jul 16</p><div><p class="time-title">Easy · 35 min</p><p class="time-note">Slightly longer easy run. Same conversational effort.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-18"><p class="time-tag">Sat · Jul 18</p><div><p class="time-title">Long Run · 4.0 mi</p><p class="time-note">Take water if it's hot. Easy effort start to finish.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 5 · Jul 20–26</p>
+      <div class="time-block run-row" data-date="2026-07-21"><p class="time-tag">Tue · Jul 21</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-23"><p class="time-tag">Thu · Jul 23</p><div><p class="time-title">Easy · 35 min</p><p class="time-note">Zone 2, relaxed.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-25"><p class="time-tag">Sat · Jul 25</p><div><p class="time-title">Long Run · 4.5 mi</p><p class="time-note">Longest yet. Slow down before you need to — finish feeling you had more.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 6 · Jul 27–Aug 2 <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">step-back / recover</span></p>
+      <div class="time-block run-row" data-date="2026-07-28"><p class="time-tag">Tue · Jul 28</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-07-30"><p class="time-tag">Thu · Jul 30</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-01"><p class="time-tag">Sat · Aug 1</p><div><p class="time-title">Long Run · 3.5 mi</p><p class="time-note">Pull the distance back on purpose. Recovery weeks are how the body absorbs the work.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 7 · Aug 3–9</p>
+      <div class="time-block run-row" data-date="2026-08-04"><p class="time-tag">Tue · Aug 4</p><div><p class="time-title">Easy · 35 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-06"><p class="time-tag">Thu · Aug 6</p><div><p class="time-title">Easy · 35 min + 4 strides</p><p class="time-note">After the run, 4 × 20 sec relaxed pickups (not sprints), full walk between. Wakes up the legs.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-08"><p class="time-tag">Sat · Aug 8</p><div><p class="time-title">Long Run · 5.0 mi</p><p class="time-note">Halfway-plus to race distance. Fuel a little beforehand.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 8 · Aug 10–16</p>
+      <div class="time-block run-row" data-date="2026-08-11"><p class="time-tag">Tue · Aug 11</p><div><p class="time-title">Easy · 35 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-13"><p class="time-tag">Thu · Aug 13</p><div><p class="time-title">Easy · 35 min + 4 strides</p><p class="time-note">Same 4 × 20 sec strides after. Smooth form, quick feet.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-15"><p class="time-tag">Sat · Aug 15</p><div><p class="time-title">Long Run · 5.5 mi</p><p class="time-note">Getting close to race distance. Practice your pre-run breakfast here.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 9 · Aug 17–23</p>
+      <div class="time-block run-row" data-date="2026-08-18"><p class="time-tag">Tue · Aug 18</p><div><p class="time-title">Easy · 35 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-20"><p class="time-tag">Thu · Aug 20</p><div><p class="time-title">Easy · 35 min + 4 strides</p><p class="time-note">Strides after. Stay relaxed.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-22"><p class="time-tag">Sat · Aug 22</p><div><p class="time-title">Long Run · 6.0 mi</p><p class="time-note">Basically race distance at easy effort. If you finish comfortable, you're ready.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 10 · Aug 24–30 <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">peak</span></p>
+      <div class="time-block run-row" data-date="2026-08-25"><p class="time-tag">Tue · Aug 25</p><div><p class="time-title">Easy · 35 min</p><p class="time-note">Zone 2.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-27"><p class="time-tag">Thu · Aug 27</p><div><p class="time-title">Easy · 30 min + 4 strides</p><p class="time-note">Shorter, with strides. Start keeping legs fresh for the peak long run.</p></div></div>
+      <div class="time-block run-row" data-date="2026-08-29"><p class="time-tag">Sat · Aug 29</p><div><p class="time-title">Long Run · 7.0 mi</p><p class="time-note">Peak run, past 10K distance. This is your confidence builder — the race is shorter than this.</p></div></div>
+    </div>
+
+    <div class="others-section">
+      <p class="others-section-title">Week 11 · Aug 31–Sep 7 <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">taper + race</span></p>
+      <div class="time-block run-row" data-date="2026-09-01"><p class="time-tag">Tue · Sep 1</p><div><p class="time-title">Easy · 30 min</p><p class="time-note">Legs feeling a little flat is normal in taper. Keep it easy.</p></div></div>
+      <div class="time-block run-row" data-date="2026-09-03"><p class="time-tag">Thu · Sep 3</p><div><p class="time-title">Easy · 25 min + 4 strides</p><p class="time-note">Short and sharp. Strides keep the legs primed without tiring them.</p></div></div>
+      <div class="time-block run-row" data-date="2026-09-05"><p class="time-tag">Sat · Sep 5</p><div><p class="time-title">Shakeout · 2.0 mi</p><p class="time-note">Very easy, just to stay loose. Then rest Sunday — legs up, hydrate, normal food.</p></div></div>
+      <div class="time-block non-neg run-row" data-date="2026-09-07"><p class="time-tag">Mon · Sep 7</p><div><p class="time-title">🏁 RACE — 10K (6.2 mi)</p><p class="time-note">Start easy and controlled, slower than feels right. Settle in. Past halfway, if you feel good, lift the pace and finish strong. You've done every run to get here.</p></div></div>
+    </div>
+  </div>
+</div>
 <div id="panel-recovery" class="panel">
   <div class="others-wrap" style="max-width:960px;">
     <div class="others-header">
@@ -2454,8 +2548,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.45</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.45: 10K training block (Sep 7) — legs 1x, 3 runs/wk, easy Zone 2 + long run, race countdown</p>
+  <p class="version-tag">Version 2.46</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.46: Running Program tab (Others, between Lifting & Recovery) — full day-by-day 10K plan to Sep 7, past runs dim, today highlighted</p>
 </div>
 
 <script>
@@ -2666,6 +2760,7 @@
     runCalc();
     renderBenefits();
     renderRace();
+    renderRunProgram();
     loadEspp();
     handleWhoopRedirect();
     autoSync();
@@ -3075,7 +3170,7 @@
   });
 
   // Tab switching
-  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'lifting', 'recovery', 'golf', 'supplements', 'facial'];
+  const otherTabs = ['goals', 'ideas', 'notes', 'offerletter', 'maintenance', 'lifting', 'running', 'recovery', 'golf', 'supplements', 'facial'];
   function switchTab(id) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -4927,6 +5022,27 @@
     set('mt-fv60', fmt(fv(captured, 38)));
     set('mt-fv65', fmt(fv(captured, 43)));
     set('mt-total-note', 'With your own ' + pct + '% added in, the whole 401(k) (you + match) compounds to about ' + fmt(fv(you + captured, 38)) + ' by 60 and ' + fmt(fv(you + captured, 43)) + ' by 65 — same 7% assumption.');
+  }
+
+  function renderRunProgram() {
+    const panel = document.getElementById('panel-running');
+    if (!panel) return;
+    const todayLd = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+    let todayRow = null;
+    panel.querySelectorAll('.run-row').forEach((r) => {
+      const d = r.getAttribute('data-date');
+      r.style.opacity = '';
+      if (d < todayLd) { r.style.opacity = '0.4'; r.classList.remove('non-neg'); }
+      else if (d === todayLd) { r.classList.add('non-neg'); todayRow = r; }
+    });
+    // Countdown card
+    const el = document.getElementById('run-countdown');
+    if (el) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const days = Math.round((new Date('2026-09-07T00:00:00') - today) / 86400000);
+      el.textContent = days > 0 ? days + ' days · ~' + Math.round(days / 7) + ' wks out'
+        : (days === 0 ? 'Race day — go!' : 'Race complete');
+    }
   }
 
   function renderRace() {
