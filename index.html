@@ -2031,6 +2031,22 @@
       <p class="insight-text">Your HR zones are unverified, so everything below runs on feel until you fix that. <strong>The full treadmill protocol is today's run (Tue Jun 23) below</strong> — a long warmup, then an incline ramp to exhaustion. The highest HR you see is your working max. Report it back and we rebuild your zones and lock real targets. Until then: <strong>run by the talk test</strong> — full sentences = easy. Don't force your HR down to a number that read low to begin with.</p>
     </div>
 
+    <div class="insight-box" style="margin-top:10px;">
+      <p class="insight-label">Log your field-test results <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:6px;">saves automatically</span></p>
+      <div class="hold-form" style="align-items:center;flex-wrap:wrap;margin-top:4px;">
+        <input type="number" id="ft-maxhr" class="sched-input" placeholder="Max HR (bpm)" style="max-width:140px;">
+        <input type="text" id="ft-fail" class="sched-input" placeholder="Failed at (e.g. 6.5 mph @ 9%)" style="max-width:240px;">
+        <select id="ft-more" class="golf-select" style="max-width:200px;">
+          <option value="">Had more in the tank?</option>
+          <option value="No — I was done">No, I was done</option>
+          <option value="Yes — had ~1 more min">Yes, ~1 more min</option>
+          <option value="Yes — had a lot more">Yes, a lot more</option>
+        </select>
+        <button class="golf-btn" onclick="saveFieldTest()">Save</button>
+      </div>
+      <p id="ft-status" class="insight-text" style="margin:8px 0 0;color:var(--green);font-size:13px;"></p>
+    </div>
+
     <div class="others-section">
       <p class="others-section-title">Week 1 · Jun 23–28 <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">re-entry after 5 weeks off</span></p>
       <div class="time-block run-row" data-date="2026-06-23"><p class="time-tag">Tue · Jun 23</p><div><p class="time-title">🔬 Max-HR Field Test</p><p class="time-note"><strong>Replaces today's easy run. Treadmill, incline-ramp to exhaustion.</strong> Chest strap if you have one (wrist HR under-reads at max). Clip the safety key. True max effort — stop if you get chest pain, dizziness, or feel faint.<br><br><strong>1 · Warm up 15–20 min (don't skip — your HR lags):</strong> 5 min brisk walk → 10 min easy jog building to comfortable → 4 × 20 sec pickups (~7.5–8 mph) with 40 sec easy between → 2 min easy.<br><br><strong>2 · Test:</strong> set a hard-but-runnable speed you could hold ~8–10 min (≈6.5 mph), incline 1%. Every 60 sec raise incline +1%, keep speed the same, no hands on rails. Keep going until you can't hold pace (~4–6 min). Last 30 sec all-out, then hit stop and straddle the belt.<br><br><strong>3 · The number:</strong> watch HR for ~10 sec after stopping (it peaks just after). Write down the single highest value.<br><br><strong>4 · Cool down</strong> 5+ min easy walk.<br><br><strong>Report:</strong> highest HR · the speed + incline you failed at · did you have one more minute? Should land well above 170 (likely upper-180s to ~195). If only ~172–175, we redo it.</p></div></div>
@@ -2553,8 +2569,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.48</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.48: Full max-HR field-test protocol written into today's run (Tue Jun 23) in Running Program tab</p>
+  <p class="version-tag">Version 2.49</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.49: Field-test results logger in Running Program tab (max HR / fail point / had-more), saves to kv_store</p>
 </div>
 
 <script>
@@ -2766,6 +2782,7 @@
     renderBenefits();
     renderRace();
     renderRunProgram();
+    renderFieldTest();
     loadEspp();
     handleWhoopRedirect();
     autoSync();
@@ -5027,6 +5044,35 @@
     set('mt-fv60', fmt(fv(captured, 38)));
     set('mt-fv65', fmt(fv(captured, 43)));
     set('mt-total-note', 'With your own ' + pct + '% added in, the whole 401(k) (you + match) compounds to about ' + fmt(fv(you + captured, 38)) + ' by 60 and ' + fmt(fv(you + captured, 43)) + ' by 65 — same 7% assumption.');
+  }
+
+  function saveFieldTest() {
+    const hr = (document.getElementById('ft-maxhr').value || '').trim();
+    const fail = (document.getElementById('ft-fail').value || '').trim();
+    const more = document.getElementById('ft-more').value || '';
+    localStorage.setItem('fieldtest-maxhr', hr);
+    localStorage.setItem('fieldtest-fail', fail);
+    localStorage.setItem('fieldtest-more', more);
+    if (hr) localStorage.setItem('fieldtest-date', new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date()));
+    renderFieldTest();
+  }
+
+  function renderFieldTest() {
+    const hrEl = document.getElementById('ft-maxhr');
+    if (!hrEl) return;
+    const hr = localStorage.getItem('fieldtest-maxhr') || '';
+    const fail = localStorage.getItem('fieldtest-fail') || '';
+    const more = localStorage.getItem('fieldtest-more') || '';
+    const date = localStorage.getItem('fieldtest-date') || '';
+    hrEl.value = hr;
+    document.getElementById('ft-fail').value = fail;
+    document.getElementById('ft-more').value = more;
+    const status = document.getElementById('ft-status');
+    if (status) {
+      status.textContent = hr
+        ? '✓ Saved' + (date ? ' ' + date : '') + ': max HR ' + hr + (fail ? ' · failed at ' + fail : '') + (more ? ' · ' + more : '') + '. Send these to Claude to rebuild your zones.'
+        : '';
+    }
   }
 
   function renderRunProgram() {
