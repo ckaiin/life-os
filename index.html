@@ -1117,6 +1117,49 @@
     </div>
 
     <div class="action-section">
+      <p class="action-section-title">Commission modeler <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">Sales Associate Incentive Plan · gross earnings, pre-tax</span></p>
+      <div class="insight-box" style="margin-bottom:14px;">
+        <p class="insight-text" style="margin:0;">You start on the <strong>Start Up Plan</strong>: salary plus 3% of gross profit, paid on top. You move to the <strong>Standard Plan</strong> permanently once your accounts hit <strong>$250K eligible gross profit over any rolling 3 months</strong> (about $83K/mo), measured from Jul 1, 2026. Standard pays the greater of your draw or 8% of gross profit.</p>
+      </div>
+      <div class="calc-input-row">
+        <div class="calc-input-group">
+          <label class="calc-label">Monthly gross profit</label>
+          <div class="calc-input-prefix"><span>$</span><input type="number" id="cm-gp" value="50000" min="0" max="500000" step="1000" oninput="renderCommission()"></div>
+        </div>
+        <div class="calc-input-group">
+          <label class="calc-label">Standard monthly draw</label>
+          <div class="calc-input-prefix"><span>$</span><input type="number" id="cm-draw" value="5833" min="0" max="50000" step="100" oninput="renderCommission()"></div>
+        </div>
+      </div>
+      <div class="golf-top-grid" style="grid-template-columns:1fr 1fr;margin-top:6px;">
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Start Up Plan — pay</p>
+          <p class="golf-stat-value" id="cm-startup" style="font-size:1.3rem;">—</p>
+          <p class="golf-stat-sub" id="cm-startup-sub">salary + 3% of GP</p>
+        </div>
+        <div class="golf-stat-card goal">
+          <p class="golf-stat-label">Standard Plan — pay</p>
+          <p class="golf-stat-value" id="cm-standard" style="font-size:1.3rem;color:var(--green);">—</p>
+          <p class="golf-stat-sub" id="cm-standard-sub">greater of draw or 8% of GP</p>
+        </div>
+      </div>
+      <p class="insight-text" id="cm-note" style="font-size:13px;color:var(--text2);margin:10px 0 0;"></p>
+
+      <div class="calc-divider" style="margin:16px 0;"></div>
+      <p class="calc-sub-title">Transition tracker <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">last 3 months of eligible gross profit → $250K flips you to Standard</span></p>
+      <div class="calc-input-row">
+        <div class="calc-input-group"><label class="calc-label">Month 1</label><div class="calc-input-prefix"><span>$</span><input type="number" id="cm-m1" value="0" min="0" step="1000" oninput="renderCommission()"></div></div>
+        <div class="calc-input-group"><label class="calc-label">Month 2</label><div class="calc-input-prefix"><span>$</span><input type="number" id="cm-m2" value="0" min="0" step="1000" oninput="renderCommission()"></div></div>
+        <div class="calc-input-group"><label class="calc-label">Month 3</label><div class="calc-input-prefix"><span>$</span><input type="number" id="cm-m3" value="0" min="0" step="1000" oninput="renderCommission()"></div></div>
+      </div>
+      <div style="margin:12px 0 4px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:5px;"><span id="cm-trans-label">$0 / $250K</span><span>Standard at $250K</span></div>
+        <div style="height:14px;background:var(--bg3);border-radius:7px;overflow:hidden;"><div id="cm-trans-bar" style="height:100%;width:0;background:var(--green);border-radius:7px;transition:width .3s;"></div></div>
+      </div>
+      <p class="insight-text" id="cm-trans-note" style="font-size:13px;color:var(--text2);margin:8px 0 0;"></p>
+    </div>
+
+    <div class="action-section">
       <p class="action-section-title">401(k) match tracker <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">free money — uses your salary &amp; 401(k) % above</span></p>
       <div class="golf-top-grid" style="grid-template-columns:1fr 1fr 1fr;">
         <div class="golf-stat-card">
@@ -2395,8 +2438,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.43</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.43: Bacopa dose synced to bottle (500mg/1 cap, Nutricost 50% bacosides)</p>
+  <p class="version-tag">Version 2.44</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.44: Commission modeler — Start Up (salary+3%) vs Standard (draw or 8%), crossover + $250K transition tracker</p>
 </div>
 
 <script>
@@ -4869,6 +4912,49 @@
     set('mt-total-note', 'With your own ' + pct + '% added in, the whole 401(k) (you + match) compounds to about ' + fmt(fv(you + captured, 38)) + ' by 60 and ' + fmt(fv(you + captured, 43)) + ' by 65 — same 7% assumption.');
   }
 
+  function renderCommission() {
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    if (!document.getElementById('cm-gp')) return;
+
+    const salary = parseFloat(document.getElementById('calc-salary').value) || 70000;
+    const gp = parseFloat(document.getElementById('cm-gp').value) || 0;
+    const drawMo = parseFloat(document.getElementById('cm-draw').value) || 0;
+    const salMo = salary / 12;
+
+    // Start Up: salary + 3% of gross profit, paid on top (additive)
+    const startupMo = salMo + 0.03 * gp;
+    // Standard: greater of draw or 8% of gross profit
+    const eightPct = 0.08 * gp;
+    const standardComm = Math.max(0, eightPct - drawMo);
+    const standardMo = drawMo + standardComm;
+
+    set('cm-startup', fmt(startupMo) + '/mo');
+    set('cm-startup-sub', fmt(startupMo * 12) + '/yr · salary + ' + fmt(0.03 * gp) + ' comm');
+    set('cm-standard', fmt(standardMo) + '/mo');
+    set('cm-standard-sub', fmt(standardMo * 12) + '/yr · ' + (standardComm > 0 ? 'draw + ' + fmt(standardComm) + ' comm' : '8% under draw, draw only'));
+
+    // Crossover where Standard's 8% overtakes Start Up: salMo + 0.03·gp = 0.08·gp → gp = salMo / 0.05
+    const crossover = salMo / 0.05;
+    const better = standardMo > startupMo + 1 ? 'Standard pays more' : (startupMo > standardMo + 1 ? 'Start Up pays more' : 'both pay the same');
+    set('cm-note', 'At ' + fmt(gp) + '/mo gross profit, ' + better + ' (' + fmt(startupMo) + ' vs ' + fmt(standardMo) + '/mo). Start Up wins until about ' + fmt(crossover) + '/mo of gross profit; above that, Standard’s 8% pulls ahead. You’re forced onto Standard at ~$83K/mo (the $250K-over-3-months bar), so the stretch from there up to ' + fmt(crossover) + ' is the dip to push through fast. Gross, before tax.');
+
+    // Transition tracker: rolling 3-month eligible GP toward $250K
+    const m1 = parseFloat(document.getElementById('cm-m1').value) || 0;
+    const m2 = parseFloat(document.getElementById('cm-m2').value) || 0;
+    const m3 = parseFloat(document.getElementById('cm-m3').value) || 0;
+    const sum = m1 + m2 + m3;
+    set('cm-trans-label', fmt(sum) + ' / $250K');
+    const bar = document.getElementById('cm-trans-bar');
+    if (bar) bar.style.width = (Math.min(sum / 250000, 1) * 100) + '%';
+    if (sum >= 250000) {
+      set('cm-trans-note', 'You’ve cleared $250K over these 3 months. You move to the Standard Plan on the 1st of next fiscal month, permanently.');
+    } else {
+      const togo = 250000 - sum;
+      const months = gp > 0 ? Math.ceil(togo / gp) : null;
+      set('cm-trans-note', fmt(togo) + ' to go across your latest 3 months. At your current ' + fmt(gp) + '/mo pace that’s about ' + (months != null ? months : '—') + ' more month(s). Until then you stay on Start Up.');
+    }
+  }
+
   function calcNYTax(income) {
     // NY 2026 brackets (single filer, estimated). NY standard deduction ~$8,000.
     // He works in Westchester NY, so wages are NY-sourced; as a CT resident he
@@ -4959,6 +5045,7 @@
     document.getElementById('calc-results').style.display = 'block';
     renderMatch();
     renderEspp();
+    renderCommission();
   }
 
   initApp();
