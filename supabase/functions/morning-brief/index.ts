@@ -21,8 +21,9 @@ const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } });
 
 const PLAN: Record<string, string> = {
-  Sunday: 'Zone 2 Run + Prep Day', Monday: 'Upper', Tuesday: 'Lower',
-  Wednesday: 'Rest', Thursday: 'Zone 2 Run', Friday: 'Upper', Saturday: 'Rest',
+  Monday: 'Upper', Tuesday: 'Easy Run (25–35 min, HR ~145–150)', Wednesday: 'Lower',
+  Thursday: 'Easy Run (25–35 min, HR ~145–150)', Friday: 'Upper',
+  Saturday: 'Long Run (easy, HR ≤150)', Sunday: 'Rest + Prep Day',
 };
 
 function wmoDesc(code: number): [string, string] {
