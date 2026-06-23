@@ -1287,23 +1287,39 @@
     <div class="action-section">
       <p class="action-section-title">Weekly training split <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">Resets every Sunday</span></p>
       <div class="time-block workout-day" id="wd-monday" onclick="toggleWorkoutDay('monday')"><div class="workout-check" id="wc-monday"></div><p class="time-tag">Monday</p><div><p class="time-title">Upper</p><p class="time-note">Chest, back, shoulders, arms. Full upper body volume.</p></div></div>
-      <div class="time-block workout-day" id="wd-tuesday" onclick="toggleWorkoutDay('tuesday')"><div class="workout-check" id="wc-tuesday"></div><p class="time-tag">Tuesday</p><div><p class="time-title">Lower</p><p class="time-note">Quads, hamstrings, glutes. Two full days before Thursday's run — legs will be recovered.</p></div></div>
-      <div class="time-block workout-day" id="wd-wednesday" onclick="toggleWorkoutDay('wednesday')"><div class="workout-check" id="wc-wednesday"></div><p class="time-tag">Wednesday</p><div><p class="time-title">Rest</p><p class="time-note">Full recovery. Don't talk yourself into doing something.</p></div></div>
-      <div class="time-block non-neg workout-day" id="wd-thursday" onclick="toggleWorkoutDay('thursday')"><div class="workout-check" id="wc-thursday"></div><p class="time-tag">Thursday</p><div><p class="time-title">Zone 2 Run</p><p class="time-note">5 min fast walk warmup. Start at 5.0–5.1 mph. Adjustments in 0.2 mph increments only — wait 3–4 min between each. Target HR 143–148. If it spikes past 150, drop speed immediately, don't wait.</p></div></div>
-      <div class="time-block workout-day" id="wd-friday" onclick="toggleWorkoutDay('friday')"><div class="workout-check" id="wc-friday"></div><p class="time-tag">Friday</p><div><p class="time-title">Upper</p><p class="time-note">Second upper session of the week. No legs — protects Sunday's run.</p></div></div>
-      <div class="time-block workout-day" id="wd-saturday" onclick="toggleWorkoutDay('saturday')"><div class="workout-check" id="wc-saturday"></div><p class="time-tag">Saturday</p><div><p class="time-title">Rest</p><p class="time-note">Recovery before Sunday run. Don't skip this.</p></div></div>
-      <div class="time-block non-neg workout-day" id="wd-sunday" onclick="toggleWorkoutDay('sunday')"><div class="workout-check" id="wc-sunday"></div><p class="time-tag">Sunday</p><div><p class="time-title">Zone 2 Run + Prep Day</p><p class="time-note">5 min fast walk warmup. Start at 5.0–5.1 mph. Adjustments in 0.2 mph increments only — wait 3–4 min between each. Target HR 143–148. If it spikes past 150, drop speed immediately. Then groceries, meal prep, clothes ready.</p></div></div>
+      <div class="time-block workout-day" id="wd-tuesday" onclick="toggleWorkoutDay('tuesday')"><div class="workout-check" id="wc-tuesday"></div><p class="time-tag">Tuesday</p><div><p class="time-title">Easy Run</p><p class="time-note">Zone 2, 25–35 min. Conversational pace, HR 143–148. This is recovery-easy, not a workout — if you can't talk, slow down.</p></div></div>
+      <div class="time-block workout-day" id="wd-wednesday" onclick="toggleWorkoutDay('wednesday')"><div class="workout-check" id="wc-wednesday"></div><p class="time-tag">Wednesday</p><div><p class="time-title">Lower</p><p class="time-note">Quads, hamstrings, glutes. Your one leg day — placed 3 days before Saturday's long run so your legs are fresh for it.</p></div></div>
+      <div class="time-block workout-day" id="wd-thursday" onclick="toggleWorkoutDay('thursday')"><div class="workout-check" id="wc-thursday"></div><p class="time-tag">Thursday</p><div><p class="time-title">Easy Run</p><p class="time-note">Zone 2, 25–35 min. Same easy effort as Tuesday. Loosens the legs the day after lifting.</p></div></div>
+      <div class="time-block workout-day" id="wd-friday" onclick="toggleWorkoutDay('friday')"><div class="workout-check" id="wc-friday"></div><p class="time-tag">Friday</p><div><p class="time-title">Upper</p><p class="time-note">Second upper session of the week. No legs — keeps Saturday's long run protected.</p></div></div>
+      <div class="time-block non-neg workout-day" id="wd-saturday" onclick="toggleWorkoutDay('saturday')"><div class="workout-check" id="wc-saturday"></div><p class="time-tag">Saturday</p><div><p class="time-title">Long Run</p><p class="time-note">The distance builder. Zone 2, conversational. Add about 0.5 mi each week toward ~6.5 mi. This is the session that gets you to a strong 10K — don't skip it.</p></div></div>
+      <div class="time-block workout-day" id="wd-sunday" onclick="toggleWorkoutDay('sunday')"><div class="workout-check" id="wc-sunday"></div><p class="time-tag">Sunday</p><div><p class="time-title">Rest + Prep Day</p><p class="time-note">Full recovery before the work week. Then groceries, meal prep, clothes ready.</p></div></div>
     </div>
 
     <div class="action-section">
       <p class="action-section-title">Running protocol notes</p>
+      <div class="golf-top-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px;">
+        <div class="golf-stat-card goal">
+          <p class="golf-stat-label">Goal race</p>
+          <p class="golf-stat-value" style="font-size:1.2rem;">10K · Sep 7</p>
+          <p class="golf-stat-sub" id="race-countdown">—</p>
+        </div>
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Plan</p>
+          <p class="golf-stat-value" style="font-size:1.2rem;color:var(--green);">Finish strong</p>
+          <p class="golf-stat-sub">easy Zone 2, build the long run</p>
+        </div>
+      </div>
       <div class="insight-box" style="margin-bottom:10px;">
-        <p class="insight-label">Phase 1 — Base building</p>
-        <p class="insight-text">Zone 2 only. Target HR 143–148. Start at 5.0–5.1 mph. Speed adjustments in 0.2 mph increments, minimum 3–4 minutes between changes. If HR spikes past 150, drop speed immediately — don't wait. Begin each session with a 5 min fast walk warmup.</p>
+        <p class="insight-label">Easy runs — Tue & Thu</p>
+        <p class="insight-text">Zone 2 only, 25–35 min. Target HR 143–148. Start at 5.0–5.1 mph, adjust in 0.2 mph increments with 3–4 min between changes. If HR spikes past 150, drop speed immediately. 5 min fast-walk warmup. These stay easy on purpose — the long run does the work.</p>
+      </div>
+      <div class="insight-box" style="margin-bottom:10px;">
+        <p class="insight-label">Long run — Sat</p>
+        <p class="insight-text">Same Zone 2 effort, just longer. Add about 0.5 mi each week toward ~6.5 mi (just past 10K distance) by late August, then ease back into race week. Conversational the whole way. If a week feels rough, hold the distance instead of adding.</p>
       </div>
       <div class="insight-box">
-        <p class="insight-label">Progression</p>
-        <p class="insight-text">5K → Half Marathon → Marathon. Do not skip phases. The base building phase exists so the later phases don't destroy you.</p>
+        <p class="insight-label">The block, week by week</p>
+        <p class="insight-text">Weeks 1–4: settle into 3 runs/week and the new job rhythm. Weeks 5–9: grow the Saturday long run. Weeks 10–11: peak long run, hold the easy runs. Race week: short and easy, extra rest, then the 10K on Sep 7. No hard intervals needed for a comfortable finish — consistency and the long run carry you. If the job makes 6 days too much, drop one easy run before you drop sleep.</p>
       </div>
     </div>
   </div>
@@ -2438,8 +2454,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.44</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.44: Commission modeler — Start Up (salary+3%) vs Standard (draw or 8%), crossover + $250K transition tracker</p>
+  <p class="version-tag">Version 2.45</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.45: 10K training block (Sep 7) — legs 1x, 3 runs/wk, easy Zone 2 + long run, race countdown</p>
 </div>
 
 <script>
@@ -2649,6 +2665,7 @@
     loadHoldings();
     runCalc();
     renderBenefits();
+    renderRace();
     loadEspp();
     handleWhoopRedirect();
     autoSync();
@@ -4910,6 +4927,17 @@
     set('mt-fv60', fmt(fv(captured, 38)));
     set('mt-fv65', fmt(fv(captured, 43)));
     set('mt-total-note', 'With your own ' + pct + '% added in, the whole 401(k) (you + match) compounds to about ' + fmt(fv(you + captured, 38)) + ' by 60 and ' + fmt(fv(you + captured, 43)) + ' by 65 — same 7% assumption.');
+  }
+
+  function renderRace() {
+    const el = document.getElementById('race-countdown');
+    if (!el) return;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const race = new Date('2026-09-07T00:00:00');
+    const days = Math.round((race - today) / 86400000);
+    if (days > 0) el.textContent = days + ' days out · ~' + Math.round(days / 7) + ' weeks';
+    else if (days === 0) el.textContent = 'Race day — go';
+    else el.textContent = 'Race complete';
   }
 
   function renderCommission() {
