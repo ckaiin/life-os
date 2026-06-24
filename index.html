@@ -713,9 +713,9 @@
     </div>
     <div class="header-right">
       <div class="start-badge">
-        <p class="start-label">Start date</p>
-        <p class="start-date">June 29, 2026</p>
-        <p class="start-company">Chef's Warehouse · West Chester County</p>
+        <p class="start-label">10K race day</p>
+        <p class="start-date" id="hdr-race-days">—</p>
+        <p class="start-company" id="hdr-race-sub">Sept 7, 2026 · 10K</p>
       </div>
     </div>
   </div>
@@ -2570,8 +2570,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.51</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.51: Field test done — rebuilt zones off max HR 190 (easy 145-150/ceiling 155); synced new split + zones across dashboard, goals, brief</p>
+  <p class="version-tag">Version 2.52</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.52: Replace homescreen work-start-date card with live 10K race countdown (Sept 7)</p>
 </div>
 
 <script>
@@ -5098,14 +5098,22 @@
   }
 
   function renderRace() {
-    const el = document.getElementById('race-countdown');
-    if (!el) return;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const race = new Date('2026-09-07T00:00:00');
     const days = Math.round((race - today) / 86400000);
-    if (days > 0) el.textContent = days + ' days out · ~' + Math.round(days / 7) + ' weeks';
-    else if (days === 0) el.textContent = 'Race day — go';
-    else el.textContent = 'Race complete';
+
+    // Daily Structure tab card
+    const el = document.getElementById('race-countdown');
+    if (el) el.textContent = days > 0 ? days + ' days out · ~' + Math.round(days / 7) + ' weeks'
+      : (days === 0 ? 'Race day — go' : 'Race complete');
+
+    // Homescreen header countdown
+    const hdr = document.getElementById('hdr-race-days');
+    if (hdr) hdr.textContent = days > 0 ? days + (days === 1 ? ' day' : ' days')
+      : (days === 0 ? 'Today!' : 'Done');
+    const sub = document.getElementById('hdr-race-sub');
+    if (sub) sub.textContent = days > 0 ? 'Sept 7, 2026 · 10K · ~' + Math.round(days / 7) + ' wks'
+      : 'Sept 7, 2026 · 10K';
   }
 
   function renderCommission() {
@@ -5245,6 +5253,7 @@
   }
 
   initApp();
+  renderRace(); // populate the homescreen race countdown immediately, even pre-login
 </script>
 </body>
 </html>
