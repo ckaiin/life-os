@@ -23,7 +23,7 @@ const json = (b: unknown, s = 200) =>
 const PLAN: Record<string, string> = {
   Monday: 'Upper', Tuesday: 'Easy Run (25–35 min, HR ~145–150)', Wednesday: 'Lower',
   Thursday: 'Easy Run (25–35 min, HR ~145–150)', Friday: 'Upper',
-  Saturday: 'Long Run (easy, HR ≤150)', Sunday: 'Rest + Prep Day',
+  Saturday: 'Rest', Sunday: 'Long Run + Prep (easy, HR ≤150)',
 };
 
 function wmoDesc(code: number): [string, string] {
