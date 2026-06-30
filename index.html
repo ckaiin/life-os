@@ -393,6 +393,13 @@
   .footer { border-top: 1px solid var(--border); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg2); }
   .footer-text { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text3); }
   .version-tag { font-size: 10px; color: var(--text3); }
+  .subtab-bar { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border); margin: 4px 0 22px; }
+  .subtab-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 9px 15px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text3); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: color .15s, border-color .15s; }
+  .subtab-btn:hover { color: var(--text2); }
+  .subtab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .subtab-btn.locked { opacity: .5; }
+  .work-subpanel { display: none; }
+  .work-subpanel.active { display: block; }
   .export-btn { font-family: 'DM Sans', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 3px; cursor: pointer; transition: opacity 0.15s; }
   .export-btn:hover { opacity: 0.8; }
   .export-btn.copied { background: var(--green); }
@@ -821,15 +828,15 @@
     <div class="dash-card card-work" onclick="switchTab('work')">
       <span class="card-tag tag-a">A — Work</span>
       <p class="card-title">Sales performance system</p>
-      <p class="card-desc">8 months inside sales is an audition, not a waiting room. The people who come out as stars treat the training period like it matters.</p>
+      <p class="card-desc">Training is an audition, not a waiting room. Win it on how you sell (value, not price) and how you run your days (a route, not a calendar).</p>
       <ul class="action-list">
-        <li><span class="dot dot-a"></span>Text your manager this week with one specific prep question</li>
-        <li><span class="dot dot-a"></span>Learn product divisions cold before June 29</li>
-        <li><span class="dot dot-a"></span>One sharp question per 101 session minimum</li>
-        <li><span class="dot dot-a"></span>Keep the neighbor/boss relationship social only</li>
+        <li><span class="dot dot-a"></span>Run CWU with your computer open, working along</li>
+        <li><span class="dot dot-a"></span>Memorize the signature products — butter &amp; oil first</li>
+        <li><span class="dot dot-a"></span>Taste and take home every sample you can</li>
+        <li><span class="dot dot-a"></span>Build the daily-route habit before you have accounts</li>
       </ul>
       <div class="card-progress">
-        <p class="card-progress-label" id="prog-label-work">0 of 7 complete</p>
+        <p class="card-progress-label" id="prog-label-work">0 of 4 complete</p>
         <div class="card-progress-track"><div class="card-progress-fill" id="prog-fill-work" style="width:0%"></div></div>
       </div>
     </div>
@@ -914,23 +921,78 @@
     <div class="pillar-header">
       <p class="pillar-eyebrow">Pillar A</p>
       <p class="pillar-title" style="color:#1e6ea8;">Sales Performance System</p>
-      <p class="pillar-lead">You start June 29th. The 8-month inside sales period is not something to survive. It's an 8-month audition. The people who come out as stars treat every part of it like it matters — the boring parts especially.</p>
+      <p class="pillar-lead">Chef's Warehouse, Westchester. The training stretch isn't something to survive, it's your audition. You win it on two things: how you sell (value and credibility, never price) and how you run your days (a geographic route, not a calendar).</p>
     </div>
-    <div class="insight-box"><p class="insight-label">Your advantage</p><p class="insight-text">You know your direct manager — he hired you. His boss is your neighbor. Most new hires walk in knowing nobody. Use this correctly and it's a significant edge. Use it as a shortcut and it quietly destroys your credibility before you've made a single sale.</p></div>
-    <div class="action-section">
-      <p class="action-section-title">Before day one</p>
-      <div class="action-item" id="item-work-1"><div class="action-check"><input type="checkbox" id="chk-work-1"><label for="chk-work-1"></label></div><p class="action-num">01</p><div><p class="urgent-tag">This week</p><p class="action-title">Text your manager one specific question about preparation</p><p class="action-detail">Not generic excitement. One specific question about how to hit the ground running. It signals seriousness and keeps you on his radar before you even start.</p></div></div>
-      <div class="action-item" id="item-work-2"><div class="action-check"><input type="checkbox" id="chk-work-2"><label for="chk-work-2"></label></div><p class="action-num">02</p><div><p class="action-title">Learn the division breakdown cold</p><p class="action-detail">Center of Plate, Produce, Dairy, and every other division. Know what they sell, who their customers are, and how they fit together. You sat through some of this training already — use it.</p></div></div>
-      <div class="action-item" id="item-work-3"><div class="action-check"><input type="checkbox" id="chk-work-3"><label for="chk-work-3"></label></div><p class="action-num">03</p><div><p class="action-title">Research what separates top performers in specialty food sales</p><p class="action-detail">Ask someone in the company directly. One conversation with a senior rep who knows the Westchester territory is worth more than any research you can do on your own.</p></div></div>
+
+    <div class="subtab-bar">
+      <button class="subtab-btn active" id="worktab-now" onclick="switchWorkTab('now')">Now</button>
+      <button class="subtab-btn" id="worktab-playbook" onclick="switchWorkTab('playbook')">Playbook</button>
+      <button class="subtab-btn" id="worktab-products" onclick="switchWorkTab('products')">Products</button>
+      <button class="subtab-btn" id="worktab-company" onclick="switchWorkTab('company')">Company</button>
+      <button class="subtab-btn locked" id="worktab-accounts" onclick="switchWorkTab('accounts')">Accounts 🔒</button>
     </div>
-    <div class="action-section">
-      <p class="action-section-title">During the 8-month training period</p>
-      <div class="action-item" id="item-work-4"><div class="action-check"><input type="checkbox" id="chk-work-4"><label for="chk-work-4"></label></div><p class="action-num">04</p><div><p class="action-title">Treat every 101 presenter as a relationship to build</p><p class="action-detail">One sharp question per session minimum. Follow up with a quick email or message after. Most new hires forget these people exist. If you're the one who remembers them, you become memorable across the whole organization before you've made a sale.</p></div></div>
-      <div class="action-item" id="item-work-5"><div class="action-check"><input type="checkbox" id="chk-work-5"><label for="chk-work-5"></label></div><p class="action-num">05</p><div><p class="action-title">Master the product catalog faster than anyone in your class</p><p class="action-detail">Unglamorous. Most people do the bare minimum. Knowing specialty food products cold is what makes you credible with chefs and restaurant buyers who've been in the industry for 20 years.</p></div></div>
-      <div class="action-item" id="item-work-6"><div class="action-check"><input type="checkbox" id="chk-work-6"><label for="chk-work-6"></label></div><p class="action-num">06</p><div><p class="action-title">Monthly check-in with your manager — keep it deliberate</p><p class="action-detail">Not needy, not constant. Once a month. He has reputational skin in the game — you're his hire. If you perform well, he looks smart. Make him look smart.</p></div></div>
-      <div class="action-item" id="item-work-7"><div class="action-check"><input type="checkbox" id="chk-work-7"><label for="chk-work-7"></label></div><p class="action-num">07</p><div><p class="action-title">Keep the neighbor relationship social only — for now</p><p class="action-detail">His boss being your neighbor is a long-term asset. It becomes a liability the second people sense you're using it as a back channel. Let your track record build first. The relationship earns its professional value through your results, not the other way around.</p></div></div>
+
+    <!-- NOW -->
+    <div class="work-subpanel active" id="worksub-now">
+      <div class="golf-top-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="golf-stat-card goal"><p class="golf-stat-label">Training</p><p class="golf-stat-value" id="work-day" style="font-size:1.3rem;color:var(--green);">Day —</p><p class="golf-stat-sub">at Chef's Warehouse</p></div>
+        <div class="golf-stat-card"><p class="golf-stat-label">Phase</p><p class="golf-stat-value" style="font-size:1.2rem;">CWU</p><p class="golf-stat-sub">~8–12 weeks</p></div>
+        <div class="golf-stat-card"><p class="golf-stat-label">Prove it by</p><p class="golf-stat-value" style="font-size:1.2rem;">~Apr 2027</p><p class="golf-stat-sub" id="work-eval">—</p></div>
+      </div>
+      <div class="action-section">
+        <p class="action-section-title">This phase — current focus</p>
+        <div class="action-item" id="item-worknow-1"><div class="action-check"><input type="checkbox" id="chk-worknow-1"><label for="chk-worknow-1"></label></div><p class="action-num">01</p><div><p class="action-title">Run CWU with your computer open, working along</p><p class="action-detail">The repetition is for muscle memory, especially the systems. Mike admitted his orders were a mess for weeks because he treated it lightly. Don't.</p></div></div>
+        <div class="action-item" id="item-worknow-2"><div class="action-check"><input type="checkbox" id="chk-worknow-2"><label for="chk-worknow-2"></label></div><p class="action-num">02</p><div><p class="action-title">Memorize the signature products — butter and olive oil first</p><p class="action-detail">The Products tab is your study list. Mastering the house brands is the fastest path to credibility. Start with Grand Reserve butter and Spiletto oil.</p></div></div>
+        <div class="action-item" id="item-worknow-3"><div class="action-check"><input type="checkbox" id="chk-worknow-3"><label for="chk-worknow-3"></label></div><p class="action-num">03</p><div><p class="action-title">Taste and take home every sample you can</p><p class="action-detail">Ask your trainer, they'll say yes. You sell what you've tasted. This is the cheapest, highest-leverage thing you can do right now.</p></div></div>
+        <div class="action-item" id="item-worknow-4"><div class="action-check"><input type="checkbox" id="chk-worknow-4"><label for="chk-worknow-4"></label></div><p class="action-num">04</p><div><p class="action-title">Start the daily-route habit now, before you have accounts</p><p class="action-detail">Mike's #1 predictor of who lasts. It's a visit schedule built on geographic density, not a calendar of meetings. Build the muscle before it counts.</p></div></div>
+      </div>
+      <div class="insight-box"><p class="insight-label">Manager rhythm</p><p class="insight-text">Tim hired you, so your performance is his reputation. Keep a deliberate monthly check-in, not needy, not constant. And keep Patrick (his boss, your neighbor) social only for now. The relationship earns its professional value through your results, not the other way around.</p></div>
     </div>
-    <div class="insight-box"><p class="insight-label">The long game</p><p class="insight-text">A book of business in specialty food sales is genuinely close to running your own business. You own the relationships, you build the revenue, your income is tied directly to how well you manage and grow it. That's the entrepreneur outlet you've been looking for. But it's on the other side of 8 months of unglamorous training. The grind is the price of admission.</p></div>
+
+    <!-- PLAYBOOK -->
+    <div class="work-subpanel" id="worksub-playbook">
+      <div class="insight-box"><p class="insight-label">1 · Run a route, not a calendar</p><p class="insight-text">You don't book meetings, you build a geographic route and see as many customers as possible per day. The people who don't keep a schedule don't succeed. Cluster tight: 20 accounts in one town earns that town its own truck, which makes ops love you and makes you more profitable.</p></div>
+      <div class="insight-box"><p class="insight-label">2 · Sell value, never price</p><p class="insight-text">You're the specialty house, the opposite of the broadliners who sell boxes on price. Lead with culinary fit. The anchor stat: the NRA's top 100 causes of high food cost had waste at #1 and #100, and only one was about food price. Lead with food and the money talk follows. Lead with money and money is all they'll discuss.</p></div>
+      <div class="insight-box"><p class="insight-label">3 · Credibility is everything</p><p class="insight-text">"Your credibility is my credibility." Learn the truth about product and read labels (Plugra "French" butter is made in Kansas City; a rival's "EVOO blend" was soybean oil per the label). One caught lie and you're done. Honesty is what carries a career.</p></div>
+      <div class="insight-box"><p class="insight-label">4 · Be a consultant, not a salesman</p><p class="insight-text">"I want to be your first call." Be an integral part of the chef's business, offer ideas, do right-by-them things that don't pay you. The goal is the chef who tells the Sysco rep "I'll call you back" because he needs you, not just likes you.</p></div>
+      <div class="insight-box"><p class="insight-label">5 · Think in margin, not markup</p><p class="insight-text">Publicly traded company, and you're paid on gross profit, so margin discipline is literally your paycheck. Know the difference cold: $2 on a $10 item is a 20% markup but ~16.7% margin. "Why don't you care about your money?"</p></div>
+      <div class="insight-box"><p class="insight-label">6 · Take responsibility, never point fingers</p><p class="insight-text">When something breaks: "I'm not sure what happened, I'll take responsibility, let's fix it." Not the chef's fault, not the driver's. Protect your chefs' businesses, never share one chef's secrets with another. Professionalism gets you past problems fast.</p></div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="work-subpanel" id="worksub-products">
+      <div class="insight-box" style="border-left:3px solid var(--accent);"><p class="insight-text" style="margin:0;">Mike's signature-product list, the items he wants you to know cold coming out of training. Master the house brands first. <strong>Start with butter and olive oil.</strong></p></div>
+      <div class="insight-box"><p class="insight-label">Butter — Grand Reserve</p><p class="insight-text">"Her name is Dairyland." Start here, you'll never lose it. Line is 80% (standard), 82% (European), 83% (pastry chefs adore it), 84% cultured (compound butters). Truth bomb: Plugra isn't French, it's Kansas City. Butter is what you're strongest at, never lose it on price.</p></div>
+      <div class="insight-box"><p class="insight-label">Olive oil — Spiletto</p><p class="insight-text">#1 oil, #5 product worldwide. 100% Greek Koroneiki olives, same producer ~25–30 yrs. Versatile, consistent, the base of the 75/25 and 90/10 blended oils too. Drop "first press / cold press" from your vocabulary, it hasn't been a thing since vertical presses ended in the 1960s.</p></div>
+      <div class="insight-box"><p class="insight-label">Tomatoes — Teo</p><p class="insight-text">Roman tomatoes, premium drained fill (beats rivals by up to ~0.9 lb in a can), packed in puree not water so it's 100% usable. Perfect item to win a cutting fast. Same company makes the Chow line.</p></div>
+      <div class="insight-box"><p class="insight-label">Heavy cream — non-UHT</p><p class="insight-text">Not ultra-high-temp pasteurized, so the solids pastry chefs need stay intact. Shorter shelf life, but exactly what bakers want. Know why "long shelf life" is actually a negative here.</p></div>
+      <div class="insight-box"><p class="insight-label">Chocolate — Valrhona + Chicoa</p><p class="insight-text">Valrhona is the finest in the world. House brand Chicoa is a true couverture (not coating chocolate), 100% crafted in Belgium, recipe by master pastry chef Francois. Pastry chefs are underserved, align with them like with a bartender.</p></div>
+      <div class="insight-box"><p class="insight-label">Beef — Allen Brothers</p><p class="insight-text">1893 Chicago, first ever to cut steaks and deliver to restaurants. USDA Prime + a Certified Angus program (note: "Certified Angus" is a company standard, not a government grade). They cut out the "cord" (gristle) most people complain about. Nobody fabricates steaks better.</p></div>
+      <div class="insight-box"><p class="insight-label">Seafood — XTXW shrimp</p><p class="insight-text">Vannamei white, frozen only once, no sodium tripolyphosphate (STPP). ~90% of market shrimp is pumped with STPP, which fakes size but turns mushy when cooked. On a cutting, yours keeps the snap. Don't compare case price, it's not apples to apples.</p></div>
+      <div class="insight-box"><p class="insight-label">Seafood — FAO 34 octopus</p><p class="insight-text">FAO 34 = the Mediterranean region near the Straits of Gibraltar. More tender and consistent than the smaller Japanese product. There's a cooked octopus leg that's excellent. House item, know it.</p></div>
+    </div>
+
+    <!-- COMPANY -->
+    <div class="work-subpanel" id="worksub-company">
+      <div class="action-section">
+        <p class="action-section-title">People to know</p>
+        <div class="insight-box"><p class="insight-label">Chris Pappas — Chairman &amp; CEO</p><p class="insight-text">Co-founder, visionary, elite salesman who knows the product better than you. Patrols the halls. If you meet him, introduce yourself, tell him where you're from, don't be intimidated. He wants to hear from you.</p></div>
+        <div class="insight-box"><p class="insight-label">John Pappas — Vice Chairman &amp; COO</p><p class="insight-text">Co-founder. Built the logistics, category teams, buying, and QC. Created My Sales 4.0. Same deal, introduce yourself when you get the chance.</p></div>
+        <div class="insight-box"><p class="insight-label">The chefs — David &amp; Francois</p><p class="insight-text">Corporate chef David sources globally; Francois is one of few master pastry chefs in the world (designed Chicoa, holds a culinary Olympic record). Verify name spellings. They're proof of the "specialty first" story you'll sell.</p></div>
+        <div class="insight-box"><p class="insight-label">Tim Wilder — your manager · Patrick — his boss / your neighbor</p><p class="insight-text">Tim hired you; make him look smart. Patrick is the long-term asset, keep it social only until your track record speaks. Using it as a back channel quietly costs you credibility.</p></div>
+      </div>
+      <div class="action-section">
+        <p class="action-section-title">Systems to learn</p>
+        <div class="insight-box"><p class="insight-label">My Sales 4.0</p><p class="insight-text">The analytics platform. Who bought / didn't buy this week, 2 weeks, 3 weeks; sales vs last year; lost items; pre-orders. Nothing to look at until you have accounts, but get fluent now so you're ready.</p></div>
+        <div class="insight-box"><p class="insight-label">Canopy &amp; JDE</p><p class="insight-text">Order management. Watch fills and weights in real time, and catch errors early. A miskeyed $40K order on a $1K customer gets credited back against your commission if it ships, so catching it protects your pay.</p></div>
+        <div class="insight-box"><p class="insight-label">Chef X pricing</p><p class="insight-text">The dynamic pricing schedule that keeps you competitive on commodity items while protecting margin on your unique brands. Varies by market. You keep autonomy to go lower, just don't give away margin.</p></div>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS (locked) -->
+    <div class="work-subpanel" id="worksub-accounts">
+      <div class="insight-box" style="border-left:3px solid var(--text3);"><p class="insight-label">Locked — unlocks at ~week 8–12 🔒</p><p class="insight-text">You won't have accounts until you finish training, so there's nothing to track yet. When you do, this becomes your account &amp; pipeline tracker: the "angry accounts" you inherit, the new ones you open, who's gone quiet, follow-ups, and your book as it grows. We'll build it then, off your real customers.</p></div>
+    </div>
   </div>
 </div>
 
@@ -2571,8 +2633,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.58</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.58: Stamp starting treadmill speed + incline onto every run day (~5.0 mph easy/long, 0–1%; strides ~7.5; shakeout ~4.8)</p>
+  <p class="version-tag">Version 2.59</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.59: Redesign Work tab with sub-tabs (Now / Playbook / Products / Company / Accounts-locked) from day-1 onboarding</p>
 </div>
 
 <script>
@@ -2782,6 +2844,7 @@
     loadHoldings();
     runCalc();
     renderBenefits();
+    renderWorkNow();
     renderRace();
     renderRunProgram();
     renderFieldTest();
@@ -3217,7 +3280,7 @@
 
   // Checkbox config
   const pillars = {
-    work:      ['chk-work-1','chk-work-2','chk-work-3','chk-work-4','chk-work-5','chk-work-6','chk-work-7'],
+    work:      ['chk-worknow-1','chk-worknow-2','chk-worknow-3','chk-worknow-4'],
     finance:   ['chk-finance-1','chk-finance-2','chk-finance-3','chk-finance-4','chk-finance-5','chk-finance-6','chk-finance-7','chk-finance-8'],
     structure: ['chk-structure-1','chk-structure-2','chk-structure-3','chk-structure-4'],
     social:    [],
@@ -5095,6 +5158,30 @@
       const days = Math.round((new Date('2026-09-07T00:00:00') - today) / 86400000);
       el.textContent = days > 0 ? days + ' days · ~' + Math.round(days / 7) + ' wks out'
         : (days === 0 ? 'Race day — go!' : 'Race complete');
+    }
+  }
+
+  function switchWorkTab(id) {
+    document.querySelectorAll('#panel-work .work-subpanel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#panel-work .subtab-btn').forEach(b => b.classList.remove('active'));
+    const sub = document.getElementById('worksub-' + id);
+    if (sub) sub.classList.add('active');
+    const btn = document.getElementById('worktab-' + id);
+    if (btn) btn.classList.add('active');
+  }
+
+  function renderWorkNow() {
+    const start = new Date('2026-06-29T00:00:00');
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const dayEl = document.getElementById('work-day');
+    if (dayEl) {
+      const day = Math.floor((today - start) / 86400000) + 1;
+      dayEl.textContent = day >= 1 ? 'Day ' + day : 'Starts soon';
+    }
+    const evalEl = document.getElementById('work-eval');
+    if (evalEl) {
+      const months = Math.round((new Date('2027-04-29T00:00:00') - today) / 86400000 / 30.44);
+      evalEl.textContent = months > 0 ? '~' + months + ' months out' : 'now';
     }
   }
 
