@@ -1330,7 +1330,7 @@
     </div>
     <div class="insight-box"><p class="insight-label">Your weekday math</p><p class="insight-text">9:00 AM start, ~50 min commute, out the door by 8:10, up at 7:00. The wake-up shift you were dreading is done — you're living it. The risk flips now: with a real job, training and recovery are the first things to slip when work runs long. Protect the evening.</p></div>
     <div class="action-section">
-      <p class="action-section-title">Daily schedule <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">recurring blocks that build your daily agenda</span></p>
+      <p class="action-section-title">Recurring agenda items <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">show on your dashboard + morning brief</span></p>
       <div class="sched-form">
         <input type="time" id="sched-time" class="sched-input" style="max-width:120px;">
         <input type="text" id="sched-label" class="sched-input" placeholder="e.g. Workout, Commute, Wake up" onkeydown="if(event.key==='Enter')addSchedule()">
@@ -1393,7 +1393,7 @@
   <div class="schedule-wrap" style="padding-top:0;">
     <div class="schedule-grid">
       <div>
-        <p class="schedule-col-title">Weekday schedule</p>
+        <p class="schedule-col-title">Your daily rhythm</p>
         <div class="time-block"><p class="time-tag">7:00 AM</p><div><p class="time-title">Wake up — no snooze</p><p class="time-note">Keystone habit. Phone across the room if you need to.</p></div></div>
         <div class="time-block"><p class="time-tag">7:15 AM</p><div><p class="time-title">Breakfast + get ready</p><p class="time-note">Prepped, so grab and reheat. Clothes and bag set the night before.</p></div></div>
         <div class="time-block"><p class="time-tag">8:10 AM</p><div><p class="time-title">Leave — commute</p><p class="time-note">~50 min to Westchester. Use it: podcasts, industry content, calls. Not scrolling.</p></div></div>
@@ -2636,8 +2636,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.64</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.64: Remove stale pre-start Action items from Daily Structure</p>
+  <p class="version-tag">Version 2.65</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.65: Relabel schedule sections â "Your daily rhythm" (static) vs "Recurring agenda items" (feeds dashboard + brief)</p>
 </div>
 
 <script>
