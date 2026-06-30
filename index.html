@@ -2651,8 +2651,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.69</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.69: Agenda items support one-time blocks (just today / tomorrow / pick a date), not only recurring</p>
+  <p class="version-tag">Version 2.70</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.70: Fix weekly training-split reset â Sunday-anchored week (was rolling over mid-Saturday); restore now un-crosses days</p>
 </div>
 
 <script>
@@ -3874,9 +3874,12 @@
   }
   // WORKOUT DAY TRACKER — resets every Sunday
   function getWeekNumber() {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
-    return Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+    // Sunday-based week index in ET. Constant Sun→Sat, increments at midnight Sunday ET.
+    // (Old version mixed in time-of-day, so it rolled over mid-Saturday and was inconsistent.)
+    const ld = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+    const d = new Date(ld + 'T12:00:00');
+    d.setDate(d.getDate() - d.getDay()); // back up to this week's Sunday
+    return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 604800000);
   }
 
   function initWorkoutDays() {
@@ -3890,11 +3893,10 @@
       localStorage.setItem('workout-week', currentWeek);
     }
 
-    // Restore state
+    // Restore — set the crossed-out state both ways so a reset actually un-crosses the tiles
     days.forEach(d => {
-      if (localStorage.getItem('workout-' + d) === 'true') {
-        document.getElementById('wd-' + d).classList.add('done');
-      }
+      const el = document.getElementById('wd-' + d);
+      if (el) el.classList.toggle('done', localStorage.getItem('workout-' + d) === 'true');
     });
   }
 
