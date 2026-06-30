@@ -31,8 +31,8 @@ select cron.schedule('life-os-whoop-sync', '5 */3 * * *', $$
   );
 $$);
 
--- Morning brief: daily at 10:30 UTC (6:30 AM Eastern during EDT)
-select cron.schedule('life-os-morning-brief', '30 10 * * *', $$
+-- Morning brief: daily at 11:00 UTC (7:00 AM Eastern during EDT)
+select cron.schedule('life-os-morning-brief', '0 11 * * *', $$
   select net.http_post(
     url := 'https://bvecxrwdmddaduwxynfe.supabase.co/functions/v1/morning-brief',
     headers := jsonb_build_object(
