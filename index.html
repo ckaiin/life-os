@@ -2666,8 +2666,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.71</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.71: Add Vendors sub-tab to Work â editable vendor contacts, seeded with James (Shay Gourmet) + Patrik (Boogie)</p>
+  <p class="version-tag">Version 2.72</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.72: Correct Vendors seed (James company name fix)
 </div>
 
 <script>
@@ -4142,7 +4142,7 @@
 
   // --- Vendor contacts (Work → Vendors) ---
   const VENDOR_SEED = [
-    { name: 'James', company: 'Shay Gourmet', role: 'Pastries + other products', contact: '', note: 'Fancy Food Show. Friendliest contact. Call when training ends — comes out with you and brings product to help land clients.' },
+    { name: 'James', company: "C'est Gourmet", role: 'Pastries + other products', contact: '', note: 'Fancy Food Show. Friendliest contact. Call when training ends — comes out with you and brings product to help land clients.' },
     { name: 'Patrik', company: 'Boogie', role: 'Bread (French)', contact: '', note: 'Fancy Food Show. Reach out when done with training.' }
   ];
   function getVendors() {
