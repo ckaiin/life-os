@@ -125,12 +125,12 @@ Deno.serve(async (req) => {
   // Reminders due today or overdue and not done.
   const { data: rems } = await db.from('reminders').select('date,text,done,due_at').eq('done', false).lte('date', todayLd).order('date', { ascending: true });
   // Recurring schedule blocks → today's agenda.
-  const { data: sched } = await db.from('daily_schedule').select('label,time,dows').eq('active', true);
+  const { data: sched } = await db.from('daily_schedule').select('label,time,dows,date').eq('active', true);
   const dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(weekday);
   const etHHMM = (iso: string) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
   const fmt12 = (hhmm: string) => { const [h, m] = hhmm.split(':').map(Number); return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h >= 12 ? 'PM' : 'AM'); };
   const agenda: { time: string; label: string; kind: string }[] = [];
-  (sched || []).forEach((b: any) => { const d = b.dows || []; if (d.length === 0 || d.includes(dow)) agenda.push({ time: b.time, label: b.label, kind: 'block' }); });
+  (sched || []).forEach((b: any) => { if (b.date) { if (b.date === todayLd) agenda.push({ time: b.time, label: b.label, kind: 'block' }); return; } const d = b.dows || []; if (d.length === 0 || d.includes(dow)) agenda.push({ time: b.time, label: b.label, kind: 'block' }); });
   (rems || []).forEach((r: any) => { if (r.due_at && r.date === todayLd) agenda.push({ time: etHHMM(r.due_at), label: r.text, kind: 'rem' }); });
   agenda.sort((a, b) => a.time.localeCompare(b.time));
 

@@ -1330,21 +1330,29 @@
       <div class="sched-form">
         <input type="time" id="sched-time" class="sched-input" style="max-width:120px;">
         <input type="text" id="sched-label" class="sched-input" placeholder="e.g. Workout, Commute, Wake up" onkeydown="if(event.key==='Enter')addSchedule()">
-        <select id="sched-days" class="sched-input" style="max-width:140px;">
-          <option value="all">Every day</option>
-          <option value="weekdays">Weekdays</option>
-          <option value="weekends">Weekends</option>
-          <option value="1">Mondays</option>
-          <option value="2">Tuesdays</option>
-          <option value="3">Wednesdays</option>
-          <option value="4">Thursdays</option>
-          <option value="5">Fridays</option>
-          <option value="6">Saturdays</option>
-          <option value="0">Sundays</option>
+        <select id="sched-days" class="sched-input" style="max-width:150px;" onchange="toggleSchedDate()">
+          <optgroup label="Recurring">
+            <option value="all">Every day</option>
+            <option value="weekdays">Weekdays</option>
+            <option value="weekends">Weekends</option>
+            <option value="1">Mondays</option>
+            <option value="2">Tuesdays</option>
+            <option value="3">Wednesdays</option>
+            <option value="4">Thursdays</option>
+            <option value="5">Fridays</option>
+            <option value="6">Saturdays</option>
+            <option value="0">Sundays</option>
+          </optgroup>
+          <optgroup label="One-time">
+            <option value="today">Just today</option>
+            <option value="tomorrow">Just tomorrow</option>
+            <option value="date">Pick a date…</option>
+          </optgroup>
         </select>
+        <input type="date" id="sched-date" class="sched-input" style="max-width:150px;display:none;">
         <button class="golf-btn" onclick="addSchedule()">Add block</button>
       </div>
-      <div id="sched-list" class="sched-list"><p class="sched-empty">No blocks yet. Add your recurring daily times above.</p></div>
+      <div id="sched-list" class="sched-list"><p class="sched-empty">No blocks yet. Add recurring or one-time blocks above.</p></div>
     </div>
 
     <div class="action-section">
@@ -2643,8 +2651,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.68</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.68: Add Brita filter to Home Maintenance (Kitchen, every 60 days)</p>
+  <p class="version-tag">Version 2.69</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.69: Agenda items support one-time blocks (just today / tomorrow / pick a date), not only recurring</p>
 </div>
 
 <script>
@@ -2998,8 +3006,23 @@
     return [...dows].sort((a, b) => a - b).map(d => names[d]).join(' ');
   }
 
+  function _etTodayISO() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date()); }
+  function _addDaysISO(iso, n) { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return new Intl.DateTimeFormat('en-CA').format(d); }
+  function oneOffLabel(iso) {
+    const today = _etTodayISO();
+    if (iso === today) return 'Today';
+    if (iso === _addDaysISO(today, 1)) return 'Tomorrow';
+    return new Date(iso + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function toggleSchedDate() {
+    const el = document.getElementById('sched-date');
+    if (el) el.style.display = (document.getElementById('sched-days').value === 'date') ? '' : 'none';
+  }
+
   async function loadSchedule() {
     if (!_sbReady) return;
+    // remove one-off blocks whose date has passed (own try so a missing 'date' column can't blank the list)
+    try { await _sb.from('daily_schedule').delete().not('date', 'is', null).lt('date', _etTodayISO()); } catch (e) {}
     try {
       const { data } = await _sb.from('daily_schedule').select('*').eq('active', true).order('time', { ascending: true });
       _scheduleBlocks = data || [];
@@ -3011,10 +3034,10 @@
   function renderScheduleList() {
     const wrap = document.getElementById('sched-list');
     if (!wrap) return;
-    if (!_scheduleBlocks.length) { wrap.innerHTML = '<p class="sched-empty">No blocks yet. Add your recurring daily times above.</p>'; return; }
+    if (!_scheduleBlocks.length) { wrap.innerHTML = '<p class="sched-empty">No blocks yet. Add recurring or one-time blocks above.</p>'; return; }
     wrap.innerHTML = _scheduleBlocks.map(b =>
       '<div class="sched-row"><span class="s-time">' + fmt12(b.time) + '</span><span>' + escapeHtml(b.label) + '</span>' +
-      '<span class="s-days">' + daysLabel(b.dows) + '</span>' +
+      '<span class="s-days">' + (b.date ? oneOffLabel(b.date) : daysLabel(b.dows)) + '</span>' +
       '<button class="sched-del" onclick="deleteSchedule(' + b.id + ')">✕</button></div>'
     ).join('');
   }
@@ -3024,13 +3047,19 @@
     const label = document.getElementById('sched-label').value.trim();
     const sel = document.getElementById('sched-days').value;
     if (!time || !label) return;
-    let dows = [];
+    let dows = [], date = null;
     if (sel === 'weekdays') dows = [1, 2, 3, 4, 5];
     else if (sel === 'weekends') dows = [0, 6];
+    else if (sel === 'today') date = _etTodayISO();
+    else if (sel === 'tomorrow') date = _addDaysISO(_etTodayISO(), 1);
+    else if (sel === 'date') { date = document.getElementById('sched-date').value; if (!date) return; }
     else if (sel !== 'all') dows = [parseInt(sel)];
+    const row = { time, label, dows };
+    if (date) row.date = date; // only set for one-offs, so recurring inserts still work pre-migration
     try {
-      await _sb.from('daily_schedule').insert({ time, label, dows });
+      await _sb.from('daily_schedule').insert(row);
       document.getElementById('sched-label').value = '';
+      const de = document.getElementById('sched-date'); if (de) de.value = '';
       await loadSchedule();
     } catch (e) {}
   }
@@ -3049,6 +3078,7 @@
     const todayLd = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(now);
     const items = [];
     _scheduleBlocks.forEach(b => {
+      if (b.date) { if (b.date === todayLd) items.push({ time: b.time, label: b.label, kind: 'block' }); return; }
       const d = b.dows || [];
       if (d.length === 0 || d.includes(dow)) items.push({ time: b.time, label: b.label, kind: 'block' });
     });
