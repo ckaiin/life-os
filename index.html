@@ -925,6 +925,7 @@
       <button class="subtab-btn" id="worktab-playbook" onclick="switchWorkTab('playbook')">Playbook</button>
       <button class="subtab-btn" id="worktab-products" onclick="switchWorkTab('products')">Products</button>
       <button class="subtab-btn" id="worktab-company" onclick="switchWorkTab('company')">Company</button>
+      <button class="subtab-btn" id="worktab-vendors" onclick="switchWorkTab('vendors')">Vendors</button>
       <button class="subtab-btn locked" id="worktab-accounts" onclick="switchWorkTab('accounts')">Accounts 🔒</button>
     </div>
 
@@ -991,6 +992,20 @@
         <div class="insight-box"><p class="insight-label">Canopy &amp; JDE</p><p class="insight-text">Order management. Watch fills and weights in real time, and catch errors early. A miskeyed $40K order on a $1K customer gets credited back against your commission if it ships, so catching it protects your pay.</p></div>
         <div class="insight-box"><p class="insight-label">Chef X pricing</p><p class="insight-text">The dynamic pricing schedule that keeps you competitive on commodity items while protecting margin on your unique brands. Varies by market. You keep autonomy to go lower, just don't give away margin.</p></div>
       </div>
+    </div>
+
+    <!-- VENDORS -->
+    <div class="work-subpanel" id="worksub-vendors">
+      <p class="action-section-title">Vendor contacts <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">partners who bring product and ride along once you're out of training</span></p>
+      <div class="hold-form" style="flex-wrap:wrap;">
+        <input type="text" id="vend-name" class="sched-input" placeholder="Name" style="max-width:120px;">
+        <input type="text" id="vend-company" class="sched-input" placeholder="Company" style="max-width:130px;">
+        <input type="text" id="vend-role" class="sched-input" placeholder="What they do" style="max-width:150px;">
+        <input type="text" id="vend-contact" class="sched-input" placeholder="Phone / email" style="max-width:160px;">
+        <input type="text" id="vend-note" class="sched-input" placeholder="Note" style="max-width:200px;" onkeydown="if(event.key==='Enter')addVendor()">
+        <button class="golf-btn" onclick="addVendor()">Add</button>
+      </div>
+      <div id="vend-list" style="margin-top:14px;display:flex;flex-direction:column;gap:10px;"></div>
     </div>
 
     <!-- ACCOUNTS (locked) -->
@@ -2651,8 +2666,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.70</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.70: Fix weekly training-split reset â Sunday-anchored week (was rolling over mid-Saturday); restore now un-crosses days</p>
+  <p class="version-tag">Version 2.71</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.71: Add Vendors sub-tab to Work â editable vendor contacts, seeded with James (Shay Gourmet) + Patrik (Boogie)</p>
 </div>
 
 <script>
@@ -2860,6 +2875,7 @@
     loadCapture();
     loadSchedule();
     loadHoldings();
+    loadVendors();
     runCalc();
     renderBenefits();
     renderWorkNow();
@@ -4122,6 +4138,56 @@
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // --- Vendor contacts (Work → Vendors) ---
+  const VENDOR_SEED = [
+    { name: 'James', company: 'Shay Gourmet', role: 'Pastries + other products', contact: '', note: 'Fancy Food Show. Friendliest contact. Call when training ends — comes out with you and brings product to help land clients.' },
+    { name: 'Patrik', company: 'Boogie', role: 'Bread (French)', contact: '', note: 'Fancy Food Show. Reach out when done with training.' }
+  ];
+  function getVendors() {
+    try {
+      const v = localStorage.getItem('work-vendors');
+      if (v === null) { localStorage.setItem('work-vendors', JSON.stringify(VENDOR_SEED)); return JSON.parse(JSON.stringify(VENDOR_SEED)); }
+      return JSON.parse(v) || [];
+    } catch (e) { return []; }
+  }
+  function saveVendors(vs) { try { localStorage.setItem('work-vendors', JSON.stringify(vs)); } catch (e) {} }
+  function loadVendors() { renderVendors(); }
+  function renderVendors() {
+    const wrap = document.getElementById('vend-list');
+    if (!wrap) return;
+    const vs = getVendors();
+    if (!vs.length) { wrap.innerHTML = '<p class="sched-empty">No vendors yet. Add the ones you meet at shows.</p>'; return; }
+    wrap.innerHTML = vs.map((v, i) =>
+      '<div class="insight-box" style="position:relative;">' +
+        '<button class="sched-del" style="position:absolute;top:10px;right:10px;" onclick="deleteVendor(' + i + ')">✕</button>' +
+        '<p class="insight-label">' + escapeHtml(v.name) + (v.company ? ' — ' + escapeHtml(v.company) : '') + '</p>' +
+        (v.role ? '<p class="insight-text" style="margin:0 0 8px;">' + escapeHtml(v.role) + '</p>' : '') +
+        '<input class="sched-input" style="max-width:260px;" value="' + escapeHtml(v.contact) + '" placeholder="Phone / email (from their card)" onchange="updateVendor(' + i + ',\'contact\',this.value)">' +
+        '<input class="sched-input" style="display:block;width:100%;max-width:none;margin-top:6px;" value="' + escapeHtml(v.note) + '" placeholder="Note" onchange="updateVendor(' + i + ',\'note\',this.value)">' +
+      '</div>'
+    ).join('');
+  }
+  function addVendor() {
+    const g = id => (document.getElementById(id).value || '').trim();
+    const name = g('vend-name');
+    if (!name) return;
+    const vs = getVendors();
+    vs.push({ name, company: g('vend-company'), role: g('vend-role'), contact: g('vend-contact'), note: g('vend-note') });
+    saveVendors(vs);
+    ['vend-name', 'vend-company', 'vend-role', 'vend-contact', 'vend-note'].forEach(id => document.getElementById(id).value = '');
+    renderVendors();
+  }
+  function updateVendor(i, field, val) {
+    const vs = getVendors();
+    if (vs[i]) { vs[i][field] = val; saveVendors(vs); }
+  }
+  function deleteVendor(i) {
+    const vs = getVendors();
+    vs.splice(i, 1);
+    saveVendors(vs);
+    renderVendors();
   }
 
   // --- Muscle readiness body map ---
