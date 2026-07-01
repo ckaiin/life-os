@@ -925,7 +925,7 @@
       <button class="subtab-btn" id="worktab-playbook" onclick="switchWorkTab('playbook')">Playbook</button>
       <button class="subtab-btn" id="worktab-products" onclick="switchWorkTab('products')">Products</button>
       <button class="subtab-btn" id="worktab-company" onclick="switchWorkTab('company')">Company</button>
-      <button class="subtab-btn" id="worktab-vendors" onclick="switchWorkTab('vendors')">Vendors</button>
+      <button class="subtab-btn" id="worktab-vendors" onclick="switchWorkTab('vendors'); renderVendors()">Vendors</button>
       <button class="subtab-btn locked" id="worktab-accounts" onclick="switchWorkTab('accounts')">Accounts 🔒</button>
     </div>
 
@@ -2666,8 +2666,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.73</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.73: Vendor contact/note fields are auto-growing textareas (no more cutoff)
+  <p class="version-tag">Version 2.74</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.74: Re-size vendor textareas when Vendors tab opens (fixes clipped fields from hidden-render)
 </div>
 
 <script>
