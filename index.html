@@ -2666,8 +2666,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.72</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.72: Correct Vendors seed (James company name fix)
+  <p class="version-tag">Version 2.73</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.73: Vendor contact/note fields are auto-growing textareas (no more cutoff)
 </div>
 
 <script>
@@ -4164,11 +4164,13 @@
         '<button class="sched-del" style="position:absolute;top:10px;right:10px;" onclick="deleteVendor(' + i + ')">✕</button>' +
         '<p class="insight-label">' + escapeHtml(v.name) + (v.company ? ' — ' + escapeHtml(v.company) : '') + '</p>' +
         (v.role ? '<p class="insight-text" style="margin:0 0 8px;">' + escapeHtml(v.role) + '</p>' : '') +
-        '<input class="sched-input" style="max-width:260px;" value="' + escapeHtml(v.contact) + '" placeholder="Phone / email (from their card)" onchange="updateVendor(' + i + ',\'contact\',this.value)">' +
-        '<input class="sched-input" style="display:block;width:100%;max-width:none;margin-top:6px;" value="' + escapeHtml(v.note) + '" placeholder="Note" onchange="updateVendor(' + i + ',\'note\',this.value)">' +
+        '<textarea class="sched-input" rows="1" oninput="autoGrow(this)" style="display:block;width:100%;max-width:none;height:auto;resize:vertical;box-sizing:border-box;" placeholder="Phone / email (from their card)" onchange="updateVendor(' + i + ',\'contact\',this.value)">' + escapeHtml(v.contact) + '</textarea>' +
+        '<textarea class="sched-input" rows="2" oninput="autoGrow(this)" style="display:block;width:100%;max-width:none;height:auto;resize:vertical;box-sizing:border-box;margin-top:6px;" placeholder="Note" onchange="updateVendor(' + i + ',\'note\',this.value)">' + escapeHtml(v.note) + '</textarea>' +
       '</div>'
     ).join('');
+    wrap.querySelectorAll('textarea').forEach(autoGrow);
   }
+  function autoGrow(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
   function addVendor() {
     const g = id => (document.getElementById(id).value || '').trim();
     const name = g('vend-name');
