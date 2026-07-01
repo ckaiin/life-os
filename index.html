@@ -2265,6 +2265,24 @@
       </div>
     </div>
 
+    <!-- REVIEW -->
+    <div class="others-section" id="whoop-review-section" style="display:none;">
+      <p class="others-section-title">Review <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">averages + trend vs the prior period</span></p>
+      <div class="subtab-bar" style="margin:4px 0 18px;">
+        <button class="subtab-btn active" id="revtab-week" onclick="setReviewPeriod('week')">This week</button>
+        <button class="subtab-btn" id="revtab-month" onclick="setReviewPeriod('month')">This month</button>
+      </div>
+      <div class="golf-top-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+        <div class="golf-stat-card"><p class="golf-stat-label">Recovery</p><p class="golf-stat-value" id="rev-recovery" style="font-size:1.3rem;">—</p><p class="golf-stat-sub" id="rev-recovery-d"></p></div>
+        <div class="golf-stat-card"><p class="golf-stat-label">HRV</p><p class="golf-stat-value" id="rev-hrv" style="font-size:1.3rem;">—</p><p class="golf-stat-sub" id="rev-hrv-d"></p></div>
+        <div class="golf-stat-card"><p class="golf-stat-label">Resting HR</p><p class="golf-stat-value" id="rev-rhr" style="font-size:1.3rem;">—</p><p class="golf-stat-sub" id="rev-rhr-d"></p></div>
+        <div class="golf-stat-card"><p class="golf-stat-label">Sleep</p><p class="golf-stat-value" id="rev-sleep" style="font-size:1.3rem;">—</p><p class="golf-stat-sub" id="rev-sleep-d"></p></div>
+        <div class="golf-stat-card"><p class="golf-stat-label">Avg strain</p><p class="golf-stat-value" id="rev-strain" style="font-size:1.3rem;">—</p><p class="golf-stat-sub" id="rev-strain-d"></p></div>
+        <div class="golf-stat-card"><p class="golf-stat-label">Workouts</p><p class="golf-stat-value" id="rev-workouts" style="font-size:1.3rem;">—</p><p class="golf-stat-sub" id="rev-workouts-d"></p></div>
+      </div>
+      <p class="insight-text" id="rev-read" style="font-size:13px;color:var(--text2);margin:12px 0 0;"></p>
+    </div>
+
     <!-- CHART -->
     <div class="others-section" id="whoop-chart-section" style="display:none;">
       <p class="others-section-title">Recovery — last 3 weeks</p>
@@ -2666,8 +2684,8 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.74</p>
-  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.74: Re-size vendor textareas when Vendors tab opens (fixes clipped fields from hidden-render)
+  <p class="version-tag">Version 2.75</p>
+  <p class="version-tag" style="margin-top:3px;font-size:9px;">2.75: WHOOP weekly/monthly review in Recovery tab (recovery/HRV/RHR/sleep/strain/workouts vs prior period + read)
 </div>
 
 <script>
@@ -4375,6 +4393,93 @@
   }
 
   let _whoopActivities = [];
+  // --- WHOOP / training review (weekly + monthly) ---
+  let _whoopDays = [];
+  let _reviewPeriod = 'week';
+  const _revIso = d => new Intl.DateTimeFormat('en-CA').format(d);
+  const _revAddDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const _revAvg = (rows, f) => { const v = rows.map(f).filter(x => x != null).map(Number); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+
+  function _revPeriodStats(startISO, endISO) {
+    const days = _whoopDays.filter(d => d.date >= startISO && d.date < endISO);
+    const acts = (_whoopActivities || []).filter(a => a.start_time && a.start_time.slice(0, 10) >= startISO && a.start_time.slice(0, 10) < endISO);
+    return {
+      recovery: _revAvg(days, d => d.recovery_score),
+      hrv: _revAvg(days, d => d.hrv),
+      rhr: _revAvg(days, d => d.resting_hr),
+      sleep: _revAvg(days, d => d.sleep_performance),
+      strain: _revAvg(days, d => d.strain),
+      workouts: acts.length,
+      distanceKm: acts.reduce((s, a) => s + (a.distance_m || 0), 0) / 1000,
+      n: days.length,
+    };
+  }
+
+  function _revSetMetric(id, cur, prev, unit, dec, goodDir) {
+    const vEl = document.getElementById('rev-' + id);
+    const dEl = document.getElementById('rev-' + id + '-d');
+    if (!vEl) return;
+    vEl.textContent = cur != null ? Number(cur).toFixed(dec) + unit : '—';
+    if (cur == null || prev == null) { dEl.textContent = ''; dEl.style.color = ''; return; }
+    const delta = cur - prev;
+    const arrow = delta > 0.05 ? '↑' : delta < -0.05 ? '↓' : '→';
+    let good = null;
+    if (goodDir === 'up') good = delta > 0.05 ? true : delta < -0.05 ? false : null;
+    else if (goodDir === 'down') good = delta < -0.05 ? true : delta > 0.05 ? false : null;
+    dEl.textContent = arrow + ' ' + Math.abs(delta).toFixed(dec) + unit + ' vs prior';
+    dEl.style.color = good === true ? 'var(--green)' : good === false ? 'var(--red)' : 'var(--text3)';
+  }
+
+  function setReviewPeriod(p) {
+    _reviewPeriod = p;
+    document.getElementById('revtab-week').classList.toggle('active', p === 'week');
+    document.getElementById('revtab-month').classList.toggle('active', p === 'month');
+    renderReview();
+  }
+
+  function renderReview() {
+    const sec = document.getElementById('whoop-review-section');
+    if (!sec) return;
+    if (!_whoopDays.length) { sec.style.display = 'none'; return; }
+    sec.style.display = '';
+    const todayLd = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+    const today = new Date(todayLd + 'T12:00:00');
+    let curStart, curEnd, prevStart, prevEnd;
+    if (_reviewPeriod === 'week') {
+      const sun = _revAddDays(today, -today.getDay());
+      curStart = _revIso(sun); curEnd = _revIso(_revAddDays(sun, 7));
+      prevStart = _revIso(_revAddDays(sun, -7)); prevEnd = curStart;
+    } else {
+      const first = new Date(today.getFullYear(), today.getMonth(), 1);
+      curStart = _revIso(first); curEnd = _revIso(new Date(today.getFullYear(), today.getMonth() + 1, 1));
+      prevStart = _revIso(new Date(today.getFullYear(), today.getMonth() - 1, 1)); prevEnd = curStart;
+    }
+    const cur = _revPeriodStats(curStart, curEnd);
+    const prev = _revPeriodStats(prevStart, prevEnd);
+    _revSetMetric('recovery', cur.recovery, prev.recovery, '%', 0, 'up');
+    _revSetMetric('hrv', cur.hrv, prev.hrv, '', 0, 'up');
+    _revSetMetric('rhr', cur.rhr, prev.rhr, '', 0, 'down');
+    _revSetMetric('sleep', cur.sleep, prev.sleep, '%', 0, 'up');
+    _revSetMetric('strain', cur.strain, prev.strain, '', 1, 'neutral');
+    document.getElementById('rev-workouts').textContent = cur.workouts;
+    document.getElementById('rev-workouts-d').textContent = (cur.distanceKm >= 0.1 ? cur.distanceKm.toFixed(1) + ' km · ' : '') + 'was ' + prev.workouts;
+    document.getElementById('rev-read').textContent = _revRead(cur, prev);
+  }
+
+  function _revRead(cur, prev) {
+    const w = _reviewPeriod === 'week' ? 'week' : 'month';
+    if (!cur.n) return 'No WHOOP data yet this ' + w + '.';
+    const bits = [];
+    if (cur.hrv != null && prev.hrv != null && cur.rhr != null && prev.rhr != null) {
+      if (cur.hrv > prev.hrv + 0.5 && cur.rhr < prev.rhr - 0.5) bits.push('HRV up and resting HR down — you’re adapting well, fitness trending up.');
+      else if (cur.hrv < prev.hrv - 0.5 && cur.rhr > prev.rhr + 0.5) bits.push('HRV down and resting HR up — a sign of fatigue or poor sleep. Ease off.');
+    }
+    if (cur.recovery != null && prev.recovery != null && cur.recovery < prev.recovery - 3) bits.push('Average recovery slipped ' + Math.round(prev.recovery - cur.recovery) + ' points vs last ' + w + ' — watch your load and sleep.');
+    if (cur.sleep != null && cur.sleep < 75) bits.push('Sleep is the weak spot this ' + w + ' (' + Math.round(cur.sleep) + '%) — highest-leverage fix.');
+    if (!bits.length) bits.push('Steady ' + w + ' — recovery, HRV, and sleep are holding about where they were.');
+    return bits.join(' ');
+  }
+
   async function loadWhoop() {
     if (!_sbReady) return;
     // Load detected activities first so they can be merged into the day rows.
@@ -4391,11 +4496,13 @@
         if (syncBtn) syncBtn.style.display = '';
         if (connectBtn) connectBtn.textContent = 'Reconnect Whoop';
         _whoopLatest = data[0];
+        _whoopDays = data;
         renderWhoop(data[0]);
         renderWhoopChart(data);
         renderWhoopHistory(data, _whoopActivities);
         updateTodayStrip();
         renderBodyMap();
+        renderReview();
       }
     } catch (e) { console.warn('Whoop load error', e); }
   }
