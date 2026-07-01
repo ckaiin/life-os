@@ -197,6 +197,48 @@ Deno.serve(async (req) => {
     ? `${weather.emoji} ${weather.temp}° ${weather.text} · feels ${weather.feels}° · H ${weather.hi}° L ${weather.lo}°${rainLine ? ' · ' + rainLine : ''}`
     : 'Weather unavailable.';
 
+  // Sunday only: weekly review of the just-completed week (Sun–Sat) vs the week before.
+  let weeklyReviewHtml = '';
+  if (weekday === 'Sunday') {
+    const iso = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(d);
+    const D = 86400000;
+    const wkStart = iso(new Date(now.getTime() - 7 * D));
+    const priorStart = iso(new Date(now.getTime() - 14 * D));
+    const { data: revDays } = await db.from('whoop_data').select('date,recovery_score,hrv,resting_hr,sleep_performance,strain').gte('date', priorStart).lt('date', todayLd);
+    const { data: revActs } = await db.from('whoop_workouts').select('start_time,distance_m').gte('start_time', priorStart);
+    const avg = (rows: any[], f: (r: any) => any) => { const v = rows.map(f).filter((x) => x != null).map(Number); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    const stats = (start: string, end: string) => {
+      const ds = (revDays || []).filter((d: any) => d.date >= start && d.date < end);
+      const as = (revActs || []).filter((a: any) => a.start_time && a.start_time.slice(0, 10) >= start && a.start_time.slice(0, 10) < end);
+      return { recovery: avg(ds, (d) => d.recovery_score), hrv: avg(ds, (d) => d.hrv), rhr: avg(ds, (d) => d.resting_hr), sleep: avg(ds, (d) => d.sleep_performance), strain: avg(ds, (d) => d.strain), workouts: as.length, km: as.reduce((s: number, a: any) => s + (a.distance_m || 0), 0) / 1000, n: ds.length };
+    };
+    const cur = stats(wkStart, todayLd);
+    const prev = stats(priorStart, wkStart);
+    if (cur.n) {
+      const row = (label: string, c: any, p: any, unit: string, dec: number, dir: string) => {
+        if (c == null) return '';
+        let d = '';
+        if (p != null) {
+          const delta = c - p;
+          const arrow = delta > 0.05 ? '▲' : delta < -0.05 ? '▼' : '–';
+          const good = dir === 'up' ? delta > 0 : dir === 'down' ? delta < 0 : null;
+          const color = Math.abs(delta) < 0.05 ? '#8a8f98' : (good ? '#1e7a46' : '#b45309');
+          d = ` <span style="color:${color};font-size:11px;">${arrow} ${Math.abs(delta).toFixed(dec)}${unit}</span>`;
+        }
+        return `<p style="font-size:14px;margin:0 0 4px;"><span style="display:inline-block;min-width:112px;color:#6a6e76;">${label}</span>${c.toFixed(dec)}${unit}${d}</p>`;
+      };
+      weeklyReviewHtml = `<div style="background:#eef2f7;border:1px solid #d8dee8;border-radius:8px;padding:16px;margin-bottom:14px;">
+        <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 8px;">Last week in review</p>
+        ${row('Recovery', cur.recovery, prev.recovery, '%', 0, 'up')}
+        ${row('HRV', cur.hrv, prev.hrv, '', 0, 'up')}
+        ${row('Resting HR', cur.rhr, prev.rhr, '', 0, 'down')}
+        ${row('Sleep', cur.sleep, prev.sleep, '%', 0, 'up')}
+        ${row('Avg strain', cur.strain, prev.strain, '', 1, 'neutral')}
+        <p style="font-size:14px;margin:0;"><span style="display:inline-block;min-width:112px;color:#6a6e76;">Workouts</span>${cur.workouts}${cur.km >= 0.1 ? ` · ${cur.km.toFixed(1)} km` : ''}</p>
+      </div>`;
+    }
+  }
+
   const html = `
     <div style="font-family:-apple-system,Segoe UI,sans-serif;max-width:520px;margin:0 auto;color:#1a1e26;">
       <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#8a8f98;margin:0 0 2px;">Life OS · Morning Brief</p>
@@ -205,6 +247,7 @@ Deno.serve(async (req) => {
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Readiness</p>
         <p style="font-size:14px;line-height:1.5;margin:0;">${summary}</p>
       </div>
+      ${weeklyReviewHtml}
       ${(rems && rems.length) ? `<div style="background:#fff7ed;border:1px solid #f0d9b8;border-radius:8px;padding:16px;margin-bottom:14px;">
         <p style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a8f98;margin:0 0 6px;">Reminders</p>
         ${rems.map((r: any) => `<p style="font-size:14px;margin:0 0 4px;">${r.date < todayLd ? '⚠️ ' : '• '}${(r.text || '').replace(/[<>]/g, '')}${r.date < todayLd ? ' <span style=\"color:#b45309;font-size:11px;\">(overdue)</span>' : ''}</p>`).join('')}
