@@ -2298,10 +2298,30 @@
       <div id="whoop-chart" class="whoop-chart"></div>
     </div>
 
-    <!-- HISTORY -->
+    <!-- RECOVERY ROOM PROTOCOL -->
     <div class="others-section">
-      <p class="others-section-title">History</p>
-      <div id="whoop-history" class="lift-history">
+      <p class="others-section-title">Recovery room protocol <span style="font-size:9px;color:var(--text3);font-family:'DM Sans',sans-serif;text-transform:none;letter-spacing:0;margin-left:8px;">cold plunge · infrared sauna · red light</span></p>
+      <div class="insight-box goal" id="recovery-today" style="border-left:3px solid var(--green);margin-bottom:12px;"><p class="insight-text" style="margin:0;">—</p></div>
+      <div class="golf-top-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Lift days · Mon / Wed / Fri</p>
+          <p class="insight-text" style="margin:6px 0 0;">Sauna + red light after lifting. <strong>Skip the cold plunge</strong> — cold in the hours after a lift blunts your muscle &amp; strength gains.</p>
+        </div>
+        <div class="golf-stat-card">
+          <p class="golf-stat-label">Run &amp; rest days · Tue / Thu / Sat / Sun</p>
+          <p class="insight-text" style="margin:6px 0 0;">Full stack: cold plunge + sauna + red light. Cold after an easy run is fine and aids recovery.</p>
+        </div>
+      </div>
+      <div class="insight-box" style="margin-top:12px;">
+        <p class="insight-label">How to run each one</p>
+        <p class="insight-text"><strong>Infrared sauna</strong> — 15–25 min, ~120–140°F, hydrate well. <strong>Cold plunge</strong> — 2–4 min, ~45–55°F, slow breathing (getting out early is fine). <strong>Red light</strong> — 10–15 min, close to the panel, eyes protected. Not UV, so no conflict with doxycycline, and it helps your skin. Evening order: cold first, finish on sauna or red light so you're calm 2–3 hrs before bed, not amped on cold.</p>
+      </div>
+    </div>
+
+    <!-- HISTORY (collapsible) -->
+    <div class="others-section">
+      <p class="others-section-title" onclick="toggleWhoopHistory()" style="cursor:pointer;user-select:none;">History <span id="wh-chevron" style="font-size:11px;color:var(--text3);">▸</span></p>
+      <div id="whoop-history" class="lift-history" style="display:none;">
         <p class="lift-empty">No history yet. Tap “Sync from Whoop” to pull your recent days.</p>
       </div>
     </div>
@@ -2693,7 +2713,7 @@
   <button class="export-btn" onclick="exportToClaude()">Export to Claude</button>
   <button class="export-btn" onclick="downloadBackup()" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Download Backup</button>
   <button class="export-btn" onclick="testBrief(this)" style="background:var(--bg3);color:var(--text2);margin-left:8px;">Email Test Brief</button>
-  <p class="version-tag">Version 2.78</p>
+  <p class="version-tag">Version 2.79</p>
   <p class="version-tag" style="margin-top:3px;font-size:9px;">2.77: Work Playbook + Route System (Phase 2 rep meeting); org chart fix (Matthew Mosebrook neighbor > Patrick Spillane > Tim > you) + trainers
 </div>
 
@@ -2903,6 +2923,7 @@
     loadSchedule();
     loadHoldings();
     loadVendors();
+    renderRecoveryToday();
     runCalc();
     renderBenefits();
     renderWorkNow();
@@ -4489,6 +4510,30 @@
     if (cur.sleep != null && cur.sleep < 75) bits.push('Sleep is the weak spot this ' + w + ' (' + Math.round(cur.sleep) + '%) — highest-leverage fix.');
     if (!bits.length) bits.push('Steady ' + w + ' — recovery, HRV, and sleep are holding about where they were.');
     return bits.join(' ');
+  }
+
+  function toggleWhoopHistory() {
+    const h = document.getElementById('whoop-history');
+    const c = document.getElementById('wh-chevron');
+    if (!h) return;
+    const hidden = h.style.display === 'none';
+    h.style.display = hidden ? '' : 'none';
+    if (c) c.textContent = hidden ? '▾' : '▸';
+  }
+
+  function renderRecoveryToday() {
+    const el = document.getElementById('recovery-today');
+    if (!el) return;
+    const p = el.querySelector('p');
+    if (!p) return;
+    const wd = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'long' }).format(new Date());
+    if (['Monday', 'Wednesday', 'Friday'].includes(wd)) {
+      p.innerHTML = '<strong>Today (' + wd + ') is a lift day:</strong> after training, sauna + red light. Skip the cold plunge to protect the gains.';
+    } else if (wd === 'Saturday') {
+      p.innerHTML = '<strong>Today (' + wd + ') is a rest day:</strong> optional full stack — cold plunge + sauna + red light for general recovery.';
+    } else {
+      p.innerHTML = '<strong>Today (' + wd + ') is a run day:</strong> after your run, full stack — cold plunge + sauna + red light.';
+    }
   }
 
   async function loadWhoop() {
